@@ -6,7 +6,7 @@ services:
         container_name: laravel-starter
         restart: unless-stopped
         ports:
-            - "88:80"
+            - 92:80"
             - "7443:443"
         volumes:
             - ./:/var/www/html:cached
