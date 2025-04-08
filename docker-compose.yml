@@ -7,7 +7,7 @@ services:
         restart: unless-stopped
         ports:
             - "83:80"
-            - "443:443"
+            - "7443:443"
         volumes:
             - ./:/var/www/html:cached
             - ./docker/nginx:/etc/nginx/conf.d
