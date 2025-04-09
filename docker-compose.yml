@@ -45,7 +45,7 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: "root"
             MYSQL_ROOT_HOST: "%"
-            MYSQL_DATABASE: admin_panel
+            MYSQL_DATABASE: cargo
             MYSQL_USER: admin_panel
             MYSQL_PASSWORD: admin_panel
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
