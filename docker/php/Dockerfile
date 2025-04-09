@@ -1,3 +1,4 @@
+/php/Dockerfile
 #
 #--------------------------------------------------------------------------
 # Image Setup
@@ -57,9 +58,10 @@ RUN set -eux; \
             libzip-dev; \
     rm -rf /var/lib/apt/lists/*
 
+# Install PHP extensions
+RUN docker-php-ext-install zip pcntl
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer 
 
 WORKDIR /var/www/html
 USER www-data
-
-
