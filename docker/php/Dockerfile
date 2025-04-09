@@ -1,3 +1,4 @@
+code/cargo/docker/php/Dockerfile
 #
 #--------------------------------------------------------------------------
 # Image Setup
@@ -54,8 +55,17 @@ RUN set -eux; \
             libxpm-dev \
             libmcrypt-dev \
             libonig-dev \
-            libzip-dev; \
+            libzip-dev \
+            gnupg; \
     rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest 
+
+
+
 
 # Install PHP extensions
 RUN docker-php-ext-install zip pcntl pdo pdo_mysql mysqli
