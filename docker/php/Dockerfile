@@ -58,7 +58,7 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install zip pcntl
+RUN docker-php-ext-install zip pcntl pdo pdo_mysql mysqli
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer 
 
