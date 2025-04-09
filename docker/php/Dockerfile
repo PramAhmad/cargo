@@ -51,6 +51,9 @@ RUN set -eux; \
             --with-xpm \
             --with-freetype; \
     docker-php-ext-install gd; \
+    # install php zip ext
+    docker-php-ext-install zip; \
+    
     php -r 'var_dump(gd_info());'
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer 
