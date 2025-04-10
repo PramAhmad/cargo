@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ProfileController as UserProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('mitra-groups', \App\Http\Controllers\MitraGroupController::class);
     Route::resource('category-customers', \App\Http\Controllers\CategoryCustomerController::class);
     Route::resource('marketing-groups', \App\Http\Controllers\MarketingGroupController::class);
+    Route::resource('marketings',MarketingController::class);
 });
 
 Route::middleware('auth')->group(function ()
