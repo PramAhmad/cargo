@@ -38,7 +38,7 @@ class MarketingFactory extends Factory
             'requirement' => $this->faker->optional(0.6)->paragraph(),
             'address_tax' => $this->faker->optional(0.7)->address(),
             'due_date' => $this->faker->optional(0.8)->numberBetween(7, 60),
-            'status' => $this->faker->boolean(80), // 80% active, 20% inactive
+            'status' => $this->faker->randomElement(['active', 'nonactive']),
         ];
     }
 }
