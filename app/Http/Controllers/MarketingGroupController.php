@@ -37,7 +37,7 @@ class MarketingGroupController extends Controller
 
         MarketingGroup::create($validated);
 
-        return redirect()->route('backend.marketing-groups.index')
+        return redirect()->route('marketing-groups.index')
             ->with('success', 'Marketing Group created successfully.');
     }
 
@@ -68,7 +68,7 @@ class MarketingGroupController extends Controller
 
         $marketingGroup->update($validated);
 
-        return redirect()->route('backend.marketing-groups.index')
+        return redirect()->route('marketing-groups.index')
             ->with('success', 'Marketing Group updated successfully.');
     }
 
@@ -79,7 +79,7 @@ class MarketingGroupController extends Controller
     {
         $marketingGroup->delete();
 
-        return redirect()->route('backend.marketing-groups.index')
+        return redirect()->route('marketing-groups.index')
             ->with('success', 'Marketing Group deleted successfully.');
     }
 }

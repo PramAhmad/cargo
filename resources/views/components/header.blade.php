@@ -7,7 +7,6 @@
       <!-- Header Options Starts -->
       <div class="flex items-center">
         <!-- Language Dropdown Starts -->
-       <x-language/>
         <!-- Language Dropdown Ends -->
 
         <!-- Dark Mood Toggle Starts -->

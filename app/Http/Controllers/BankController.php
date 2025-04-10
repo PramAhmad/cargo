@@ -37,7 +37,7 @@ class BankController extends Controller
 
         Bank::create($validated);
 
-        return redirect()->route('backend.banks.index')
+        return redirect()->route('banks.index')
             ->with('success', 'Bank created successfully.');
     }
 
@@ -68,7 +68,7 @@ class BankController extends Controller
 
         $bank->update($validated);
 
-        return redirect()->route('backend.banks.index')
+        return redirect()->route('banks.index')
             ->with('success', 'Bank updated successfully.');
     }
 
@@ -79,7 +79,7 @@ class BankController extends Controller
     {
         $bank->delete();
 
-        return redirect()->route('backend.banks.index')
+        return redirect()->route('banks.index')
             ->with('success', 'Bank deleted successfully.');
     }
 }

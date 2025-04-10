@@ -37,7 +37,7 @@ class CategoryCustomerController extends Controller
 
         CategoryCustomer::create($validated);
 
-        return redirect()->route('backend.category-customers.index')
+        return redirect()->route('category-customers.index')
             ->with('success', 'Category Customer created successfully.');
     }
 
@@ -68,7 +68,7 @@ class CategoryCustomerController extends Controller
 
         $categoryCustomer->update($validated);
 
-        return redirect()->route('backend.category-customers.index')
+        return redirect()->route('category-customers.index')
             ->with('success', 'Category Customer updated successfully.');
     }
 
@@ -79,7 +79,7 @@ class CategoryCustomerController extends Controller
     {
         $categoryCustomer->delete();
 
-        return redirect()->route('backend.category-customers.index')
+        return redirect()->route('category-customers.index')
             ->with('success', 'Category Customer deleted successfully.');
     }
 }

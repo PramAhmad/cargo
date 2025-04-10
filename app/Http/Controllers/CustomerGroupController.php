@@ -38,7 +38,7 @@ class CustomerGroupController extends Controller
 
         CustomerGroup::create($validated);
 
-        return redirect()->route('backend.customer-groups.index')
+        return redirect()->route('customer-groups.index')
             ->with('success', 'Customer Group created successfully.');
     }
 
@@ -69,7 +69,7 @@ class CustomerGroupController extends Controller
 
         $customerGroup->update($validated);
 
-        return redirect()->route('backend.customer-groups.index')
+        return redirect()->route('customer-groups.index')
             ->with('success', 'Customer Group updated successfully.');
     }
 
@@ -80,7 +80,7 @@ class CustomerGroupController extends Controller
     {
         $customerGroup->delete();
 
-        return redirect()->route('backend.customer-groups.index')
+        return redirect()->route('customer-groups.index')
             ->with('success', 'Customer Group deleted successfully.');
     }
 }

@@ -37,7 +37,7 @@ class MitraGroupController extends Controller
 
         MitraGroup::create($validated);
 
-        return redirect()->route('backend.mitra-groups.index')
+        return redirect()->route('mitra-groups.index')
             ->with('success', 'Mitra Group created successfully.');
     }
 
@@ -68,7 +68,7 @@ class MitraGroupController extends Controller
 
         $mitraGroup->update($validated);
 
-        return redirect()->route('backend.mitra-groups.index')
+        return redirect()->route('mitra-groups.index')
             ->with('success', 'Mitra Group updated successfully.');
     }
 
@@ -79,7 +79,7 @@ class MitraGroupController extends Controller
     {
         $mitraGroup->delete();
 
-        return redirect()->route('backend.mitra-groups.index')
+        return redirect()->route('mitra-groups.index')
             ->with('success', 'Mitra Group deleted successfully.');
     }
 }

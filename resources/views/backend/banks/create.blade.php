@@ -26,10 +26,10 @@
                     </div>
                   
                 </div>
-                        <div class="form-group mb-3">
-                            <button type="submit" class="btn btn-success">Submit</button>
-                            <a href="{{ route('banks.index') }}" class="btn btn-secondary">Back</a>
-                        </div>
+                <div class="mt-6 flex items-center justify-end gap-4">
+                        <a href="{{ route('customer-groups.index') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
                     </form>
                 </div>
             </div>
