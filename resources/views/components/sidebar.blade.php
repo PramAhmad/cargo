@@ -51,77 +51,83 @@
 
         <div class="sidebar-menu-header">Main Menu</div>
 
-   
-        <!-- Notification -->
-  
-      
-        <!-- ecommnerce -->
-        @can('ecommerce.view')
-            <li>
-                <a href="javascript:void(0);"
-                    class="sidebar-menu {{ request()->routeIs([
-                        'admin.product.index',
-                        'admin.product.edit',
-                        'admin.order.index',
-                        'admin.order.show',
-                        'admin.customer.index',
-                    ])
-                        ? 'active'
-                        : '' }}">
-                    <span class="sidebar-menu-icon">
-                        <i data-feather="shopping-bag"></i>
-                    </span>
-                    <span class="sidebar-menu-text">Ecommerce</span>
-                    <span class="sidebar-menu-arrow">
-                        <i data-feather="chevron-right"></i>
-                    </span>
-                </a>
-                <ul class="sidebar-submenu">
-                    @can('product.view')
-                        <li>
-                            <a href="{{ route('admin.product.index') }}"
-                                class="sidebar-submenu-item {{ request()->routeIs('admin.product.index') ? 'active' : '' }}">
-                                Product List </a>
-                        </li>
-                    @endcan
-                    @can('product.edit')
-                        <li>
-                            <a href="{{ route('admin.product.edit') }}"
-                                class="sidebar-submenu-item {{ request()->routeIs('admin.product.edit') ? 'active' : '' }}">
-                                Product Edit </a>
-                        </li>
-                    @endcan
-                    @can('order.view')
-                        <li>
-                            <a href="{{ route('admin.order.index') }}"
-                                class="sidebar-submenu-item {{ request()->routeIs('admin.order.index') ? 'active' : '' }}">
-                                Order List </a>
-                        </li>
-                    @endcan
-                    @can('order.view')
-                        <li>
-                            <a href="{{ route('admin.order.show') }}"
-                                class="sidebar-submenu-item {{ request()->routeIs('admin.order.show') ? 'active' : '' }}">
-                                Order Details </a>
-                        </li>
-                    @endcan
-                    @can('customer.view')
-                        <li>
-                            <a href="{{ route('admin.customer.index') }}"
-                                class="sidebar-submenu-item {{ request()->routeIs('admin.customer.index') ? 'active' : '' }}">
-                                Customer List </a>
-                        </li>
-                    @endcan
-                </ul>
-            </li>
-        @endcan
-        <!-- Users -->
-       
+        <!-- Master Data -->
+        <li>
+            <a href="javascript:void(0);"
+                class="sidebar-menu {{ request()->routeIs([
+                    'banks.index', 
+                    'banks.create', 
+                    'banks.edit', 
+                    'banks.show',
+                    'customer-groups.index', 
+                    'customer-groups.create', 
+                    'customer-groups.edit', 
+                    'customer-groups.show',
+                    'category-customers.index', 
+                    'category-customers.create', 
+                    'category-customers.edit', 
+                    'category-customers.show',
+                    'marketing-groups.index', 
+                    'marketing-groups.create', 
+                    'marketing-groups.edit', 
+                    'marketing-groups.show',
+                    'mitra-groups.index', 
+                    'mitra-groups.create', 
+                    'mitra-groups.edit', 
+                    'mitra-groups.show',
+                ]) ? 'active' : '' }}">
+                <span class="sidebar-menu-icon">
+                    <i data-feather="database"></i>
+                </span>
+                <span class="sidebar-menu-text">Master Data</span>
+                <span class="sidebar-menu-arrow">
+                    <i data-feather="chevron-right"></i>
+                </span>
+            </a>
+            <ul class="sidebar-submenu">
+                @can('banks.view')
+                    <li>
+                        <a href="{{ route('banks.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('banks.index', 'banks.create', 'banks.edit', 'banks.show') ? 'active' : '' }}">
+                             Bank</a>
+                    </li>
+                @endcan
+                @can('customer-groups.view')
+                    <li>
+                        <a href="{{ route('customer-groups.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('customer-groups.index', 'customer-groups.create', 'customer-groups.edit', 'customer-groups.show') ? 'active' : '' }}">
+                            Customer Group </a>
+                    </li>
+                @endcan
+                @can('category-customers.view')
+                    <li>
+                        <a href="{{ route('category-customers.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('category-customers.index', 'category-customers.create', 'category-customers.edit', 'category-customers.show') ? 'active' : '' }}">
+                            Category Customer </a>
+                    </li>
+                @endcan
+                @can('marketing-groups.view')
+                    <li>
+                        <a href="{{ route('marketing-groups.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('marketing-groups.index', 'marketing-groups.create', 'marketing-groups.edit', 'marketing-groups.show') ? 'active' : '' }}">
+                            Marketing Group </a>
+                    </li>
+                @endcan
+                @can('mitra-groups.view')
+                    <li>
+                        <a href="{{ route('mitra-groups.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('mitra-groups.index', 'mitra-groups.create', 'mitra-groups.edit', 'mitra-groups.show') ? 'active' : '' }}">
+                            Mitra Group </a>
+                    </li>
+                @endcan
+            </ul>
+        </li>
+
         <!--  Commponents  -->
         <div class="sidebar-menu-header">Pages</div>
     
 
-            {{-- setting no ul--}}
+        {{-- setting no ul--}}
         <li>
             <a 
                 href="{{ route('admin.settings.index') }}"

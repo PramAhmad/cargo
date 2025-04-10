@@ -24,6 +24,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [UserProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [UserProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('banks', \App\Http\Controllers\BankController::class);
+    Route::resource('customer-groups', \App\Http\Controllers\CustomerGroupController::class);
+    Route::resource('mitra-groups', \App\Http\Controllers\MitraGroupController::class);
+    Route::resource('category-customers', \App\Http\Controllers\CategoryCustomerController::class);
+    Route::resource('marketing-groups', \App\Http\Controllers\MarketingGroupController::class);
+});
+
+Route::middleware('auth')->group(function ()
+{
 });
 
 require __DIR__.'/auth.php';

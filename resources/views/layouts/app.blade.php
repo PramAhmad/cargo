@@ -79,7 +79,6 @@
         <!-- Search Modal Start -->
         <x-search-modal />
         <!-- Search Modal Ends -->
-        <x-media.media-gallery />
     </div>
 </body>
 

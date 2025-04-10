@@ -11,7 +11,6 @@
                 </div>
             </div>
             <div class="modal-body ">
-                <x-media.media  />
             </div>
             <div class="modal-footer">
                 <div class="flex items-center justify-end gap-4">
