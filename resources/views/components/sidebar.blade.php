@@ -122,7 +122,38 @@
                 @endcan
             </ul>
         </li>
-                    <!-- marketing list dan create -->
+        
+        <!-- Customer -->
+        <li>
+            <a href="javascript:void(0);"
+                class="sidebar-menu {{ request()->routeIs(['customers.*']) ? 'active' : '' }}">
+                <span class="sidebar-menu-icon">
+                    <i data-feather="users"></i>
+                </span>
+                <span class="sidebar-menu-text">Customers</span>
+                <span class="sidebar-menu-arrow">
+                    <i data-feather="chevron-right"></i>
+                </span>
+            </a>
+            <ul class="sidebar-submenu">
+                @can('customer.view')
+                    <li>
+                        <a href="{{ route('customers.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('customers.index') ? 'active' : '' }}">
+                            Customer List</a>
+                    </li>
+                @endcan
+                @can('customer.create')
+                    <li>
+                        <a href="{{ route('customers.create') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('customers.create') ? 'active' : '' }}">
+                            Create Customer</a>
+                    </li>
+                @endcan
+            </ul>
+        </li>
+        
+        <!-- Marketing -->
         <li>
             <a href="javascript:void(0);"
                 class="sidebar-menu {{ request()->routeIs(['marketings.*']) ? 'active' : '' }}">

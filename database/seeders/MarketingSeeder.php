@@ -49,9 +49,9 @@ class MarketingSeeder extends Seeder
         
         // Create some marketing groups if none exist
         if (MarketingGroup::count() == 0) {
-            MarketingGroup::create(['name' => 'Corporate', 'code' => 'CRP', 'status' => 1]);
-            MarketingGroup::create(['name' => 'Individual', 'code' => 'IND', 'status' => 1]);
-            MarketingGroup::create(['name' => 'Agency', 'code' => 'AGN', 'status' => 1]);
+            MarketingGroup::create(['name' => 'Corporate']);
+            MarketingGroup::create(['name' => 'Individual']);
+            MarketingGroup::create(['name' => 'Agency']);
         }
         
         // Create 10 marketing records

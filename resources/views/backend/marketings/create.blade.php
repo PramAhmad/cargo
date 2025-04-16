@@ -96,8 +96,8 @@
                         
                         <!-- Email -->
                         <div class="flex flex-col gap-1">
-                            <label class="label mb-1 font-medium" for="email">Email</label>
-                            <input type="email" class="input" id="email" name="email" value="{{ old('email') }}" />
+                            <label class="label label-required mb-1 font-medium" for="email">Email</label>
+                            <input type="email" class="input" id="email" name="email" value="{{ old('email') }}" required />
                         </div>
                         
                         <!-- Website -->
@@ -116,33 +116,25 @@
                             <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3">System Account</h3>
                         </div>
                         
-                        <!-- Create User Account -->
-                        <div class="col-span-1 md:col-span-3 lg:col-span-3">
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" id="create_user" name="create_user" value="1" class="checkbox" {{ old('create_user') ? 'checked' : '' }} />
-                                <label for="create_user" class="cursor-pointer font-medium text-slate-700 dark:text-slate-200">
-                                    Create user account for this marketing contact
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- User Account Password -->
-                        <div id="user_account_fields" class="col-span-1 md:col-span-3 lg:col-span-3 {{ old('create_user') ? '' : 'hidden' }} grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2">
+                        <!-- User Account Password - Now always visible -->
+                        <div class="col-span-1 md:col-span-3 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2">
+                            <input type="hidden" name="create_user" value="1">
+                            
                             <div class="flex flex-col gap-1">
-                                <label class="label mb-1 font-medium" for="password">Password</label>
-                                <input type="password" class="input" id="password" name="password" />
+                                <label class="label label-required mb-1 font-medium" for="password">Password</label>
+                                <input type="password" class="input" id="password" name="password" required />
                                 <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
                             </div>
                             
                             <div class="flex flex-col gap-1">
-                                <label class="label mb-1 font-medium" for="password_confirmation">Confirm Password</label>
-                                <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
+                                <label class="label label-required mb-1 font-medium" for="password_confirmation">Confirm Password</label>
+                                <input type="password" class="input" id="password_confirmation" name="password_confirmation" required />
                             </div>
                             
                             <div class="col-span-1 md:col-span-2">
                                 <p class="text-sm text-slate-500">
                                     <i class="inline-block h-4 w-4 mr-1 text-primary-500" data-feather="info"></i>
-                                    Creating a user account will allow this marketing contact to log into the system. 
+                                    A user account will be automatically created for this marketing contact.
                                     They will be given a "Marketing" role with limited permissions.
                                 </p>
                             </div>
@@ -214,28 +206,4 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const createUserCheckbox = document.getElementById('create_user');
-            const userAccountFields = document.getElementById('user_account_fields');
-            const emailField = document.getElementById('email');
-            
-            function toggleUserFields() {
-                if (createUserCheckbox.checked) {
-                    userAccountFields.classList.remove('hidden');
-                    emailField.setAttribute('required', 'required');
-                } else {
-                    userAccountFields.classList.add('hidden');
-                    emailField.removeAttribute('required');
-                }
-            }
-            
-            // Initial state
-            toggleUserFields();
-            
-            // Listen for changes
-            createUserCheckbox.addEventListener('change', toggleUserFields);
-        });
-    </script>
 </x-app-layout>

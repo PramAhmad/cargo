@@ -101,8 +101,8 @@
                         
                         <!-- Email -->
                         <div class="flex flex-col gap-1">
-                            <label class="label mb-1 font-medium" for="email">Email</label>
-                            <input type="email" class="input" id="email" name="email" value="{{ old('email', $marketing->email) }}" />
+                            <label class="label label-required mb-1 font-medium" for="email">Email</label>
+                            <input type="email" class="input" id="email" name="email" value="{{ old('email', $marketing->email) }}" required />
                         </div>
                         
                         <!-- Website -->
@@ -134,17 +134,57 @@
                                     <p class="text-sm text-slate-500">{{ $marketing->user->name }} ({{ $marketing->user->email }})</p>
                                 </div>
                             </div>
+                            
+                            <!-- Password Update Section -->
+                            <div class="mt-4 border-t pt-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="text-base font-medium text-slate-700 dark:text-slate-200">Update Password</h5>
+                                    <button type="button" id="togglePasswordUpdate" class="text-xs text-primary-600 hover:text-primary-800 focus:outline-none">
+                                        <span id="passwordUpdateButtonText">Show Password Fields</span>
+                                    </button>
+                                </div>
+                                
+                                <div id="passwordUpdateSection" class="hidden">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2 mt-2">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="label mb-1 font-medium" for="password">New Password</label>
+                                            <input type="password" class="input" id="password" name="password" />
+                                            <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                                        </div>
+                                        
+                                        <div class="flex flex-col gap-1">
+                                            <label class="label mb-1 font-medium" for="password_confirmation">Confirm New Password</label>
+                                            <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
+                                        </div>
+                                        
+                                        <div class="col-span-1 md:col-span-2">
+                                            <p class="text-sm text-amber-600">
+                                                <i class="inline-block h-4 w-4 mr-1" data-feather="alert-triangle"></i>
+                                                Leave blank if you don't want to change the password.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         @else
-                        <div class="col-span-1 md:col-span-3 lg:col-span-3">
-                            <div class="flex items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400">
-                                    <i class="h-5 w-5" data-feather="user-x"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <h5 class="text-base font-medium text-slate-700 dark:text-slate-200">No Linked User Account</h5>
-                                    <p class="text-sm text-slate-500">This marketing contact doesn't have a system user account.</p>
-                                </div>
+                        <div class="col-span-1 md:col-span-3 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2">
+                            <div class="col-span-1 md:col-span-2">
+                                <p class="text-sm text-primary-600 font-medium mb-3">
+                                    <i class="inline-block h-4 w-4 mr-1" data-feather="alert-circle"></i>
+                                    This marketing contact needs a user account. Please create one now.
+                                </p>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1">
+                                <label class="label label-required mb-1 font-medium" for="password">Password</label>
+                                <input type="password" class="input" id="password" name="password" required />
+                                <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1">
+                                <label class="label label-required mb-1 font-medium" for="password_confirmation">Confirm Password</label>
+                                <input type="password" class="input" id="password_confirmation" name="password_confirmation" required />
                             </div>
                         </div>
                         @endif
@@ -211,4 +251,24 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('togglePasswordUpdate');
+            const passwordSection = document.getElementById('passwordUpdateSection');
+            const buttonText = document.getElementById('passwordUpdateButtonText');
+            
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    if (passwordSection.classList.contains('hidden')) {
+                        passwordSection.classList.remove('hidden');
+                        buttonText.textContent = 'Hide Password Fields';
+                    } else {
+                        passwordSection.classList.add('hidden');
+                        buttonText.textContent = 'Show Password Fields';
+                    }
+                });
+            }
+        });
+    </script>
 </x-app-layout>

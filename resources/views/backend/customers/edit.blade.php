@@ -179,73 +179,65 @@
                         <!-- User Account Section -->
                         <div class="col-span-1 md:col-span-3 lg:col-span-3">
                             @if($customer->user)
-                                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-md">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-500 text-white">
-                                        <i class="h-6 w-6" data-feather="user"></i>
+                                <div class="flex items-center p-3 bg-primary-50 dark:bg-slate-800 rounded-md">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-white dark:bg-primary-600">
+                                        <i class="h-5 w-5" data-feather="user"></i>
                                     </div>
-                                    <div>
-                                        <h5 class="text-base font-medium text-slate-900 dark:text-slate-200">
-                                            {{ $customer->user->name }}
-                                        </h5>
-                                        <p class="text-sm text-slate-500 dark:text-slate-400">{{ $customer->user->email }}</p>
-                                    </div>
-                                    <div class="ml-auto">
-                                        <span class="badge badge-soft-success">System User</span>
+                                    <div class="ml-4">
+                                        <h5 class="text-base font-medium text-slate-700 dark:text-slate-200">Linked User Account</h5>
+                                        <p class="text-sm text-slate-500">{{ $customer->user->name }} ({{ $customer->user->email }})</p>
                                     </div>
                                 </div>
                                 
-                                <div class="mt-4 ml-4">
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="update_user_link" name="update_user_link" value="1" class="checkbox" {{ old('update_user_link') ? 'checked' : '' }} />
-                                        <label for="update_user_link" class="cursor-pointer font-medium text-slate-700 dark:text-slate-200">
-                                            Update user account link
-                                        </label>
+                                <!-- Password Update Section -->
+                                <div class="mt-4 border-t pt-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h5 class="text-base font-medium text-slate-700 dark:text-slate-200">Update Password</h5>
+                                        <button type="button" id="togglePasswordUpdate" class="text-xs text-primary-600 hover:text-primary-800 focus:outline-none">
+                                            <span id="passwordUpdateButtonText">Show Password Fields</span>
+                                        </button>
                                     </div>
                                     
-                                    <div id="user_selection_field" class="mt-4 {{ old('update_user_link') ? '' : 'hidden' }}">
-                                        <label class="label mb-1 font-medium" for="users_id">Select User</label>
-                                        <select id="users_id" name="users_id" class="select">
-                                            <option value="">Select User</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}" {{ old('users_id', $customer->users_id) == $user->id ? 'selected' : '' }}>
-                                                    {{ $user->name }} ({{ $user->email }})
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <p class="text-xs text-slate-500 mt-1">
-                                            Select a user to associate with this customer, or leave blank to remove the current user link.
-                                        </p>
+                                    <div id="passwordUpdateSection" class="hidden">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2 mt-2">
+                                            <div class="flex flex-col gap-1">
+                                                <label class="label mb-1 font-medium" for="password">New Password</label>
+                                                <input type="password" class="input" id="password" name="password" />
+                                                <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                                            </div>
+                                            
+                                            <div class="flex flex-col gap-1">
+                                                <label class="label mb-1 font-medium" for="password_confirmation">Confirm New Password</label>
+                                                <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
+                                            </div>
+                                            
+                                            <div class="col-span-1 md:col-span-2">
+                                                <p class="text-sm text-amber-600">
+                                                    <i class="inline-block h-4 w-4 mr-1" data-feather="alert-triangle"></i>
+                                                    Leave blank if you don't want to change the password.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @else
-                                <div class="bg-slate-50 dark:bg-slate-800 rounded-md p-4 flex items-center gap-4">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400">
-                                        <i class="h-6 w-6" data-feather="user-x"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="text-base font-medium text-slate-900 dark:text-slate-200">No User Account Linked</h5>
-                                        <p class="text-sm text-slate-500 dark:text-slate-400">This customer doesn't have system access</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-4 ml-4">
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="update_user_link" name="update_user_link" value="1" class="checkbox" {{ old('update_user_link') ? 'checked' : '' }} />
-                                        <label for="update_user_link" class="cursor-pointer font-medium text-slate-700 dark:text-slate-200">
-                                            Link to an existing user account
-                                        </label>
+                                <div class="col-span-1 md:col-span-3 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2">
+                                    <div class="col-span-1 md:col-span-2">
+                                        <p class="text-sm text-primary-600 font-medium mb-3">
+                                            <i class="inline-block h-4 w-4 mr-1" data-feather="alert-circle"></i>
+                                            This customer doesn't have a user account. Please create one now by setting a password.
+                                        </p>
                                     </div>
                                     
-                                    <div id="user_selection_field" class="mt-4 {{ old('update_user_link') ? '' : 'hidden' }}">
-                                        <label class="label mb-1 font-medium" for="users_id">Select User</label>
-                                        <select id="users_id" name="users_id" class="select">
-                                            <option value="">Select User</option>
-                                            @foreach($users as $user)
-                                                <option value="{{ $user->id }}" {{ old('users_id') == $user->id ? 'selected' : '' }}>
-                                                    {{ $user->name }} ({{ $user->email }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="label label-required mb-1 font-medium" for="password">Password</label>
+                                        <input type="password" class="input" id="password" name="password" />
+                                        <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                                    </div>
+                                    
+                                    <div class="flex flex-col gap-1">
+                                        <label class="label label-required mb-1 font-medium" for="password_confirmation">Confirm Password</label>
+                                        <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
                                     </div>
                                 </div>
                             @endif
@@ -304,22 +296,21 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const updateUserCheckbox = document.getElementById('update_user_link');
-            const userSelectionField = document.getElementById('user_selection_field');
+            const toggleButton = document.getElementById('togglePasswordUpdate');
+            const passwordSection = document.getElementById('passwordUpdateSection');
+            const buttonText = document.getElementById('passwordUpdateButtonText');
             
-            function toggleUserFields() {
-                if (updateUserCheckbox.checked) {
-                    userSelectionField.classList.remove('hidden');
-                } else {
-                    userSelectionField.classList.add('hidden');
-                }
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    if (passwordSection.classList.contains('hidden')) {
+                        passwordSection.classList.remove('hidden');
+                        buttonText.textContent = 'Hide Password Fields';
+                    } else {
+                        passwordSection.classList.add('hidden');
+                        buttonText.textContent = 'Show Password Fields';
+                    }
+                });
             }
-            
-            // Initial state
-            toggleUserFields();
-            
-            // Listen for changes
-            updateUserCheckbox.addEventListener('change', toggleUserFields);
         });
     </script>
 </x-app-layout>

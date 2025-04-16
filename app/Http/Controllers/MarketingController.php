@@ -150,17 +150,16 @@ class MarketingController extends Controller
      */
     public function update(Request $request, Marketing $marketing)
     {
-        // Validate the request data
+        // Validate the request
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:20|unique:marketings,code,' . $marketing->id,
+            'code' => 'required|string|max:20|unique:marketings,code,'.$marketing->id,
             'name' => 'required|string|max:255',
             'address' => 'required|string',
-            'atas_nama' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
             'phone1' => 'required|string|max:20',
             'phone2' => 'nullable|string|max:20',
             'borndate' => 'nullable|date',
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$marketing->user_id.',id',
             'website' => 'nullable|url|max:255',
             'ktp' => 'nullable|string|max:20',
             'npwp' => 'nullable|string|max:30',
@@ -169,33 +168,84 @@ class MarketingController extends Controller
             'due_date' => 'nullable|integer|min:0',
             'bank_id' => 'nullable|exists:banks,id',
             'marketing_group_id' => 'required|exists:marketing_groups,id',
-            'user_id' => 'nullable|exists:users,id',
             'no_rek' => 'nullable|string|max:50',
+            'atas_nama' => 'nullable|string|max:255',
             'status' => 'required|boolean',
+            
+            // Password validation - only required if not empty or if user doesn't exist
+            'password' => $marketing->user_id ? 'nullable|min:8' : 'required|min:8',
+            'password_confirmation' => $marketing->user_id ? 'nullable|same:password' : 'required|same:password',
         ]);
-
+        
         if ($validator->fails()) {
-            return redirect()
-                ->route('marketings.edit', $marketing->id)
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        // Update marketing
-        $marketing->update($request->all());
-        
-        // If there's a user associated with this marketing, update user's basic info too
-        if ($marketing->user_id && $marketing->user) {
-            $user = $marketing->user;
-            $user->name = $marketing->name;
-            $user->email = $marketing->email;
-            $user->phone = $marketing->phone1;
-            $user->save();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
         
-        return redirect()
-            ->route('marketings.index')
-            ->with('success', 'Marketing has been updated successfully');
+        // Start transaction
+        DB::beginTransaction();
+        try {
+            // Update marketing info
+            $marketing->update([
+                'code' => $request->code,
+                'name' => $request->name,
+                'address' => $request->address,
+                'city' => $request->city,
+                'phone1' => $request->phone1,
+                'phone2' => $request->phone2,
+                'borndate' => $request->borndate,
+                'email' => $request->email,
+                'website' => $request->website,
+                'ktp' => $request->ktp,
+                'npwp' => $request->npwp,
+                'requirement' => $request->requirement,
+                'address_tax' => $request->address_tax,
+                'due_date' => $request->due_date,
+                'bank_id' => $request->bank_id,
+                'marketing_group_id' => $request->marketing_group_id,
+                'no_rek' => $request->no_rek,
+                'atas_nama' => $request->atas_nama,
+                'status' => $request->status,
+            ]);
+            
+            // Handle user account
+            if ($marketing->user_id) {
+                // Update existing user
+                $user = User::find($marketing->user_id);
+                $userData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                ];
+                
+                // Only update password if provided
+                if ($request->filled('password')) {
+                    $userData['password'] = Hash::make($request->password);
+                }
+                
+                $user->update($userData);
+                
+            } else if ($request->filled('password')) {
+                // Create new user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'status' => UserStatus::ACTIVE,
+                ]);
+                
+                // Assign marketing role - you may need to adjust this based on your role management system
+                $user->assignRole('marketing');
+                
+                // Link user to marketing
+                $marketing->update(['user_id' => $user->id]);
+            }
+            
+            DB::commit();
+            return redirect()->route('marketings.index')->with('success', 'Marketing updated successfully!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
