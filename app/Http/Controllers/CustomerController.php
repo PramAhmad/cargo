@@ -19,13 +19,45 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::with(['bank', 'marketing', 'customerGroup', 'customerCategory', 'user'])
-            ->orderBy('name', 'asc')
-            ->paginate(10);
+        // Get the search query and filters
+        $search = $request->input('search');
+        $typeFilter = $request->input('type');
+        $marketingFilter = $request->input('marketing_id');
+        
+        // Build the query
+        $customersQuery = Customer::with(['bank', 'marketing', 'customerGroup', 'customerCategory', 'user']);
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $customersQuery->where(function($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone1', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply type filter
+        if ($typeFilter) {
+            $customersQuery->where('type', $typeFilter);
+        }
+        
+        // Apply marketing filter
+        if ($marketingFilter) {
+            $customersQuery->where('marketing_id', $marketingFilter);
+        }
+        
+        // Order and paginate results
+        $customers = $customersQuery->orderBy('name', 'asc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
             
-        return view('backend.customers.index', compact('customers'));
+        // Get data for filters    
+        $marketings = Marketing::where('status', 1)->orderBy('name')->get();
+            
+        return view('backend.customers.index', compact('customers', 'search', 'typeFilter', 'marketingFilter', 'marketings'));
     }
 
     /**

@@ -17,13 +17,39 @@ class MarketingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $marketings = Marketing::with(['bank', 'marketingGroup', 'user'])
-            ->orderBy('name', 'asc')
-            ->paginate(10);
+        // Get the search query and filters
+        $search = $request->input('search');
+        $groupFilter = $request->input('group_id');
+        
+        // Build the query with relationships
+        $marketingsQuery = Marketing::with(['bank', 'marketingGroup', 'user']);
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $marketingsQuery->where(function($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone1', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply group filter
+        if ($groupFilter) {
+            $marketingsQuery->where('marketing_group_id', $groupFilter);
+        }
+        
+        // Order and paginate results
+        $marketings = $marketingsQuery->orderBy('name', 'asc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+        
+        // Get marketing groups for the filter dropdown
+        $marketingGroups = MarketingGroup::orderBy('name')->get();
             
-        return view('backend.marketings.index', compact('marketings'));
+        return view('backend.marketings.index', compact('marketings', 'search', 'groupFilter', 'marketingGroups'));
     }
 
     /**

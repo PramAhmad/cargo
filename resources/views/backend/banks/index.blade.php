@@ -1,8 +1,6 @@
 <x-app-layout>
     <!-- Page Title Starts -->
-    
     <x-page-title header="Bank List" page="Finance" />
-
     <!-- Page Title Ends -->
 
     <!-- Bank List Starts -->
@@ -11,13 +9,25 @@
         <div class="flex flex-col items-center justify-between gap-y-4 md:flex-row md:gap-y-0">
             <!-- Bank Search Starts -->
             <form
+                action="{{ route('banks.index') }}"
+                method="GET"
                 class="group flex h-10 w-full items-center rounded-primary border border-transparent bg-white shadow-sm focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-inset focus-within:ring-primary-500 dark:border-transparent dark:bg-slate-800 dark:focus-within:border-primary-500 md:w-72">
                 <div class="flex h-full items-center px-2">
                     <i class="h-4 text-slate-400 group-focus-within:text-primary-500" data-feather="search"></i>
                 </div>
                 <input
                     class="h-full w-full border-transparent bg-transparent px-0 text-sm placeholder-slate-400 placeholder:text-sm focus:border-transparent focus:outline-none focus:ring-0"
-                    type="text" placeholder="Search" />
+                    type="text"
+                    name="search"
+                    value="{{ $search ?? '' }}" 
+                    placeholder="Search bank name" />
+                @if(isset($search) && !empty($search))
+                    <div class="flex h-full items-center px-2">
+                        <a href="{{ route('banks.index') }}" class="text-slate-400 hover:text-danger-500">
+                            <i class="h-4" data-feather="x-circle"></i>
+                        </a>
+                    </div>
+                @endif
             </form>
             <!-- Bank Search Ends -->
 
@@ -44,13 +54,21 @@
             {{ session('success') }}
         </div>
         @endif
+        
+        @if(isset($search) && !empty($search))
+        <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
+            <span>Search results for: <span class="font-medium text-primary-500">{{ $search }}</span></span>
+            <a href="{{ route('banks.index') }}" class="ml-2 text-xs text-danger-500 hover:underline">
+                Clear search
+            </a>
+        </div>
+        @endif
 
         <!-- Bank Table Starts -->
         <div class="table-responsive whitespace-nowrap rounded-primary">
             <table class="table">
                 <thead>
                     <tr>
-                     
                         <th class="w-[40%] uppercase">Name</th>
                         <th class="w-[25%] uppercase">Created At</th>
                         <th class="w-[25%] uppercase">Updated At</th>
@@ -60,7 +78,6 @@
                 <tbody>
                     @forelse($banks as $bank)
                     <tr>
-                       
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="flex h-10 w-10 items-center justify-center rounded-primary bg-primary-500/10 text-primary-500">
@@ -115,7 +132,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4">No banks found</td>
+                        <td colspan="4" class="text-center py-4">
+                            @if(isset($search) && !empty($search))
+                                No banks found matching "{{ $search }}"
+                            @else
+                                No banks found
+                            @endif
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -18,13 +18,39 @@ class MitraController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $mitras = Mitra::with(['bank', 'mitraGroup', 'user'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // Get the search query and filters
+        $search = $request->input('search');
+        $groupFilter = $request->input('group_id');
+        
+        // Build the query with relationships
+        $mitrasQuery = Mitra::with(['bank', 'mitraGroup', 'user']);
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $mitrasQuery->where(function($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone1', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply group filter
+        if ($groupFilter) {
+            $mitrasQuery->where('mitra_group_id', $groupFilter);
+        }
+        
+        // Order and paginate results
+        $mitras = $mitrasQuery->orderBy('name', 'asc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+        
+        // Get mitra groups for the filter dropdown
+        $mitraGroups = MitraGroup::orderBy('name')->get();
             
-        return view('backend.mitras.index', compact('mitras'));
+        return view('backend.mitras.index', compact('mitras', 'search', 'groupFilter', 'mitraGroups'));
     }
 
     /**

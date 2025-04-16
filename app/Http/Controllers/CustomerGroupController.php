@@ -10,13 +10,25 @@ class CustomerGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-
-        $customerGroups = CustomerGroup::select('*')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('backend.customer-groups.index', compact('customerGroups'));
+        // Get the search query
+        $search = $request->input('search');
+        
+        // Build the query
+        $customerGroupsQuery = CustomerGroup::query();
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $customerGroupsQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        // Order and paginate results
+        $customerGroups = $customerGroupsQuery->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+            
+        return view('backend.customer-groups.index', compact('customerGroups', 'search'));
     }
 
     /**

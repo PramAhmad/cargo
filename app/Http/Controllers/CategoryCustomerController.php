@@ -10,12 +10,25 @@ class CategoryCustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categoryCustomers = CategoryCustomer::select('*')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('backend.category-customers.index', compact('categoryCustomers'));
+        // Get the search query
+        $search = $request->input('search');
+        
+        // Build the query
+        $categoryCustomersQuery = CategoryCustomer::query();
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $categoryCustomersQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        // Order and paginate results
+        $categoryCustomers = $categoryCustomersQuery->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+            
+        return view('backend.category-customers.index', compact('categoryCustomers', 'search'));
     }
 
     /**

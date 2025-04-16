@@ -10,12 +10,24 @@ class BankController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $banks = Bank::select('*')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('backend.banks.index', compact('banks'));
+        // Get the search query
+        $search = $request->input('search');
+        
+        // Build the query
+        $banksQuery = Bank::query();
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $banksQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        // Order and paginate results
+        $banks = $banksQuery->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+        return view('backend.banks.index', compact('banks', 'search'));
     }
 
     /**

@@ -1,8 +1,6 @@
 <x-app-layout>
     <!-- Page Title Starts -->
-    
     <x-page-title header="Category Customer List" page="Customers" />
-
     <!-- Page Title Ends -->
 
     <!-- Category Customer List Starts -->
@@ -11,13 +9,25 @@
         <div class="flex flex-col items-center justify-between gap-y-4 md:flex-row md:gap-y-0">
             <!-- Category Customer Search Starts -->
             <form
+                action="{{ route('category-customers.index') }}"
+                method="GET"
                 class="group flex h-10 w-full items-center rounded-primary border border-transparent bg-white shadow-sm focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-inset focus-within:ring-primary-500 dark:border-transparent dark:bg-slate-800 dark:focus-within:border-primary-500 md:w-72">
                 <div class="flex h-full items-center px-2">
                     <i class="h-4 text-slate-400 group-focus-within:text-primary-500" data-feather="search"></i>
                 </div>
                 <input
                     class="h-full w-full border-transparent bg-transparent px-0 text-sm placeholder-slate-400 placeholder:text-sm focus:border-transparent focus:outline-none focus:ring-0"
-                    type="text" placeholder="Search" />
+                    type="text"
+                    name="search"
+                    value="{{ $search ?? '' }}" 
+                    placeholder="Search category customer" />
+                @if(isset($search) && !empty($search))
+                    <div class="flex h-full items-center px-2">
+                        <a href="{{ route('category-customers.index') }}" class="text-slate-400 hover:text-danger-500">
+                            <i class="h-4" data-feather="x-circle"></i>
+                        </a>
+                    </div>
+                @endif
             </form>
             <!-- Category Customer Search Ends -->
 
@@ -42,6 +52,15 @@
         @if(session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
+        </div>
+        @endif
+        
+        @if(isset($search) && !empty($search))
+        <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
+            <span>Search results for: <span class="font-medium text-primary-500">{{ $search }}</span></span>
+            <a href="{{ route('category-customers.index') }}" class="ml-2 text-xs text-danger-500 hover:underline">
+                Clear search
+            </a>
         </div>
         @endif
 
@@ -113,7 +132,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center py-4">No category customers found</td>
+                        <td colspan="4" class="text-center py-4">
+                            @if(isset($search) && !empty($search))
+                                No category customers found matching "{{ $search }}"
+                            @else
+                                No category customers found
+                            @endif
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>

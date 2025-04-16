@@ -10,12 +10,25 @@ class MitraGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $mitraGroups = MitraGroup::select('*')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('backend.mitra-groups.index', compact('mitraGroups'));
+        // Get the search query
+        $search = $request->input('search');
+        
+        // Build the query
+        $mitraGroupsQuery = MitraGroup::query();
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $mitraGroupsQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        // Order and paginate results
+        $mitraGroups = $mitraGroupsQuery->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+            
+        return view('backend.mitra-groups.index', compact('mitraGroups', 'search'));
     }
 
     /**

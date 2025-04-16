@@ -10,12 +10,25 @@ class MarketingGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $marketingGroups = MarketingGroup::select('*')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('backend.marketing-groups.index', compact('marketingGroups'));
+        // Get the search query
+        $search = $request->input('search');
+        
+        // Build the query
+        $marketingGroupsQuery = MarketingGroup::query();
+        
+        // Apply search filter if search term is provided
+        if ($search) {
+            $marketingGroupsQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        // Order and paginate results
+        $marketingGroups = $marketingGroupsQuery->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString(); // This preserves the search parameter in pagination links
+            
+        return view('backend.marketing-groups.index', compact('marketingGroups', 'search'));
     }
 
     /**
