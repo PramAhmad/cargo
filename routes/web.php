@@ -33,6 +33,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('marketing-groups', \App\Http\Controllers\MarketingGroupController::class);
     Route::resource('marketings',MarketingController::class);
     Route::resource('customers', CustomerController::class);
+    Route::resource('mitras', \App\Http\Controllers\MitraController::class);
 });
 
 Route::middleware('auth')->group(function ()

@@ -158,7 +158,7 @@
             <a href="javascript:void(0);"
                 class="sidebar-menu {{ request()->routeIs(['marketings.*']) ? 'active' : '' }}">
                 <span class="sidebar-menu-icon">
-                    <i data-feather="user"></i>
+                    <i data-feather="dollar-sign"></i>
                 </span>
                 <span class="sidebar-menu-text">Marketing</span>
                 <span class="sidebar-menu-arrow">
@@ -178,6 +178,35 @@
                         <a href="{{ route('marketings.create') }}"
                             class="sidebar-submenu-item {{ request()->routeIs('marketings.create') ? 'active' : '' }}">
                             Create Marketing</a>
+                    </li>
+                @endcan
+            </ul>
+        </li>
+        <!-- Mitra -->
+        <li>
+            <a href="javascript:void(0);"
+                class="sidebar-menu {{ request()->routeIs(['mitras.*']) ? 'active' : '' }}">
+                <span class="sidebar-menu-icon">
+                    <i data-feather="users"></i>
+                </span>
+                <span class="sidebar-menu-text">Mitra</span>
+                <span class="sidebar-menu-arrow">
+                    <i data-feather="chevron-right"></i>
+                </span>
+            </a>
+            <ul class="sidebar-submenu">
+                @can('mitra.view')
+                    <li>
+                        <a href="{{ route('mitras.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('mitras.index') ? 'active' : '' }}">
+                            Mitra</a>
+                    </li>
+                @endcan
+                @can('mitra.create')
+                    <li>
+                        <a href="{{ route('mitras.create') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('mitras.create') ? 'active' : '' }}">
+                            Create Mitra</a>
                     </li>
                 @endcan
             </ul>

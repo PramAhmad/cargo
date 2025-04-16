@@ -46,6 +46,7 @@
             }
         }
     </style>
+    @stack('styles')
 </head>
 
 <body>
@@ -80,6 +81,8 @@
         <x-search-modal />
         <!-- Search Modal Ends -->
     </div>
+
+    @stack('scripts')
 </body>
 
 </html>
