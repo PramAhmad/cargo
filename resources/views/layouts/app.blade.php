@@ -11,7 +11,7 @@
         type="image/svg+xml" />
     <title>{{ getSettings('site_name') ?? config('app.name', 'Ecommerce') }}</title>
     <meta name="description"
-        content="Admin Toolkit is a modern admin dashboard template based on Tailwindcss. It comes with a variety of useful ui components and pre-built pages" />
+        content="Cargo international adalah perusahaan yang bergerak dibidang import indonesia" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
