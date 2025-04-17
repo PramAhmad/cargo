@@ -154,7 +154,7 @@
                         
                         <!-- Email -->
                         <div class="flex flex-col gap-1">
-                            <label class="label mb-1 font-medium" for="email">Email</label>
+                            <label class="label label-required mb-1 font-medium" for="email">Email</label>
                             <input type="email" class="input" id="email" name="email" value="{{ old('email') }}" />
                         </div>
                         
@@ -225,13 +225,13 @@
                         
                         <!-- Account Name -->
                         <div class="flex flex-col gap-1">
-                            <label class="label mb-1 font-medium" for="atas_nama">Account Name</label>
+                            <label class="label label-required mb-1 font-medium" for="atas_nama">Account Name</label>
                             <input type="text" class="input" id="atas_nama" name="atas_nama" value="{{ old('atas_nama') }}" />
                         </div>
                         
                         <!-- Account Number -->
                         <div class="flex flex-col gap-1">
-                            <label class="label mb-1 font-medium" for="no_rek">Account Number</label>
+                            <label class="label mb-1 label-required font-medium" for="no_rek">Account Number</label>
                             <input type="text" class="input" id="no_rek" name="no_rek" value="{{ old('no_rek') }}" />
                         </div>
                         

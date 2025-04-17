@@ -254,7 +254,7 @@
             const marketingFilter = document.getElementById('marketing-filter').value;
             const searchParam = '{{ $search ?? "" }}';
             
-            let url = '{{ route('customers.index') }}?';
+            let url = `{{ route('customers.index') }}?`;
             
             if (searchParam) {
                 url += `search=${encodeURIComponent(searchParam)}&`;

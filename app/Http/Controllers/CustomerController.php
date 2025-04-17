@@ -196,7 +196,7 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        // Validate the request data
+        // Validasi request
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:20|unique:customers,code,' . $customer->id,
             'name' => 'required|string|max:255',
@@ -222,6 +222,8 @@ class CustomerController extends Controller
             'tax_address' => 'nullable|string',
             'created_date' => 'nullable|date',
             'users_id' => 'nullable|exists:users,id',
+            'password' => 'nullable|min:8',
+            'password_confirmation' => 'nullable|same:password',
         ]);
 
         if ($validator->fails()) {
@@ -235,14 +237,70 @@ class CustomerController extends Controller
             // Start transaction
             DB::beginTransaction();
             
-            // Update customer
-            $customer->update($request->all());
+            // Handle user account
+            $userId = $customer->users_id;
             
-            // If there's a user associated with this customer, update user's basic info too
+            // Case 1: Customer doesn't have a user account but we want to create one
+            if (!$customer->users_id && $request->password) {
+                // Check if there's already a user with this email
+                $existingUser = User::where('email', $request->email)->first();
+                
+                if ($existingUser) {
+                    // Link to existing user
+                    $userId = $existingUser->id;
+                } else {
+                    // Create new user if email exists
+                    if ($request->email) {
+                        $user = User::create([
+                            'name' => $request->name,
+                            'email' => $request->email,
+                            'password' => Hash::make($request->password),
+                            'phone' => $request->phone1,
+                            'status' => UserStatus::ACTIVE,
+                        ]);
+                        
+                        // Assign customer role
+                        $user->assignRole('customer');
+                        $userId = $user->id;
+                    }
+                }
+            } 
+            // Case 2: Customer has a user account and we want to update password
+            elseif ($customer->users_id && $request->password) {
+                $user = User::find($customer->users_id);
+                if ($user) {
+                    $user->password = Hash::make($request->password);
+                    $user->save();
+                }
+            }
+            
+            // Prepare data for update (exclude certain fields)
+            $customerData = $request->except(['password', 'password_confirmation']);
+            
+            // Set user ID if we have one
+            if ($userId) {
+                $customerData['users_id'] = $userId;
+            }
+            
+            // Update customer
+            $customer->update($customerData);
+            
+            // Update associated user if exists
             if ($customer->users_id && $customer->user) {
                 $user = $customer->user;
                 $user->name = $customer->name;
-                $user->email = $customer->email;
+                
+                // Only update email if it changed and doesn't conflict
+                if ($customer->email && $customer->email !== $user->email) {
+                    $emailExists = User::where('email', $customer->email)
+                        ->where('id', '!=', $user->id)
+                        ->exists();
+                    
+                    if (!$emailExists) {
+                        $user->email = $customer->email;
+                    }
+                }
+                
                 $user->phone = $customer->phone1;
                 $user->save();
             }

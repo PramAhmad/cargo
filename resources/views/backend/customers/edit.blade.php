@@ -221,23 +221,45 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="col-span-1 md:col-span-3 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-2">
+                                <div class="flex items-center gap-4 p-3 bg-amber-50 dark:bg-slate-800 rounded-md mb-4">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-white dark:bg-amber-600">
+                                        <i class="h-5 w-5" data-feather="user-x"></i>
+                                    </div>
+                                    <div class="ml-2">
+                                        <h5 class="text-base font-medium text-slate-700 dark:text-slate-200">No User Account Linked</h5>
+                                        <p class="text-sm text-slate-500">Create a user account to allow system access</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-3">
                                     <div class="col-span-1 md:col-span-2">
-                                        <p class="text-sm text-primary-600 font-medium mb-3">
-                                            <i class="inline-block h-4 w-4 mr-1" data-feather="alert-circle"></i>
-                                            This customer doesn't have a user account. Please create one now by setting a password.
-                                        </p>
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="create_user" name="create_user" value="1" class="checkbox" {{ old('create_user') ? 'checked' : '' }} />
+                                            <label for="create_user" class="cursor-pointer font-medium text-slate-700 dark:text-slate-200">
+                                                Create user account for this customer
+                                            </label>
+                                        </div>
                                     </div>
                                     
-                                    <div class="flex flex-col gap-1">
-                                        <label class="label label-required mb-1 font-medium" for="password">Password</label>
-                                        <input type="password" class="input" id="password" name="password" />
-                                        <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
-                                    </div>
-                                    
-                                    <div class="flex flex-col gap-1">
-                                        <label class="label label-required mb-1 font-medium" for="password_confirmation">Confirm Password</label>
-                                        <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
+                                    <div id="user_account_fields" class="col-span-1 md:col-span-2 {{ old('create_user') ? '' : 'hidden' }} grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="label mb-1 font-medium" for="password">Password</label>
+                                            <input type="password" class="input" id="password" name="password" />
+                                            <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
+                                        </div>
+                                        
+                                        <div class="flex flex-col gap-1">
+                                            <label class="label mb-1 font-medium" for="password_confirmation">Confirm Password</label>
+                                            <input type="password" class="input" id="password_confirmation" name="password_confirmation" />
+                                        </div>
+                                        
+                                        <div class="col-span-1 md:col-span-2">
+                                            <p class="text-sm text-slate-600">
+                                                <i class="inline-block h-4 w-4 mr-1 text-primary-500" data-feather="info"></i>
+                                                A new user account will be created with the customer's email address.
+                                                Make sure the email field is filled with a valid email.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             @endif
@@ -296,6 +318,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password update section for existing users
             const toggleButton = document.getElementById('togglePasswordUpdate');
             const passwordSection = document.getElementById('passwordUpdateSection');
             const buttonText = document.getElementById('passwordUpdateButtonText');
@@ -310,6 +333,26 @@
                         buttonText.textContent = 'Show Password Fields';
                     }
                 });
+            }
+            
+            // Toggle user creation fields for new users
+            const createUserCheckbox = document.getElementById('create_user');
+            const userAccountFields = document.getElementById('user_account_fields');
+            
+            if (createUserCheckbox) {
+                function toggleUserFields() {
+                    if (createUserCheckbox.checked) {
+                        userAccountFields.classList.remove('hidden');
+                    } else {
+                        userAccountFields.classList.add('hidden');
+                    }
+                }
+                
+                // Initial state
+                toggleUserFields();
+                
+                // Listen for changes
+                createUserCheckbox.addEventListener('change', toggleUserFields);
             }
         });
     </script>
