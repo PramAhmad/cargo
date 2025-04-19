@@ -246,7 +246,6 @@ class CustomerController extends Controller
                 $existingUser = User::where('email', $request->email)->first();
                 
                 if ($existingUser) {
-                    // Link to existing user
                     $userId = $existingUser->id;
                 } else {
                     // Create new user if email exists

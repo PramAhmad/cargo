@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\MitraWarehouseController;
 use App\Http\Controllers\ProfileController as UserProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,8 +35,16 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('marketings',MarketingController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('mitras', \App\Http\Controllers\MitraController::class);
-});
 
+});
+Route::middleware(['auth'])->prefix('mitras/{mitra}/warehouses')->name('mitra.warehouses.')->group(function () {
+    Route::get('/', [MitraWarehouseController::class, 'index'])->name('index');
+    Route::get('/create', [MitraWarehouseController::class, 'create'])->name('create');
+    Route::post('/', [MitraWarehouseController::class, 'store'])->name('store');
+    Route::get('/{warehouse}/edit', [MitraWarehouseController::class, 'edit'])->name('edit');
+    Route::put('/{warehouse}', [MitraWarehouseController::class, 'update'])->name('update');
+    Route::delete('/{warehouse}', [MitraWarehouseController::class, 'destroy'])->name('destroy');
+});
 Route::middleware('auth')->group(function ()
 {
 });

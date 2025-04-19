@@ -8,10 +8,12 @@ use App\Models\MitraGroup;
 use App\Models\User;
 use App\Enums\UserStatus;
 use App\Models\CountryMitra;
+use App\Models\MitraBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MitraController extends Controller
 {
@@ -70,96 +72,153 @@ class MitraController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        // Set validation rules
-        $rules = [
-            'name' => 'required|string|max:255',
-            'mitra_group_id' => 'required|exists:mitra_groups,id',
-            'address_office_indo' => 'nullable|string',
-            'country' => 'nullable|array',
-            'country.*' => 'string|max:100',
-            'phone1' => 'required|string|max:20',
-            'phone2' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'ktp' => 'nullable|string|max:20',
-            'npwp' => 'nullable|string|max:30',
-            'tax_address' => 'nullable|string',
-            'birthdate' => 'nullable|date',
-            'borndate' => 'nullable|date',
-            'created_date' => 'nullable|date',
-            'bank_id' => 'nullable|exists:banks,id',
-            'no_rek' => 'nullable|string|max:50',
-            'atas_nama' => 'nullable|string|max:255',
-            'syarat_bayar' => 'nullable|integer|min:0',
-            'batas_tempo' => 'nullable|integer|min:0',
-            'status' => 'required|boolean',
-        ];
+public function store(Request $request)
+{
+    // Set validation rules
+    $rules = [
+        'name' => 'required|string|max:255',
+        'code' => 'nullable|string|max:20|unique:mitras',
+        'mitra_group_id' => 'required|exists:mitra_groups,id',
+        'address_office_indo' => 'nullable|string',
+        'country' => 'nullable|array',
+        'country.*' => 'string|max:100',
+        'phone1' => 'required|string|max:20',
+        'phone2' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'website' => 'nullable|url|max:255',
+        'ktp' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:20048',
+        'npwp' => 'nullable|string|max:30',
+        'tax_address' => 'nullable|string',
+        'birthdate' => 'nullable|date',
+        'borndate' => 'nullable|date',
+        'created_date' => 'nullable|date',
+        'syarat_bayar' => 'nullable|integer|min:0',
+        'batas_tempo' => 'nullable|integer|min:0',
+        'status' => 'required|boolean',
+        'bank_accounts' => 'nullable|array',
+        'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+        'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+        'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+        'bank_accounts.*.is_default' => 'nullable|boolean',
+    ];
+    // handle ktp upload
+    if ($request->hasFile('ktp')) {
+        $file = $request->file('ktp');
+        $filename = $file->getClientOriginalName();
+        Storage::putFileAs('public/ktp', $file, $filename);
+
+    }
+
+
+    if ($request->has('create_account')) {
+        $rules = array_merge($rules, [
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|min:8',
+            'password_confirmation' => 'required|same:password',
+        ]);
+    }
+    
+    $validator = Validator::make($request->all(), $rules);
+    
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+    
+    $code = $request->code ?? Mitra::generateMitraCode();
+    
+    try {
+        DB::beginTransaction();
         
-        // Add user account validation rules if checkbox is checked
-        if ($request->has('create_account')) {
-            $rules = array_merge($rules, [
-                'email' => 'required|email|max:255|unique:users,email',
-                'password' => 'required|min:8',
-                'password_confirmation' => 'required|same:password',
-            ]);
+        $mitraData = $request->except(['country', 'password', 'password_confirmation', 'create_account', 'bank_accounts', 'ktp']);
+        $mitraData['code'] = $code;
+        
+        if ($request->hasFile('ktp')) {
+            $file = $request->file('ktp');
+            $filename = $file->getClientOriginalName();
+            Storage::putFileAs('public/ktp', $file, $filename);
+            $mitraData['ktp'] = $filename;
         }
         
-        // Validate the request
-        $validator = Validator::make($request->all(), $rules);
+        $mitra = Mitra::create($mitraData);
         
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+        if ($request->has('country') && is_array($request->country)) {
+            foreach ($request->country as $countryName) {
+                CountryMitra::create([
+                    'mitra_id' => $mitra->id,
+                    'name' => $countryName,
+                ]);
+            }
         }
         
-        // Generate a unique code
-        $code = Mitra::generateMitraCode();
-        
-        try {
-            // Start transaction
-            DB::beginTransaction();
+        // Handle bank accounts with proper default handling
+        if ($request->has('bank_accounts') && is_array($request->bank_accounts)) {
+            // First, find which account should be default
+            $hasDefault = false;
+            $defaultBankIndex = null;
             
-            // Create the mitra (exclude countries and password fields)
-            $mitraData = $request->except(['country', 'password', 'password_confirmation', 'create_account']);
-            $mitra = Mitra::create(array_merge($mitraData, ['code' => $code]));
-            
-            // Store countries in country_mitra table if provided
-            if ($request->has('country') && is_array($request->country)) {
-                foreach ($request->country as $countryName) {
-                    CountryMitra::create([
-                        'mitra_id' => $mitra->id,
-                        'name' => $countryName,
-                    ]);
+            foreach ($request->bank_accounts as $index => $bankData) {
+                if (!empty($bankData['is_default'])) {
+                    $hasDefault = true;
+                    $defaultBankIndex = $index;
+                    break;
                 }
             }
             
-            // Create user account if checkbox is checked
-            if ($request->has('create_account')) {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'phone' => $request->phone1,
-                    'status' => UserStatus::ACTIVE,
-                ]);
-                
-                // Assign role
-                $user->assignRole('mitra');
-                
-                // Link user to mitra
-                $mitra->update(['user_id' => $user->id]);
+            // If no default is specified but there are bank accounts, make the first one default
+            if (!$hasDefault && count($request->bank_accounts) > 0) {
+                foreach ($request->bank_accounts as $index => $bankData) {
+                    if (!empty($bankData['bank_id']) || !empty($bankData['rek_no']) || !empty($bankData['rek_name'])) {
+                        $defaultBankIndex = $index;
+                        break;
+                    }
+                }
             }
             
-            DB::commit();
-            
-            return redirect()->route('mitras.index')->with('success', 'Mitra created successfully!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
+            // Now create bank accounts
+            foreach ($request->bank_accounts as $index => $bankData) {
+                // Skip empty bank records
+                if (empty($bankData['bank_id']) && empty($bankData['rek_no']) && empty($bankData['rek_name'])) {
+                    continue;
+                }
+                
+                // Set is_default based on our earlier determination
+                $isDefault = ($index === $defaultBankIndex);
+                
+                MitraBank::create([
+                    'mitra_id' => $mitra->id,
+                    'bank_id' => $bankData['bank_id'] ?? null,
+                    'rek_no' => $bankData['rek_no'] ?? null,
+                    'rek_name' => $bankData['rek_name'] ?? null,
+                    'is_default' => $isDefault,
+                ]);
+            }
         }
+        
+        // Create user account if checkbox is checked
+        if ($request->has('create_account')) {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'phone' => $request->phone1,
+                'status' => UserStatus::ACTIVE,
+            ]);
+            
+            // Assign role
+            $user->assignRole('mitra');
+            
+            // Link user to mitra
+            $mitra->update(['user_id' => $user->id]);
+        }
+        
+        DB::commit();
+        
+        return redirect()->route('mitras.index')->with('success', 'Mitra created successfully!');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
     }
-
+}
     /**
      * Display the specified resource.
      */
@@ -185,65 +244,83 @@ class MitraController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Mitra $mitra)
-    {
-        // Set validation rules
-        $rules = [
-            'name' => 'required|string|max:255',
-            'mitra_group_id' => 'required|exists:mitra_groups,id',
-            'address_office_indo' => 'nullable|string',
-            'country' => 'nullable|array',
-            'country.*' => 'string|max:100',
-            'phone1' => 'required|string|max:20',
-            'phone2' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'ktp' => 'nullable|string|max:20',
-            'npwp' => 'nullable|string|max:30',
-            'tax_address' => 'nullable|string',
-            'birthdate' => 'nullable|date',
-            'borndate' => 'nullable|date',
-            'created_date' => 'nullable|date',
-            'bank_id' => 'nullable|exists:banks,id',
-            'no_rek' => 'nullable|string|max:50',
-            'atas_nama' => 'nullable|string|max:255',
-            'syarat_bayar' => 'nullable|integer|min:0',
-            'batas_tempo' => 'nullable|integer|min:0',
-            'status' => 'required|boolean',
-        ];
-        
-        // Add user account validation rules if checkbox is checked
-        if ($request->has('create_account')) {
-            $uniqueRule = $mitra->user_id ? 'unique:users,email,'.$mitra->user_id.',id' : 'unique:users,email';
-            $passwordRule = $mitra->user_id ? 'nullable|min:8' : 'required|min:8';
-            
+    public function update(Request $request, $id)
+{
+    // Set validation rules
+    $rules = [
+        'name' => 'required|string|max:255',
+        'mitra_group_id' => 'required|exists:mitra_groups,id',
+        'address_office_indo' => 'nullable|string',
+        'country' => 'nullable|array',
+        'country.*' => 'string|max:100',
+        'phone1' => 'required|string|max:20',
+        'phone2' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'website' => 'nullable|url|max:255',
+        'ktp' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048', 
+        'npwp' => 'nullable|string|max:30',
+        'tax_address' => 'nullable|string',
+        'birthdate' => 'nullable|date',
+        'created_date' => 'nullable|date',
+        'syarat_bayar' => 'nullable|integer|min:0',
+        'batas_tempo' => 'nullable|integer|min:0',
+        'status' => 'required|boolean',
+        'bank_accounts' => 'nullable|array',
+        'bank_accounts.*.id' => 'nullable|exists:mitra_banks,id',
+        'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+        'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+        'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+        'bank_accounts.*.is_default' => 'nullable|boolean',
+        'deleted_bank_accounts' => 'nullable|array',
+        'deleted_bank_accounts.*' => 'exists:mitra_banks,id',
+    ];
+    // dd($request->all());
+    $mitra = Mitra::findOrFail($id);
+    
+    if ($request->has('create_account')) {
+        if (!$mitra->user_id) {
             $rules = array_merge($rules, [
-                'email' => 'required|email|max:255|'.$uniqueRule,
-                'password' => $passwordRule,
-                'password_confirmation' => 'same:password',
+                'email' => 'required|email|max:255|unique:users,email',
+                'password' => 'required|min:8',
+                'password_confirmation' => 'required|same:password',
             ]);
+        } else {
+            if ($request->filled('password')) {
+                $rules = array_merge($rules, [
+                    'password' => 'min:8',
+                    'password_confirmation' => 'required|same:password',
+                ]);
+            }
+        }
+    }
+    
+    $validator = Validator::make($request->all(), $rules);
+    
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+    
+    try {
+        // Start transaction
+        DB::beginTransaction();
+        
+        $mitraData = $request->except(['country', 'password', 'password_confirmation', 'create_account', 'bank_accounts', 'deleted_bank_accounts', 'ktp']);
+        
+        if ($request->hasFile('ktp')) {
+            if ($mitra->ktp && file_exists(public_path($mitra->ktp))) {
+                unlink(public_path($mitra->ktp));
+            }
+            
+            $ktpPath = $request->file('ktp')->store('uploads/ktp', 'public');
+            $mitraData['ktp'] = '/storage/' . $ktpPath;
         }
         
-        // Validate the request
-        $validator = Validator::make($request->all(), $rules);
+        $mitra->update($mitraData);
         
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        
-        try {
-            // Start transaction
-            DB::beginTransaction();
-            
-            // Update mitra with data except sensitive fields
-            $mitra->update($request->except(['country', 'password', 'password_confirmation', 'create_account']));
-            
-            // Update countries
-            // First, delete existing records
+        if ($request->has('country')) {
             CountryMitra::where('mitra_id', $mitra->id)->delete();
             
-            // Then add the new ones
-            if ($request->has('country') && is_array($request->country)) {
+            if (is_array($request->country)) {
                 foreach ($request->country as $countryName) {
                     CountryMitra::create([
                         'mitra_id' => $mitra->id,
@@ -251,64 +328,80 @@ class MitraController extends Controller
                     ]);
                 }
             }
-            
-            // Handle user account
-            if ($request->has('create_account')) {
-                if ($mitra->user_id) {
-                    // Update existing user
-                    $user = User::find($mitra->user_id);
-                    
-                    $userData = [
-                        'name' => $request->name,
-                        'email' => $request->email,
-                        'phone' => $request->phone1,
-                    ];
-                    
-                    // Only update password if provided
-                    if ($request->filled('password')) {
-                        $userData['password'] = Hash::make($request->password);
-                    }
-                    
-                    $user->update($userData);
-                    
-                } else {
-                    // Create new user
-                    $user = User::create([
-                        'name' => $request->name,
-                        'email' => $request->email,
-                        'password' => Hash::make($request->password),
-                        'phone' => $request->phone1,
-                        'status' => UserStatus::ACTIVE,
-                    ]);
-                    
-                    // Assign role
-                    $user->assignRole('mitra');
-                    
-                    // Link user to mitra
-                    $mitra->update(['user_id' => $user->id]);
-                }
-            } else if ($mitra->user_id && !$request->has('create_account')) {
-                // If checkbox is unchecked but mitra had a user account before
-                // We need to unlink the user from the mitra
-                $mitra->update(['user_id' => null]);
-                
-                // We don't delete the user account to avoid data loss
-            }
-            
-            DB::commit();
-            
-            return redirect()->route('mitras.index')->with('success', 'Mitra updated successfully!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
         }
+        // dd($request->bank_accounts);     
+        if ($request->has('bank_accounts') && is_array($request->bank_accounts)) {
+            // delete old bank accounts
+            MitraBank::where('mitra_id', $mitra->id)->delete();
+            // Create new bank accounts
+            
+        }
+        foreach ($request->bank_accounts as $bankAccountId) {
+            MitraBank::create([
+                'mitra_id' => $mitra->id,
+                'bank_id' => $bankAccountId['bank_id'] ?? null,
+                'rek_no' => $bankAccountId['rek_no'] ?? null,
+                'rek_name' => $bankAccountId['rek_name'] ?? null,
+                'is_default' => $bankAccountId['is_default'] ?? false,
+            ]);
+        }
+  
+        // Handle user account
+        if ($request->has('create_account')) {
+            if ($mitra->user_id) {
+                // Update existing user
+                $user = User::findOrFail($mitra->user_id);
+                
+                // Update user data
+                $userData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                ];
+                
+                // Update password if provided
+                if ($request->filled('password')) {
+                    $userData['password'] = Hash::make($request->password);
+                }
+                
+                $user->update($userData);
+                
+            } else {
+                // Create new user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'phone' => $request->phone1,
+                    'status' => UserStatus::ACTIVE,
+                ]);
+                
+                // Assign role
+                $user->assignRole('mitra');
+                
+                // Link user to mitra
+                $mitra->update(['user_id' => $user->id]);
+            }
+        } else if ($mitra->user_id) {
+            // Unlink user account if checkbox is unchecked
+            $mitra->update(['user_id' => null]);
+        }
+        
+        DB::commit();
+        
+        return redirect()->back()->with('success', 'Mitra updated successfully!');
+    } catch (\Exception $e) {
+        dd($e);
+        DB::rollBack();
+        return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
     }
+}
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Mitra $mitra)
     {
+        dd($mitra->user_id);
         try {
             // Soft delete the mitra
             $mitra->delete();

@@ -16,14 +16,12 @@ class Mitra extends Model
      * @var array
      */
     protected $fillable = [
-        'bank_id',
+  
         'mitra_group_id',
         'user_id',
         'code',
         'name',
         'address_office_indo',
-        'no_rek',
-        'atas_nama',
         'phone1',
         'phone2',
         'email',
@@ -138,5 +136,24 @@ class Mitra extends Model
     public function getDueTermsAttribute()
     {
         return $this->batas_tempo > 0 ? $this->batas_tempo . ' days' : 'N/A';
+    }
+
+    public function banks()
+{
+    return $this->hasMany(MitraBank::class);
+}
+
+/**
+ * Get the default bank account for the mitra.
+ */
+public function defaultBank()
+{
+    return $this->hasOne(MitraBank::class)->where('is_default', true);
+}
+
+
+    public function warehouses()
+    {
+        return $this->hasMany(Warehouse::class);
     }
 }

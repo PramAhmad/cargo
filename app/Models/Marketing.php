@@ -59,4 +59,16 @@ class Marketing extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function banks()
+{
+    return $this->hasMany(MarketingBank::class);
+}
+
+/**
+ * Get the default bank account for the marketing.
+ */
+public function defaultBank()
+{
+    return $this->hasOne(MarketingBank::class)->where('is_default', true);
+}
 }
