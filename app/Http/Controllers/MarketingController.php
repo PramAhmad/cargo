@@ -197,8 +197,6 @@ class MarketingController extends Controller
             'no_rek' => 'nullable|string|max:50',
             'atas_nama' => 'nullable|string|max:255',
             'status' => 'required|boolean',
-            
-            // Password validation - only required if not empty or if user doesn't exist
             'password' => $marketing->user_id ? 'nullable|min:8' : 'required|min:8',
             'password_confirmation' => $marketing->user_id ? 'nullable|same:password' : 'required|same:password',
         ]);
@@ -210,7 +208,6 @@ class MarketingController extends Controller
         // Start transaction
         DB::beginTransaction();
         try {
-            // Update marketing info
             $marketing->update([
                 'code' => $request->code,
                 'name' => $request->name,
@@ -233,9 +230,7 @@ class MarketingController extends Controller
                 'status' => $request->status,
             ]);
             
-            // Handle user account
             if ($marketing->user_id) {
-                // Update existing user
                 $user = User::find($marketing->user_id);
                 $userData = [
                     'name' => $request->name,
@@ -250,18 +245,13 @@ class MarketingController extends Controller
                 $user->update($userData);
                 
             } else if ($request->filled('password')) {
-                // Create new user
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
                     'password' => Hash::make($request->password),
                     'status' => UserStatus::ACTIVE,
                 ]);
-                
-                // Assign marketing role - you may need to adjust this based on your role management system
                 $user->assignRole('marketing');
-                
-                // Link user to marketing
                 $marketing->update(['user_id' => $user->id]);
             }
             

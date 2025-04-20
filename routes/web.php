@@ -35,6 +35,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('marketings',MarketingController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('mitras', \App\Http\Controllers\MitraController::class);
+    Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
 
 });
 Route::middleware(['auth'])->prefix('mitras/{mitra}/warehouses')->name('mitra.warehouses.')->group(function () {

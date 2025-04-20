@@ -120,6 +120,14 @@
                             Mitra Group </a>
                     </li>
                 @endcan
+                {{-- catgory product --}}
+                @can('category_product.view')
+                    <li>
+                        <a href="{{ route('category-products.index') }}"
+                            class="sidebar-submenu-item {{ request()->routeIs('category-products.index', 'category-products.create', 'category-products.edit', 'category-products.show') ? 'active' : '' }}">
+                            Category Product </a>
+                    </li>
+                @endcan
             </ul>
         </li>
         
