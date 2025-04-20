@@ -21,4 +21,15 @@ class Warehouse extends Model
     {
         return $this->belongsTo(Mitra::class);
     }
+    
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+    
+    // Method untuk menghitung total produk
+    public function getProductsCountAttribute()
+    {
+        return $this->products()->count();
+    }
 }

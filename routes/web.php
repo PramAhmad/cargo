@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\MitraWarehouseController;
 use App\Http\Controllers\ProfileController as UserProfileController;
+use App\Http\Controllers\WarehouseProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,8 +47,23 @@ Route::middleware(['auth'])->prefix('mitras/{mitra}/warehouses')->name('mitra.wa
     Route::put('/{warehouse}', [MitraWarehouseController::class, 'update'])->name('update');
     Route::delete('/{warehouse}', [MitraWarehouseController::class, 'destroy'])->name('destroy');
 });
-Route::middleware('auth')->group(function ()
-{
+Route::middleware('auth')->group(function () {
+    // Warehouse Product Management Routes
+    Route::get('/mitras/{mitra}/warehouses/{warehouse}/products', [WarehouseProductController::class, 'index'])
+        ->name('mitra.warehouses.products.index');
+    
+    Route::get('/mitras/{mitra}/warehouses/{warehouse}/products/create', [WarehouseProductController::class, 'create'])
+        ->name('mitra.warehouses.products.create');
+    Route::post('/mitras/{mitra}/warehouses/{warehouse}/products', [WarehouseProductController::class, 'store'])
+        ->name('mitra.warehouses.products.store');
+    
+    Route::get('/mitras/{mitra}/warehouses/{warehouse}/products/{product}/edit', [WarehouseProductController::class, 'edit'])
+        ->name('mitra.warehouses.products.edit');
+    Route::put('/mitras/{mitra}/warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'update'])
+        ->name('mitra.warehouses.products.update');
+    
+    Route::delete('/mitras/{mitra}/warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'destroy'])
+        ->name('mitra.warehouses.products.destroy');
 });
 
 require __DIR__.'/auth.php';

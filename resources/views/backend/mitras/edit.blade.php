@@ -392,40 +392,56 @@
                                 @if($warehouses->count() > 0)
                                     <div class="overflow-x-auto">
                                         <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Type</th>
-                                                    <th>Address</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($warehouses as $warehouse)
-                                                    <tr>
-                                                        <td>{{ $warehouse->name }}</td>
-                                                        <td>
-                                                            <span class="badge {{ $warehouse->type == 'sea' ? 'bg-info-500' : 'bg-warning-500' }}">
-                                                                {{ ucfirst($warehouse->type) }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ Str::limit($warehouse->address, 50) }}</td>
-                                                        <td>
-                                                            <div class="flex space-x-2">
-                                                                <a href="{{ route('mitra.warehouses.edit', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" class="btn btn-sm btn-info">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <button type="button" class="btn btn-sm btn-danger delete-warehouse-btn" data-warehouse-id="{{ $warehouse->id }}" data-mitra-id="{{ $mitra->id }}" data-warehouse-name="{{ $warehouse->name }}">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                                <!-- Delete Modal -->
-                                                                 
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Address</th>
+            <th>Products</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($warehouses as $warehouse)
+            <tr>
+                <td>{{ $warehouse->name }}</td>
+                <td>
+                    <span class="badge {{ $warehouse->type == 'sea' ? 'badge badge-soft-primary' : 'badge-soft-warning ' }}">
+                        {{ ucfirst($warehouse->type) }}
+                    </span>
+                </td>
+                <td>{{ Str::limit($warehouse->address, 50) }}</td>
+                <td>
+                    <span class="badge badge-soft-success">
+                        {{ $warehouse->products_count ?? 0 }} products
+                    </span>
+                </td>
+                <td>
+                    <div class="flex space-x-2">
+                        <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                           class="btn btn-sm btn-success" 
+                           title="Manage Products">
+                            <i class="fas fa-box"></i>
+                        </a>
+                        <a href="{{ route('mitra.warehouses.edit', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                           class="btn btn-sm btn-info"
+                           title="Edit Warehouse">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm btn-danger delete-warehouse-btn" 
+                                data-warehouse-id="{{ $warehouse->id }}" 
+                                data-mitra-id="{{ $mitra->id }}" 
+                                data-warehouse-name="{{ $warehouse->name }}"
+                                title="Delete Warehouse">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
                                     </div>
                                 @else
                                     <div class="bg-slate-50 dark:bg-slate-800 p-6 rounded-md text-center">
