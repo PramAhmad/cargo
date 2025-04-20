@@ -226,24 +226,139 @@
                     </div>
                 </div>
                 
-                <!-- Collaboration History Section -->
+                <!-- Products by Warehouse Section -->
                 <div class="card">
                     <div class="card-header border-b border-slate-200 dark:border-slate-700">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <i class="mr-2 h-5 w-5 text-primary-500" data-feather="bar-chart-2"></i>
-                                <h4 class="card-title">Collaboration History</h4>
+                                <i class="mr-2 h-5 w-5 text-primary-500" data-feather="box"></i>
+                                <h4 class="card-title">Products by Warehouse</h4>
                             </div>
-                            <a href="#" class="text-sm text-primary-500 hover:underline">View All Projects</a>
                         </div>
                     </div>
                     <div class="card-body p-6">
-                        <div class="flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-md">
-                            <p class="text-slate-500 dark:text-slate-400">No projects found with this mitra</p>
-                        </div>
+                        @if($mitra->warehouses && $mitra->warehouses->count() > 0)
+                            <div class="space-y-6">
+                                @foreach($mitra->warehouses as $warehouse)
+                                    <div class="border rounded-lg overflow-hidden">
+                                        <div class="bg-slate-50 dark:bg-slate-800 p-4 border-b">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    <div class="h-10 w-10 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300">
+                                                        <i class="h-5 w-5" data-feather="home"></i>
+                                                    </div>
+                                                    <div class="ml-3">
+                                                        <h5 class="text-base font-medium text-slate-900 dark:text-slate-100">{{ $warehouse->name }}</h5>
+                                                        <p class="text-xs text-slate-500">{{ ucfirst($warehouse->type) }} Warehouse</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="h-4 w-4 mr-1" data-feather="box"></i>
+                                                        Manage Products
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="p-4">
+                                            @if($warehouse->products && $warehouse->products->count() > 0) 
+                                                <div class="overflow-x-auto">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Product</th>
+                                                                <th>Category</th>
+                                                                <th>Mitra Price</th>
+                                                                <th>Customer Price</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @php
+                                                                // Get only parent products (top level)
+                                                                $parentProducts = $warehouse->products->whereNull('parent_id')->take(5);
+                                                            @endphp
+                                                            
+                                                            @forelse($parentProducts as $product)
+                                                                <tr>
+                                                                    <td>{{ $product->name }}</td>
+                                                                    <td>
+                                                                        @if($product->category)
+                                                                            <span class="badge badge-soft-primary">{{ $product->category->name }}</span>
+                                                                        @else
+                                                                            <span class="text-slate-400">-</span>
+                                                                        @endif
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="flex flex-col">
+                                                                            <span class="text-xs text-slate-500">CBM: Rp {{ number_format($product->mit_price_cbm, 0, ',', '.') }}</span>
+                                                                            <span class="text-xs text-slate-500">KG: Rp {{ number_format($product->mit_price_kg, 0, ',', '.') }}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="flex flex-col">
+                                                                            <span class="text-xs text-slate-500">CBM: Rp {{ number_format($product->cust_price_cbm, 0, ',', '.') }}</span>
+                                                                            <span class="text-xs text-slate-500">KG: Rp {{ number_format($product->cust_price_kg, 0, ',', '.') }}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center py-4 text-slate-500">No products found for this warehouse</td>
+                                                                </tr>
+                                                            @endforelse
+                                                            
+                                                            @if($warehouse->products->count() > 5)
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center">
+                                                                        <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                                                           class="text-primary-500 text-sm hover:underline">
+                                                                            View all {{ $warehouse->products->count() }} products...
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            @endif
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <div class="text-center py-6">
+                                                    <div class="inline-flex rounded-full bg-slate-100 p-3 dark:bg-slate-700 mb-3">
+                                                        <i class="h-6 w-6 text-slate-500" data-feather="box"></i>
+                                                    </div>
+                                                    <h5 class="font-medium text-slate-700 dark:text-slate-300 mb-1">No Products Found</h5>
+                                                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-3">This warehouse doesn't have any products yet.</p>
+                                                    <a href="{{ route('mitra.warehouses.products.create', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="h-4 w-4 mr-1" data-feather="plus"></i>
+                                                        Add First Product
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center justify-center py-8 text-center">
+                                <div class="mb-3 rounded-full bg-slate-100 p-3 dark:bg-slate-700">
+                                    <i class="h-6 w-6 text-slate-500 dark:text-slate-400" data-feather="package"></i>
+                                </div>
+                                <h5 class="mb-1 text-base font-medium text-slate-700 dark:text-slate-300">No Warehouses Found</h5>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-4">
+                                    You need to add warehouses before you can manage products.
+                                </p>
+                                <a href="{{ route('mitra.warehouses.create', $mitra->id) }}" class="btn btn-primary">
+                                    <i class="h-4 w-4 mr-1" data-feather="plus"></i>
+                                    Add First Warehouse
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
-
+                
                 <!-- Warehouses Section -->
                 <div class="card">
                     <div class="card-header border-b border-slate-200 dark:border-slate-700">
@@ -314,7 +429,11 @@
                                                     
                                                     @if($mitra->status)
                                                         <div class="mt-3 flex justify-end gap-2">
-                                                            <a href="{{ route('mitra.warehouses.edit', [$mitra->id, $warehouse->id]) }}" class="text-xs text-primary-500 hover:underline">
+                                                            <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                                               class="text-xs text-primary-500 hover:underline">
+                                                                <i class="h-3.5 w-3.5 inline-block mr-1" data-feather="box"></i> Manage Products
+                                                            </a>
+                                                            <a href="{{ route('mitra.warehouses.edit', [$mitra->id, $warehouse->id]) }}" class="text-xs text-info-500 hover:underline">
                                                                 <i class="h-3.5 w-3.5 inline-block mr-1" data-feather="edit"></i> Edit
                                                             </a>
                                                             <button type="button" class="text-xs text-danger-500 hover:underline delete-warehouse-btn" 
@@ -475,21 +594,82 @@
                     </div>
                 </div>
                 
+                <!-- Warehouse List -->
+                <div class="card">
+                    <div class="card-header border-b border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center">
+                            <i class="mr-2 h-5 w-5 text-primary-500" data-feather="package"></i>
+                            <h4 class="card-title">Warehouse List</h4>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($mitra->warehouses && $mitra->warehouses->count() > 0)
+                            <ul class="divide-y divide-slate-200 dark:divide-slate-700">
+                                @foreach($mitra->warehouses as $warehouse)
+                                    <li class="py-3 first:pt-0 last:pb-0">
+                                        <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                           class="flex items-center hover:bg-slate-50 dark:hover:bg-slate-800 -mx-2 px-2 py-1 rounded">
+                                            <div class="h-8 w-8 flex items-center justify-center rounded-md bg-{{ $warehouse->type == 'sea' ? 'blue' : 'orange' }}-100 text-{{ $warehouse->type == 'sea' ? 'blue' : 'orange' }}-600 dark:bg-{{ $warehouse->type == 'sea' ? 'blue' : 'orange' }}-900/30 dark:text-{{ $warehouse->type == 'sea' ? 'blue' : 'orange' }}-400 mr-3">
+                                                <i class="h-4 w-4" data-feather="{{ $warehouse->type == 'sea' ? 'anchor' : 'truck' }}"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h5 class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{{ $warehouse->name }}</h5>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                                    {{ $warehouse->products_count ?? $warehouse->products->count() }} products · {{ ucfirst($warehouse->type) }} freight
+                                                </p>
+                                            </div>
+                                            <div class="ml-2">
+                                                <i class="h-5 w-5 text-slate-400" data-feather="chevron-right"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                <a href="{{ route('mitra.warehouses.create', $mitra->id) }}" class="btn btn-sm btn-outline-primary w-full">
+                                    <i class="h-4 w-4 mr-1" data-feather="plus"></i>
+                                    Add New Warehouse
+                                </a>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <div class="inline-flex rounded-full bg-slate-100 p-3 dark:bg-slate-700 mb-3">
+                                    <i class="h-6 w-6 text-slate-500" data-feather="package"></i>
+                                </div>
+                                <h5 class="font-medium text-slate-700 dark:text-slate-300 mb-1">No Warehouses Yet</h5>
+                                <p class="text-slate-500 dark:text-slate-400 text-sm mb-3">Add a warehouse to manage products</p>
+                                <a href="{{ route('mitra.warehouses.create', $mitra->id) }}" class="btn btn-sm btn-primary">
+                                    <i class="h-4 w-4 mr-1" data-feather="plus"></i>
+                                    Add First Warehouse
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
                 <!-- Mitra Stats -->
                 <div class="card bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700">
                     <div class="card-body p-6">
                         <h4 class="font-semibold text-lg text-blue-700 dark:text-blue-400 mb-4">Mitra Summary</h4>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="rounded-lg bg-white dark:bg-slate-800 p-4 shadow-sm">
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Projects</h5>
+                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Warehouses</h5>
                                 <p class="text-xl font-bold text-blue-600 dark:text-blue-500 mt-1">
-                                    {{ number_format(rand(1, 20)) }}
+                                    {{ $mitra->warehouses ? $mitra->warehouses->count() : 0 }}
                                 </p>
                             </div>
                             <div class="rounded-lg bg-white dark:bg-slate-800 p-4 shadow-sm">
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Projects</h5>
+                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Products</h5>
                                 <p class="text-xl font-bold text-blue-600 dark:text-blue-500 mt-1">
-                                    {{ rand(0, 5) }}
+                                    @php
+                                        $totalProducts = 0;
+                                        if ($mitra->warehouses) {
+                                            foreach ($mitra->warehouses as $warehouse) {
+                                                $totalProducts += $warehouse->products ? $warehouse->products->count() : 0;
+                                            }
+                                        }
+                                    @endphp
+                                    {{ $totalProducts }}
                                 </p>
                             </div>
                         </div>
@@ -512,38 +692,6 @@
                         </div>
                     </div>
                 </div>
-                
-                @if($mitra->status)
-                <!-- Quick Actions -->
-                <div class="card">
-                    <div class="card-header border-b border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center">
-                            <i class="mr-2 h-5 w-5 text-primary-500" data-feather="zap"></i>
-                            <h4 class="card-title">Quick Actions</h4>
-                        </div>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <a href="#" class="btn btn-outline-primary btn-sm">
-                                <i class="h-4 w-4 mr-1" data-feather="mail"></i>
-                                <span>Email</span>
-                            </a>
-                            <a href="#" class="btn btn-outline-primary btn-sm">
-                                <i class="h-4 w-4 mr-1" data-feather="phone"></i>
-                                <span>Call</span>
-                            </a>
-                            <a href="#" class="btn btn-outline-primary btn-sm">
-                                <i class="h-4 w-4 mr-1" data-feather="file-text"></i>
-                                <span>New Project</span>
-                            </a>
-                            <a href="#" class="btn btn-outline-primary btn-sm">
-                                <i class="h-4 w-4 mr-1" data-feather="message-circle"></i>
-                                <span>Message</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
     </div>
