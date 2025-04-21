@@ -267,7 +267,7 @@
                                 <!-- NPWP -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="npwp">NPWP</label>
-                                    <input type="text" class="input" id="npwp" name="npwp" value="{{ old('npwp') }}" />
+                                    <input type="number" class="input" id="npwp" name="npwp" value="{{ old('npwp') }}" />
                                 </div>
                                 
                                 <!-- Tax Address -->

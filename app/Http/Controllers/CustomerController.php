@@ -239,7 +239,6 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        // Validasi request
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:20|unique:customers,code,' . $customer->id,
             'name' => 'required|string|max:255',
@@ -247,7 +246,6 @@ class CustomerController extends Controller
             'marketing_id' => 'required|exists:marketings,id',
             'customer_group_id' => 'required|exists:customer_groups,id',
             'customer_category_id' => 'required|exists:category_customers,id',
-            'bank_id' => 'nullable|exists:banks,id',
             'status' => 'required|boolean',
             'phone1' => 'required|string|max:20',
             'phone2' => 'nullable|string|max:20',
@@ -259,14 +257,22 @@ class CustomerController extends Controller
             'street_item' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
-            'no_rek' => 'nullable|string|max:50',
-            'atas_nama' => 'nullable|string|max:255',
             'npwp' => 'nullable|string|max:30',
             'tax_address' => 'nullable|string',
             'created_date' => 'nullable|date',
             'users_id' => 'nullable|exists:users,id',
             'password' => 'nullable|min:8',
             'password_confirmation' => 'nullable|same:password',
+            
+            // Bank accounts fields
+            'bank_accounts' => 'nullable|array',
+            'bank_accounts.*.id' => 'nullable|exists:customer_banks,id',
+            'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+            'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+            'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+            'bank_accounts.*.is_default' => 'nullable|boolean',
+            'deleted_bank_accounts' => 'nullable|array',
+            'deleted_bank_accounts.*' => 'exists:customer_banks,id',
         ]);
 
         if ($validator->fails()) {
@@ -316,8 +322,16 @@ class CustomerController extends Controller
                 }
             }
             
-            // Prepare data for update (exclude certain fields)
-            $customerData = $request->except(['password', 'password_confirmation']);
+            // Prepare data for update - explicitly exclude problematic fields
+            $customerData = $request->except([
+                'password', 
+                'password_confirmation', 
+                'bank_accounts',
+                'bank_id',            // Exclude this old column
+                'atas_nama',          // Exclude this old column
+                'no_rek',             // Exclude this old column
+                'deleted_bank_accounts'
+            ]);
             
             // Set user ID if we have one
             if ($userId) {
@@ -345,6 +359,110 @@ class CustomerController extends Controller
                 
                 $user->phone = $customer->phone1;
                 $user->save();
+            }
+            
+            // Handle bank accounts - Similar to MitraController approach
+            if ($request->has('bank_accounts') && is_array($request->bank_accounts)) {
+                // Instead of deleting all and recreating, we'll use a more surgical approach
+                
+                // Track existing and seen bank account IDs
+                $existingBankIds = $customer->banks()->pluck('id')->toArray();
+                $seenBankIds = [];
+                
+                // Find which account should be the default
+                $defaultBankId = null;
+                foreach ($request->bank_accounts as $bankData) {
+                    if (!empty($bankData['is_default']) && !empty($bankData['bank_id'])) {
+                        $defaultBankId = isset($bankData['id']) ? $bankData['id'] : null;
+                        break;
+                    }
+                }
+                
+                // If no default is marked, use the first valid bank
+                if (!$defaultBankId) {
+                    foreach ($request->bank_accounts as $bankData) {
+                        if (!empty($bankData['bank_id']) || !empty($bankData['rek_no'])) {
+                            $defaultBankId = isset($bankData['id']) ? $bankData['id'] : 'new';
+                            break;
+                        }
+                    }
+                }
+                
+                // Process each bank account
+                foreach ($request->bank_accounts as $bankData) {
+                    // Skip empty entries
+                    if (empty($bankData['bank_id']) && empty($bankData['rek_no']) && empty($bankData['rek_name'])) {
+                        continue;
+                    }
+                    
+                    // Determine if this record should be default
+                    $isDefault = false;
+                    if ($defaultBankId === 'new' && !isset($bankData['id'])) {
+                        $isDefault = true;
+                        $defaultBankId = null; // Clear so only first new account is default
+                    } else if (isset($bankData['id']) && $bankData['id'] == $defaultBankId) {
+                        $isDefault = true;
+                    }
+                    
+                    // Update or create
+                    if (isset($bankData['id'])) {
+                        // Existing bank account
+                        $bank = CustomerBank::find($bankData['id']);
+                        if ($bank) {
+                            $bank->update([
+                                'bank_id' => $bankData['bank_id'] ?? null,
+                                'rek_no' => $bankData['rek_no'] ?? null,
+                                'rek_name' => $bankData['rek_name'] ?? null,
+                                'is_default' => $isDefault,
+                            ]);
+                            $seenBankIds[] = $bank->id;
+                        }
+                    } else {
+                        // New bank account
+                        $bank = CustomerBank::create([
+                            'customer_id' => $customer->id,
+                            'bank_id' => $bankData['bank_id'] ?? null,
+                            'rek_no' => $bankData['rek_no'] ?? null,
+                            'rek_name' => $bankData['rek_name'] ?? null,
+                            'is_default' => $isDefault,
+                        ]);
+                        $seenBankIds[] = $bank->id;
+                    }
+                }
+                
+                // Handle explicitly deleted bank accounts
+                if ($request->has('deleted_bank_accounts') && is_array($request->deleted_bank_accounts)) {
+                    foreach ($request->deleted_bank_accounts as $deletedId) {
+                        CustomerBank::destroy($deletedId);
+                    }
+                }
+                
+                // Delete accounts that weren't included in the form and weren't explicitly deleted
+                foreach ($existingBankIds as $existingId) {
+                    if (!in_array($existingId, $seenBankIds) && 
+                        (!$request->has('deleted_bank_accounts') || 
+                         !in_array($existingId, $request->deleted_bank_accounts))) {
+                        CustomerBank::destroy($existingId);
+                    }
+                }
+                
+                // Ensure there's exactly one default if banks exist
+                $bankCount = $customer->banks()->count();
+                if ($bankCount > 0) {
+                    $defaultCount = $customer->banks()->where('is_default', true)->count();
+                    
+                    if ($defaultCount === 0) {
+                        // No default set, make the first one default
+                        $customer->banks()->first()->update(['is_default' => true]);
+                    } else if ($defaultCount > 1) {
+                        // Multiple defaults, keep only the first one
+                        $firstDefault = $customer->banks()->where('is_default', true)->first();
+                        $customer->banks()
+                            ->where('is_default', true)
+                            ->where('id', '!=', $firstDefault->id)
+                            ->update(['is_default' => false]);
+                    }
+                }
             }
             
             DB::commit();
