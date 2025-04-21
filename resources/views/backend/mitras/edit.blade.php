@@ -359,7 +359,7 @@
                                     <label class="label {{ $mitra->user_id ? '' : 'label-required' }} mb-1 font-medium" for="password">
                                         {{ $mitra->user_id ? 'New Password' : 'Password' }}
                                     </label>
-                                    <input type="password" class="input" id="password" name="password" {{ $mitra->user_id ? '' : 'required' }} />
+                                    <input type="password" class="input" id="password" name="password"  />
                                     <p class="text-xs text-slate-500 mt-1">
                                         {{ $mitra->user_id ? 'Leave blank to keep current password' : 'Password must be at least 8 characters' }}
                                     </p>
@@ -369,7 +369,7 @@
                                     <label class="label {{ $mitra->user_id ? '' : 'label-required' }} mb-1 font-medium" for="password_confirmation">
                                         Confirm {{ $mitra->user_id ? 'New ' : '' }}Password
                                     </label>
-                                    <input type="password" class="input" id="password_confirmation" name="password_confirmation" {{ $mitra->user_id ? '' : 'required' }} />
+                                    <input type="password" class="input" id="password_confirmation" name="password_confirmation"  />
                                 </div>
                             </div>
                         </div>

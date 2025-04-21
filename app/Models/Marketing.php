@@ -15,7 +15,6 @@ class Marketing extends Model
         "code",
         "name",
         "address",
-        "atas_nama",
         "city",
         "phone1",
         "phone2",
@@ -28,10 +27,8 @@ class Marketing extends Model
         "address_tax",
         "due_date",
         "status",
-        "bank_id",
         "marketing_group_id",
         "user_id",
-        "no_rek",
         "status",
     ];
 

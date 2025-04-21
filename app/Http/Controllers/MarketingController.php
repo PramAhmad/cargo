@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Marketing;
 use App\Models\Bank;
 use App\Models\MarketingGroup;
+use App\Models\MarketingBank;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\UserStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MarketingController extends Controller
 {
@@ -24,7 +26,7 @@ class MarketingController extends Controller
         $groupFilter = $request->input('group_id');
         
         // Build the query with relationships
-        $marketingsQuery = Marketing::with(['bank', 'marketingGroup', 'user']);
+        $marketingsQuery = Marketing::with(['banks', 'marketingGroup', 'user']);
         
         // Apply search filter if search term is provided
         if ($search) {
@@ -72,28 +74,31 @@ class MarketingController extends Controller
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:20|unique:marketings',
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'atas_nama' => 'nullable|string|max:255',
-            'city' => 'required|string|max:100',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
             'phone1' => 'required|string|max:20',
             'phone2' => 'nullable|string|max:20',
             'borndate' => 'nullable|date',
-            'email' => 'nullable|email|max:255|unique:users,email',
+            'email' => 'required|email|max:255|unique:users,email',
             'website' => 'nullable|url|max:255',
-            'ktp' => 'nullable|string|max:20',
+            'ktp' => 'nullable|file|mimes:jpeg,jpg,png,gif,pdf|max:2048',
             'npwp' => 'nullable|string|max:30',
             'requirement' => 'nullable|string',
             'address_tax' => 'nullable|string',
             'due_date' => 'nullable|integer|min:0',
-            'bank_id' => 'nullable|exists:banks,id',
             'marketing_group_id' => 'required|exists:marketing_groups,id',
-            'no_rek' => 'nullable|string|max:50',
             'status' => 'required|boolean',
             
+            // Bank accounts
+            'bank_accounts' => 'nullable|array',
+            'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+            'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+            'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+            'bank_accounts.*.is_default' => 'nullable|boolean',
+            
             // User account fields
-            'create_user' => 'nullable|boolean',
-            'password' => 'nullable|required_if:create_user,1|min:8',
-            'password_confirmation' => 'nullable|required_if:create_user,1|same:password',
+            'password' => 'required|min:8',
+            'password_confirmation' => 'required|same:password',
         ]);
 
         if ($validator->fails()) {
@@ -107,31 +112,55 @@ class MarketingController extends Controller
             // Start transaction
             DB::beginTransaction();
             
-            // Create user if requested
-            $userId = null;
-            if ($request->create_user && $request->email) {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'phone' => $request->phone1,
-                    'status' => UserStatus::ACTIVE,
-                ]);
+            // Handle file upload
+            $ktpPath = null;
+            if ($request->hasFile('ktp')) {
+                $file = $request->file('ktp');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                // Store file directly in public/ktp directory
+                $uploadPath = public_path('ktp');
                 
-                // Assign basic marketing role (you can modify this as needed)
-                if ($user) {
-                    $user->assignRole('marketing');
-                    $userId = $user->id;
+                // Create directory if it doesn't exist
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
                 }
+                
+                $file->move($uploadPath, $fileName);
+                $ktpPath = $fileName;
             }
+            
+            // Create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'phone' => $request->phone1,
+                'status' => UserStatus::ACTIVE,
+            ]);
+            
+            // Assign marketing role
+            $user->assignRole('marketing');
             
             // Create marketing record
-            $marketingData = $request->except(['create_user', 'password', 'password_confirmation']);
-            if ($userId) {
-                $marketingData['user_id'] = $userId;
-            }
+            $marketingData = $request->except(['password', 'password_confirmation', 'bank_accounts', 'ktp']);
+            $marketingData['user_id'] = $user->id;
+            $marketingData['ktp'] = $ktpPath;
             
-            Marketing::create($marketingData);
+            $marketing = Marketing::create($marketingData);
+            
+            // Save bank accounts
+            if ($request->has('bank_accounts')) {
+                foreach ($request->bank_accounts as $bankAccount) {
+                    if (!empty($bankAccount['bank_id']) || !empty($bankAccount['rek_no'])) {
+                        $marketing->banks()->create([
+                            'bank_id' => $bankAccount['bank_id'] ?? null,
+                            'rek_name' => $bankAccount['rek_name'] ?? null,
+                            'rek_no' => $bankAccount['rek_no'] ?? null,
+                            'is_default' => isset($bankAccount['is_default']) ? true : false,
+                        ]);
+                    }
+                }
+            }
             
             DB::commit();
             
@@ -153,7 +182,7 @@ class MarketingController extends Controller
      */
     public function show(Marketing $marketing)
     {
-        $marketing->load(['bank', 'marketingGroup', 'user']);
+        $marketing->load(['banks.bank', 'marketingGroup', 'user']);
         
         return view('backend.marketings.show', compact('marketing'));
     }
@@ -165,10 +194,9 @@ class MarketingController extends Controller
     {
         $banks = Bank::orderBy('name')->get();
         $marketingGroups = MarketingGroup::orderBy('name')->get();
-        $users = User::orderBy('name')->get();
+        $marketing->load(['banks.bank']);
         
-        
-        return view('backend.marketings.edit', compact('marketing', 'banks', 'marketingGroups', 'users'));
+        return view('backend.marketings.edit', compact('marketing', 'banks', 'marketingGroups'));
     }
 
     /**
@@ -180,87 +208,148 @@ class MarketingController extends Controller
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:20|unique:marketings,code,'.$marketing->id,
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'city' => 'required|string|max:100',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
             'phone1' => 'required|string|max:20',
             'phone2' => 'nullable|string|max:20',
             'borndate' => 'nullable|date',
             'email' => 'required|email|max:255|unique:users,email,'.$marketing->user_id.',id',
             'website' => 'nullable|url|max:255',
-            'ktp' => 'nullable|string|max:20',
+            'ktp' => 'nullable|file|mimes:jpeg,jpg,png,gif,pdf|max:2048', 
             'npwp' => 'nullable|string|max:30',
             'requirement' => 'nullable|string',
             'address_tax' => 'nullable|string',
             'due_date' => 'nullable|integer|min:0',
-            'bank_id' => 'nullable|exists:banks,id',
             'marketing_group_id' => 'required|exists:marketing_groups,id',
-            'no_rek' => 'nullable|string|max:50',
-            'atas_nama' => 'nullable|string|max:255',
             'status' => 'required|boolean',
-            'password' => $marketing->user_id ? 'nullable|min:8' : 'required|min:8',
-            'password_confirmation' => $marketing->user_id ? 'nullable|same:password' : 'required|same:password',
+            
+            // Bank accounts
+            'bank_accounts' => 'nullable|array',
+            'bank_accounts.*.id' => 'nullable|exists:marketing_banks,id',
+            'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+            'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+            'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+            'bank_accounts.*.is_default' => 'nullable|boolean',
+            
+            // User account
+            'password' => 'nullable|min:8',
+            'password_confirmation' => 'nullable|same:password',
         ]);
         
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
         
-        // Start transaction
-        DB::beginTransaction();
         try {
-            $marketing->update([
-                'code' => $request->code,
-                'name' => $request->name,
-                'address' => $request->address,
-                'city' => $request->city,
-                'phone1' => $request->phone1,
-                'phone2' => $request->phone2,
-                'borndate' => $request->borndate,
-                'email' => $request->email,
-                'website' => $request->website,
-                'ktp' => $request->ktp,
-                'npwp' => $request->npwp,
-                'requirement' => $request->requirement,
-                'address_tax' => $request->address_tax,
-                'due_date' => $request->due_date,
-                'bank_id' => $request->bank_id,
-                'marketing_group_id' => $request->marketing_group_id,
-                'no_rek' => $request->no_rek,
-                'atas_nama' => $request->atas_nama,
-                'status' => $request->status,
-            ]);
+            // Start transaction
+            DB::beginTransaction();
             
-            if ($marketing->user_id) {
-                $user = User::find($marketing->user_id);
-                $userData = [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                ];
-                
-                // Only update password if provided
-                if ($request->filled('password')) {
-                    $userData['password'] = Hash::make($request->password);
+            // Handle file upload
+            if ($request->hasFile('ktp')) {
+                // Delete old file if exists
+                if ($marketing->ktp) {
+                    $oldFilePath = public_path('ktp/' . $marketing->ktp);
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
                 }
                 
-                $user->update($userData);
+                // Upload new file
+                $file = $request->file('ktp');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $uploadPath = public_path('ktp');
                 
-            } else if ($request->filled('password')) {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'status' => UserStatus::ACTIVE,
-                ]);
-                $user->assignRole('marketing');
-                $marketing->update(['user_id' => $user->id]);
+                // Create directory if it doesn't exist
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                $file->move($uploadPath, $fileName);
+                $marketing->ktp = $fileName;
+            }
+            
+            // Update marketing (except ktp which we handled separately)
+            $marketing->update($request->except(['password', 'password_confirmation', 'bank_accounts', 'ktp']));
+            
+            // User account handling
+            $user = User::findOrFail($marketing->user_id);
+            $userData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone1,
+            ];
+            
+            // Only update password if provided
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+            
+            $user->update($userData);
+            
+            // Bank accounts handling
+            if ($request->has('bank_accounts')) {
+                // Get existing bank account IDs
+                $existingBankIds = $marketing->banks->pluck('id')->toArray();
+                $updatedBankIds = [];
+                
+                foreach ($request->bank_accounts as $bankData) {
+                    // Check if this is an existing bank account or new one
+                    if (isset($bankData['id']) && in_array($bankData['id'], $existingBankIds)) {
+                        $bank = MarketingBank::find($bankData['id']);
+                        
+                        if (!empty($bankData['bank_id']) || !empty($bankData['rek_no'])) {
+                            $bank->update([
+                                'bank_id' => $bankData['bank_id'] ?? null,
+                                'rek_name' => $bankData['rek_name'] ?? null,
+                                'rek_no' => $bankData['rek_no'] ?? null,
+                                'is_default' => isset($bankData['is_default']) ? true : false,
+                            ]);
+                            $updatedBankIds[] = $bankData['id'];
+                        }
+                    } else {
+                        // This is a new bank account
+                        if (!empty($bankData['bank_id']) || !empty($bankData['rek_no'])) {
+                            $newBank = $marketing->banks()->create([
+                                'bank_id' => $bankData['bank_id'] ?? null,
+                                'rek_name' => $bankData['rek_name'] ?? null,
+                                'rek_no' => $bankData['rek_no'] ?? null,
+                                'is_default' => isset($bankData['is_default']) ? true : false,
+                            ]);
+                            $updatedBankIds[] = $newBank->id;
+                        }
+                    }
+                }
+                
+                // Delete any bank accounts that weren't in the request
+                foreach ($existingBankIds as $existingId) {
+                    if (!in_array($existingId, $updatedBankIds)) {
+                        MarketingBank::destroy($existingId);
+                    }
+                }
+                
+                // Ensure only one default bank
+                $defaultBanks = $marketing->banks()->where('is_default', true)->get();
+                if ($defaultBanks->count() > 1) {
+                    // Keep only the first default bank
+                    $firstDefault = $defaultBanks->first();
+                    foreach ($defaultBanks as $bank) {
+                        if ($bank->id !== $firstDefault->id) {
+                            $bank->update(['is_default' => false]);
+                        }
+                    }
+                }
             }
             
             DB::commit();
-            return redirect()->route('marketings.index')->with('success', 'Marketing updated successfully!');
             
+            return redirect()->route('marketings.index')
+                ->with('success', 'Marketing has been updated successfully');
+                
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'An error occurred: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -269,10 +358,32 @@ class MarketingController extends Controller
      */
     public function destroy(Marketing $marketing)
     {
-        $marketing->delete();
-        
-        return redirect()
-            ->route('marketings.index')
-            ->with('success', 'Marketing has been deleted successfully');
+        try {
+            DB::beginTransaction();
+            
+            // Delete KTP file if exists
+            if ($marketing->ktp) {
+                $filePath = public_path('ktp/' . $marketing->ktp);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+            
+            // Delete related bank accounts
+            $marketing->banks()->delete();
+            
+            // Delete marketing
+            $marketing->delete();
+            
+            DB::commit();
+            
+            return redirect()->route('marketings.index')
+                ->with('success', 'Marketing has been deleted successfully');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('marketings.index')
+                ->with('error', 'An error occurred: ' . $e->getMessage());
     }
 }
+    }

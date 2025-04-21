@@ -157,7 +157,18 @@
                                 <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
                                     {{ $marketing->ktp }}
                                 </p>
+                                <div class="flex items-center">
+                                    <span class="text-sm text-slate-700 dark:text-slate-200">KTP Document:</span>
+                                    <a href="{{ asset('ktp/' . $marketing->ktp) }}" 
+                                       target="_blank" 
+                                       class="ml-2 text-primary-500 hover:text-primary-600 hover:underline flex items-center">
+                                        <i class="fas fa-file-alt mr-1"></i>
+                                        View Document
+                                    </a>
+                                </div>
                             </div>
+                            @else
+                            <span class="text-sm text-slate-500">No KTP document uploaded</span>
                             @endif
                             
                             @if($marketing->npwp)
