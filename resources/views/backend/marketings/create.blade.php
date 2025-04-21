@@ -144,7 +144,7 @@
                                 
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="ktp">KTP</label>
-                                    <input type="file" class="file-input w-full" id="ktp" name="ktp" accept="image/*,.pdf" />
+                                    <input type="file" class="file-input   input w-full" id="ktp" name="ktp" accept="image/*,.pdf" />
                                     <p class="text-xs text-slate-500 mt-1">Upload KTP image or PDF (max 2MB)</p>
                                 </div>
                                 

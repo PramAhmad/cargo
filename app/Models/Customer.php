@@ -26,8 +26,6 @@ class Customer extends Model
         'phone2',
         'name',
         'status',
-        'no_rek',
-        'atas_nama',
         'country',
         'city',
         'borndate',
@@ -68,9 +66,9 @@ class Customer extends Model
     /**
      * Get the bank associated with the customer.
      */
-    public function bank()
+    public function banks()
     {
-        return $this->belongsTo(Bank::class);
+        return $this->hasMany(CustomerBank::class);
     }
 
     /**
@@ -167,11 +165,9 @@ class Customer extends Model
         $lastCustomer = self::orderBy('id', 'desc')->first();
         
         if (!$lastCustomer) {
-            // If no customers exist yet, start with 10001
             return 10001;
         }
         
-        // Otherwise, increment the last code
         return $lastCustomer->code + 1;
     }
 }

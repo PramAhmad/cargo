@@ -8,6 +8,7 @@ use App\Models\CustomerGroup;
 use App\Models\CategoryCustomer;
 use App\Models\Marketing;
 use App\Models\User;
+use App\Models\CustomerBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -21,15 +22,12 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        // Get the search query and filters
         $search = $request->input('search');
         $typeFilter = $request->input('type');
         $marketingFilter = $request->input('marketing_id');
         
-        // Build the query
-        $customersQuery = Customer::with(['bank', 'marketing', 'customerGroup', 'customerCategory', 'user']);
+        $customersQuery = Customer::with(['banks', 'marketing', 'customerGroup', 'customerCategory', 'user']);
         
-        // Apply search filter if search term is provided
         if ($search) {
             $customersQuery->where(function($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -39,17 +37,14 @@ class CustomerController extends Controller
             });
         }
         
-        // Apply type filter
         if ($typeFilter) {
             $customersQuery->where('type', $typeFilter);
         }
         
-        // Apply marketing filter
         if ($marketingFilter) {
             $customersQuery->where('marketing_id', $marketingFilter);
         }
         
-        // Order and paginate results
         $customers = $customersQuery->orderBy('name', 'asc')
             ->paginate(10)
             ->withQueryString(); // This preserves the search parameter in pagination links
@@ -78,7 +73,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request data for customer
+        // dd($request->all());
         $validator = Validator::make($request->all(), [
             'code' => 'nullable|string|max:20|unique:customers',
             'name' => 'required|string|max:255',
@@ -86,7 +81,6 @@ class CustomerController extends Controller
             'marketing_id' => 'required|exists:marketings,id',
             'customer_group_id' => 'required|exists:customer_groups,id',
             'customer_category_id' => 'required|exists:category_customers,id',
-            'bank_id' => 'nullable|exists:banks,id',
             'status' => 'required|boolean',
             'phone1' => 'required|string|max:20',
             'phone2' => 'nullable|string|max:20',
@@ -98,14 +92,19 @@ class CustomerController extends Controller
             'street_item' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',
             'country' => 'nullable|string|max:100',
-            'no_rek' => 'nullable|string|max:50',
-            'atas_nama' => 'nullable|string|max:255',
             'npwp' => 'nullable|string|max:30',
             'tax_address' => 'nullable|string',
             'created_date' => 'nullable|date',
             
+            // Bank accounts fields
+            'bank_accounts' => 'nullable|array',
+            'bank_accounts.*.bank_id' => 'nullable|exists:banks,id',
+            'bank_accounts.*.rek_no' => 'nullable|string|max:50',
+            'bank_accounts.*.rek_name' => 'nullable|string|max:255',
+            'bank_accounts.*.is_default' => 'nullable|boolean',
+            
             // User account fields
-            'create_user' => 'nullable|boolean',
+            'create_user' => 'nullable',
             'password' => 'nullable|required_if:create_user,1|min:8',
             'password_confirmation' => 'nullable|required_if:create_user,1|same:password',
         ]);
@@ -145,12 +144,56 @@ class CustomerController extends Controller
             }
             
             // Create customer record
-            $customerData = $request->except(['create_user', 'password', 'password_confirmation']);
+            $customerData = $request->except(['create_user', 'password', 'password_confirmation', 'bank_accounts']);
             if ($userId) {
                 $customerData['users_id'] = $userId;
             }
             
-            Customer::create($customerData);
+            $customer = Customer::create($customerData);
+            
+            // Handle bank accounts
+            if ($request->has('bank_accounts') && is_array($request->bank_accounts)) {
+                $hasDefault = false;
+                $defaultBankIndex = null;
+                
+                // Find which account should be default
+                foreach ($request->bank_accounts as $index => $bankData) {
+                    if (!empty($bankData['is_default'])) {
+                        $hasDefault = true;
+                        $defaultBankIndex = $index;
+                        break;
+                    }
+                }
+                
+                // If no default is specified but there are bank accounts, make the first one default
+                if (!$hasDefault && count($request->bank_accounts) > 0) {
+                    foreach ($request->bank_accounts as $index => $bankData) {
+                        if (!empty($bankData['bank_id']) || !empty($bankData['rek_no']) || !empty($bankData['rek_name'])) {
+                            $defaultBankIndex = $index;
+                            break;
+                        }
+                    }
+                }
+                
+                // Now create bank accounts
+                foreach ($request->bank_accounts as $index => $bankData) {
+                    // Skip empty bank records
+                    if (empty($bankData['bank_id']) && empty($bankData['rek_no']) && empty($bankData['rek_name'])) {
+                        continue;
+                    }
+                    
+                    // Set is_default based on our earlier determination
+                    $isDefault = ($index === $defaultBankIndex);
+                    
+                    CustomerBank::create([
+                        'customer_id' => $customer->id,
+                        'bank_id' => $bankData['bank_id'] ?? null,
+                        'rek_no' => $bankData['rek_no'] ?? null,
+                        'rek_name' => $bankData['rek_name'] ?? null,
+                        'is_default' => $isDefault,
+                    ]);
+                }
+            }
             
             DB::commit();
             
@@ -172,7 +215,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        $customer->load(['bank', 'marketing', 'customerGroup', 'customerCategory', 'user']);
+        $customer->load(['banks', 'marketing', 'customerGroup', 'customerCategory', 'user']);
         
         return view('backend.customers.show', compact('customer'));
     }

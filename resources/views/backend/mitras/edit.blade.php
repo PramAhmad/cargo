@@ -68,8 +68,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <!-- Code -->
                                 <div class="flex flex-col gap-1">
-                                    <label class="label mb-1 font-medium" for="code">Code</label>
-                                    <input type="text" class="input bg-slate-100 dark:bg-slate-800" id="code" value="{{ $mitra->code }}" readonly />
+                                    <label class="label mb-1 font-medium" for="code">Marking Code</label>
+                                    <input type="text" class="input"  name="code" id="code" value="{{ $mitra->code }}"  />
                                 </div>
                                 
                                 <!-- Name -->
@@ -122,7 +122,7 @@
         <div class="mt-2 flex items-center">
             <i class="fas fa-file  mr-2"></i>
             <span class="text-sm">Current file: {{ basename($mitra->ktp) }}</span>
-            <a href="{{ asset($mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
+            <a href="{{ asset('ktp/' .$mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
         </div>
     @endif
 </div>
@@ -597,7 +597,7 @@
             if(this.checked) {
                 $('#account_section').removeClass('hidden');
                 // Only make passwords required if no user account exists yet
-                if(!{{ $mitra->user_id ? 'true' : 'false' }}) {
+                if(!`{{ $mitra->user_id ? 'true' : 'false' }}`) {
                     $('#password, #password_confirmation').prop('required', true);
                 }
             } else {
@@ -607,7 +607,7 @@
         });
         
         // Bank account section
-        let bankCounter = {{ count(old('bank_accounts', $mitra->banks ? $mitra->banks->toArray() : [0])) }};
+        let bankCounter = `{{ count(old('bank_accounts', $mitra->banks ? $mitra->banks->toArray() : [0])) }}`;
         
         // Add bank account
         $('#addBankAccount').on('click', function() {
@@ -719,7 +719,7 @@
         
         // If displaying an existing mitra with user account, prevent accidentally
         // disabling the account without explicit confirmation
-        if({{ $mitra->user_id ? 'true' : 'false' }}) {
+        if(`{{ $mitra->user_id ? 'true' : 'false' }}`) {
             var originalChecked = $('#create_account').is(':checked');
             
             $('#create_account').on('change', function() {
@@ -747,7 +747,7 @@
             // If creating a new account (no user ID yet) and checkbox is checked,
             // ensure password is provided
             if($('#create_account').is(':checked') && 
-               !{{ $mitra->user_id ? 'true' : 'false' }} && 
+               !`{{ $mitra->user_id ? 'true' : 'false' }}` && 
                $('#password').val() === '') {
                 e.preventDefault();
                 alert('Password is required for creating a new user account.');
