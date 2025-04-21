@@ -48,10 +48,7 @@
                             <input type="file" class="input" id="address_photo" name="address_photo" accept="image/*" />
                             
                             @if($warehouse->address_photo)
-                                <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $warehouse->address_photo) }}" alt="Warehouse Address" class="h-32 w-auto object-cover rounded-md" />
-                                    <p class="text-xs text-slate-500 mt-1">Current photo. Upload a new one to replace it.</p>
-                                </div>
+                                <img src="{{ asset($warehouse->address_photo) }}" class="max-w-[300px]" alt="Warehouse Image">
                             @endif
                             
                             <p class="text-xs text-slate-500 mt-1">Upload an image of the warehouse location (JPEG, PNG, JPG, max 2MB)</p>
