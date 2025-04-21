@@ -68,6 +68,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 
 # Install PHP extensions
 RUN docker-php-ext-install zip pcntl pdo pdo_mysql mysqli
+RUN chown -R www-data:www-data /var/www/html/public/ktp
+
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer 
 

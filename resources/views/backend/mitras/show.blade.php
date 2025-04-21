@@ -126,6 +126,10 @@
                                     <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
                                         {{ $mitra->ktp }}
                                     </p>
+                                    {{-- view ktp --}}
+                                    <a href="{{ asset('ktp/' . $mitra->ktp) }}" target="_blank" class="text-sm text-primary-500 hover:underline">
+                                        View KTP
+                                    </a>
                                 </div>
                                 @endif
                             </div>
