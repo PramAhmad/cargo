@@ -362,11 +362,6 @@
                         @endif
                     </div>
                 </div>
-                
-                <!-- Warehouses Section -->
-            
-                
-              
             </div>
             
             <!-- Right Column - Contact & User Info -->

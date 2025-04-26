@@ -116,17 +116,17 @@
                                 
                                 <!-- KTP -->
                                 <div class="flex flex-col gap-1">
-    <label class="label mb-1 font-medium" for="ktp">KTP</label>
-    <input type="file" class="input" id="ktp" name="ktp" />
-    @if($mitra->ktp)
-        <div class="mt-2 flex items-center">
-            <i class="fas fa-file  mr-2"></i>
-            <span class="text-sm">Current file: {{ basename($mitra->ktp) }}</span>
-            <a href="{{ asset('ktp/' .$mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
-        </div>
-    @endif
-</div>
-                                
+                                    <label class="label mb-1 font-medium" for="ktp">KTP</label>
+                                    <input type="file" class="input" id="ktp" name="ktp" />
+                                    @if($mitra->ktp)
+                                        <div class="mt-2 flex items-center">
+                                            <i class="fas fa-file  mr-2"></i>
+                                            <span class="text-sm">Current file: {{ basename($mitra->ktp) }}</span>
+                                            <a href="{{ asset('ktp/' .$mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
+                                        </div>
+                                    @endif
+                                </div>
+                                                                
                                 <!-- Payment Terms -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="syarat_bayar">Payment Terms (Days)</label>
