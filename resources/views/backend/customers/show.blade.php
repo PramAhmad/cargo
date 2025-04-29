@@ -172,44 +172,100 @@
                         </div>
                     </div>
                     <div class="card-body p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @if($customer->bank)
-                            <div>
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Bank</h5>
-                                <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
-                                    {{ $customer->bank->name }}
-                                </p>
+                        <!-- Bank Accounts Section -->
+                        @if($customer->banks && $customer->banks->count() > 0)
+                            <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Bank Accounts</h5>
+                            <div class="space-y-4">
+                                @foreach($customer->banks as $bankAccount)
+                                    <div class="p-4 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h6 class="font-medium text-slate-700 dark:text-slate-300">
+                                                {{ $bankAccount->bank->name ?? 'Bank' }} Account
+                                                @if($bankAccount->is_default)
+                                                    <span class="ml-2 badge badge-soft-success text-xs">Default</span>
+                                                @endif
+                                            </h6>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            @if($bankAccount->bank)
+                                                <div>
+                                                    <span class="text-xs text-slate-500 dark:text-slate-400">Bank</span>
+                                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                        {{ $bankAccount->bank->name }}
+                                                    </p>
+                                                </div>
+                                            @endif
+                                            
+                                            @if($bankAccount->rek_name)
+                                                <div>
+                                                    <span class="text-xs text-slate-500 dark:text-slate-400">Account Name</span>
+                                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                        {{ $bankAccount->rek_name }}
+                                                    </p>
+                                                </div>
+                                            @endif
+                                            
+                                            @if($bankAccount->rek_no)
+                                                <div>
+                                                    <span class="text-xs text-slate-500 dark:text-slate-400">Account Number</span>
+                                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                        {{ $bankAccount->rek_no }}
+                                                    </p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                            @endif
-                            
-                            @if($customer->atas_nama)
-                            <div>
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Account Name</h5>
-                                <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
-                                    {{ $customer->atas_nama }}
-                                </p>
+                        @elseif($customer->bank)
+                            <!-- Legacy bank information (single account) -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                @if($customer->bank)
+                                <div>
+                                    <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Bank</h5>
+                                    <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
+                                        {{ $customer->bank->name }}
+                                    </p>
+                                </div>
+                                @endif
+                                
+                                @if($customer->atas_nama)
+                                <div>
+                                    <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Account Name</h5>
+                                    <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
+                                        {{ $customer->atas_nama }}
+                                    </p>
+                                </div>
+                                @endif
+                                
+                                @if($customer->no_rek)
+                                <div>
+                                    <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Account Number</h5>
+                                    <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
+                                        {{ $customer->no_rek }}
+                                    </p>
+                                </div>
+                                @endif
                             </div>
-                            @endif
-                            
-                            @if($customer->no_rek)
-                            <div>
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Account Number</h5>
-                                <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
-                                    {{ $customer->no_rek }}
-                                </p>
+                        @else
+                            <p class="text-sm text-slate-500">No bank account information available</p>
+                        @endif
+                        
+                        <!-- NPWP Section -->
+                        <div class="{{ ($customer->banks && $customer->banks->count() > 0) || $customer->bank ? 'mt-6 pt-6 border-t border-slate-200 dark:border-slate-700' : '' }}">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                @if($customer->npwp)
+                                <div>
+                                    <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">NPWP Number</h5>
+                                    <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
+                                        {{ $customer->npwp }}
+                                    </p>
+                                </div>
+                                @endif
                             </div>
-                            @endif
-                            
-                            @if($customer->npwp)
-                            <div>
-                                <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">NPWP Number</h5>
-                                <p class="mt-1 text-base font-medium text-slate-900 dark:text-slate-200">
-                                    {{ $customer->npwp }}
-                                </p>
-                            </div>
-                            @endif
                         </div>
                         
+                        <!-- Tax Address Section -->
                         @if($customer->tax_address)
                         <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
                             <h5 class="text-sm font-medium text-slate-500 dark:text-slate-400">Tax Address</h5>

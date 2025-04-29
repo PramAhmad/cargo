@@ -216,24 +216,17 @@
                                 </div>
                                 
                                 <div id="bankAccountsContainer">
-                                    @php
-                                        $bankAccounts = old('bank_accounts', $customer->banks);
-                                            $bankCounter = count($bankAccounts);
-                                    @endphp
-                                
-                                    @if($bankCounter > 0)
-                                        @foreach($bankAccounts as $index => $bankAccount)
+                                    @if($customer->banks->count() > 0)
+                                        @foreach($customer->banks as $index => $bankAccount)
                                             <div class="bank-account-record bg-slate-50 dark:bg-slate-800 p-4 rounded-md mb-4" data-record-id="{{ $index }}">
                                                 <div class="flex justify-between items-center mb-3">
                                                     <h4 class="text-md font-medium text-slate-700 dark:text-slate-200">Bank Account #<span class="record-number">{{ $index + 1 }}</span></h4>
                                                     <div class="flex items-center">
                                                         <div class="flex items-center mr-4">
-                                                            <input type="hidden" name="bank_accounts[{{ $index }}][id]" value="{{ $bankAccount['id'] ?? '' }}">
-                                                            <input type="checkbox" id="is_default_{{ $index }}" name="bank_accounts[{{ $index }}][is_default]" value="1" class="default-bank-checkbox mr-2" 
-                                                                {{ (isset($bankAccount['is_default']) && $bankAccount['is_default']) ? 'checked' : '' }}>
+                                                            <input type="checkbox" id="is_default_{{ $index }}" name="bank_accounts[{{ $index }}][is_default]" value="1" class="default-bank-checkbox mr-2" {{ $bankAccount->is_default ? 'checked' : '' }}>
                                                             <label for="is_default_{{ $index }}" class="text-sm">Default Account</label>
                                                         </div>
-                                                        <button type="button" class="remove-bank-account text-red-500 hover:text-red-700">
+                                                        <button type="button" class="remove-bank-account text-red-500 hover:text-red-700" {{ $customer->banks->count() <= 1 ? 'disabled' : '' }}>
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                     </div>
@@ -242,11 +235,11 @@
                                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div class="flex flex-col gap-1">
                                                         <label class="label mb-1 font-medium" for="bank_id_{{ $index }}">Bank</label>
+                                                        <input type="hidden" name="bank_accounts[{{ $index }}][id]" value="{{ $bankAccount->id }}">
                                                         <select id="bank_id_{{ $index }}" name="bank_accounts[{{ $index }}][bank_id]" class="select">
                                                             <option value="">Select Bank</option>
                                                             @foreach($banks as $bank)
-                                                                <option value="{{ $bank->id }}" 
-                                                                    {{ old('bank_accounts.'.$index.'.bank_id', $bankAccount['bank_id'] ?? '') == $bank->id ? 'selected' : '' }}>
+                                                                <option value="{{ $bank->id }}" {{ old('bank_accounts.' . $index . '.bank_id', $bankAccount->bank_id) == $bank->id ? 'selected' : '' }}>
                                                                     {{ $bank->name }}
                                                                 </option>
                                                             @endforeach
@@ -255,14 +248,12 @@
                                                     
                                                     <div class="flex flex-col gap-1">
                                                         <label class="label mb-1 font-medium" for="rek_name_{{ $index }}">Account Name</label>
-                                                        <input type="text" class="input" id="rek_name_{{ $index }}" name="bank_accounts[{{ $index }}][rek_name]" 
-                                                            value="{{ old('bank_accounts.'.$index.'.rek_name', $bankAccount['rek_name'] ?? '') }}" />
+                                                        <input type="text" class="input" id="rek_name_{{ $index }}" name="bank_accounts[{{ $index }}][rek_name]" value="{{ old('bank_accounts.' . $index . '.rek_name', $bankAccount->rek_name) }}" />
                                                     </div>
                                                     
                                                     <div class="flex flex-col gap-1">
                                                         <label class="label mb-1 font-medium" for="rek_no_{{ $index }}">Account Number</label>
-                                                        <input type="text" class="input" id="rek_no_{{ $index }}" name="bank_accounts[{{ $index }}][rek_no]" 
-                                                            value="{{ old('bank_accounts.'.$index.'.rek_no', $bankAccount['rek_no'] ?? '') }}" />
+                                                        <input type="text" class="input" id="rek_no_{{ $index }}" name="bank_accounts[{{ $index }}][rek_no]" value="{{ old('bank_accounts.' . $index . '.rek_no', $bankAccount->rek_no) }}" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -307,13 +298,6 @@
                                         </div>
                                     @endif
                                 </div>
-                            </div>
-                            
-                            <!-- Old Single Bank Fields (Hidden but preserved for backward compatibility) -->
-                            <div class="hidden">
-                                <input type="hidden" name="bank_id" value="{{ old('bank_id', $customer->bank_id) }}">
-                                <input type="hidden" name="atas_nama" value="{{ old('atas_nama', $customer->atas_nama) }}">
-                                <input type="hidden" name="no_rek" value="{{ old('no_rek', $customer->no_rek) }}">
                             </div>
                             
                             <!-- NPWP & Tax Address -->
@@ -476,10 +460,7 @@
     <script>
         $(document).ready(function() {
             // Initialize Select2
-            $('.select').select2({
-                width: '100%',
-                theme: document.documentElement.classList.contains('dark') ? 'classic' : 'default'
-            });
+        
             
             // Tab functionality
             const tabs = ['basic-tab', 'contact-tab', 'financial-tab', 'account-tab'];
@@ -608,10 +589,7 @@
                 $template.find('.remove-bank-account').prop('disabled', false);
                 
                 // Reinitialize select2 for the new elements
-                $template.find('select').select2({
-                    width: '100%',
-                    theme: document.documentElement.classList.contains('dark') ? 'classic' : 'default'
-                });
+            
                 
                 // Add to container
                 $('#bankAccountsContainer').append($template);

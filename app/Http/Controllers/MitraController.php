@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use App\Exports\MitrasExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MitraController extends Controller
 {
@@ -436,5 +438,19 @@ class MitraController extends Controller
             "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", 
             "Zambia", "Zimbabwe"
         ];
+    }
+
+    /**
+     * Export the list of mitras.
+     */
+    public function export(Request $request)
+    {
+        $search = $request->query('search');
+        $groupId = $request->query('group_id');
+        
+        $timestamp = now()->format('Y-m-d-His');
+        $filename = "mitras-{$timestamp}.xlsx";
+        
+        return Excel::download(new MitrasExport($search, $groupId), $filename);
     }
 }

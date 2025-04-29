@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mitra;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class MitraWarehouseController extends Controller
 {
@@ -39,8 +39,22 @@ class MitraWarehouseController extends Controller
         ]);
 
         if ($request->hasFile('address_photo')) {
-            $path = $request->file('address_photo')->store('warehouses', 'public');
-            $validated['address_photo'] = $path;
+            // Generate a unique filename with original extension
+            $file = $request->file('address_photo');
+            $extension = $file->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            
+            // Make sure directory exists
+            $directory = public_path('warehouses');
+            if (!File::isDirectory($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+            
+            // Move file to public/warehouses directory
+            $file->move($directory, $filename);
+            
+            // Store the relative path in the database
+            $validated['address_photo'] = 'warehouses/' . $filename;
         }
 
         $warehouse = $mitra->warehouses()->create($validated);
@@ -81,12 +95,26 @@ class MitraWarehouseController extends Controller
 
         if ($request->hasFile('address_photo')) {
             // Delete old file if exists
-            if ($warehouse->address_photo && Storage::disk('public')->exists($warehouse->address_photo)) {
-                Storage::disk('public')->delete($warehouse->address_photo);
+            if ($warehouse->address_photo && File::exists(public_path($warehouse->address_photo))) {
+                File::delete(public_path($warehouse->address_photo));
             }
             
-            $path = $request->file('address_photo')->store('warehouses', 'public');
-            $validated['address_photo'] = $path;
+            // Generate a unique filename with original extension
+            $file = $request->file('address_photo');
+            $extension = $file->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            
+            // Make sure directory exists
+            $directory = public_path('warehouses');
+            if (!File::isDirectory($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+            
+            // Move file to public/warehouses directory
+            $file->move($directory, $filename);
+            
+            // Store the relative path in the database
+            $validated['address_photo'] = 'warehouses/' . $filename;
         }
 
         $warehouse->update($validated);
@@ -106,12 +134,13 @@ class MitraWarehouseController extends Controller
         }
 
         // Delete address photo if exists
-        if ($warehouse->address_photo && Storage::disk('public')->exists($warehouse->address_photo)) {
-            Storage::disk('public')->delete($warehouse->address_photo);
+        if ($warehouse->address_photo && File::exists(public_path($warehouse->address_photo))) {
+            File::delete(public_path($warehouse->address_photo));
         }
 
         $warehouse->delete();
-return response()->json([
+        
+        return response()->json([
             'success' => true,
             'message' => 'Warehouse deleted successfully.',
         ]);

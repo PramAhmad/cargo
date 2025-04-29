@@ -39,6 +39,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
 
 });
+Route::get('mitras/export', [\App\Http\Controllers\MitraController::class, 'export'])->name('mitras.export');
 Route::middleware(['auth'])->prefix('mitras/{mitra}/warehouses')->name('mitra.warehouses.')->group(function () {
     Route::get('/', [MitraWarehouseController::class, 'index'])->name('index');
     Route::get('/create', [MitraWarehouseController::class, 'create'])->name('create');

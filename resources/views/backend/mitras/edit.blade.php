@@ -126,7 +126,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+                                                                
                                 <!-- Payment Terms -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="syarat_bayar">Payment Terms (Days)</label>

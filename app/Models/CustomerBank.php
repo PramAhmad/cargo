@@ -46,16 +46,4 @@ class CustomerBank extends Model
     {
         return $this->belongsTo(Bank::class);
     }
-    public function banks()
-{
-    return $this->hasMany(CustomerBank::class);
-}
-
-/**
- * Get the default bank account for the customer.
- */
-public function defaultBank()
-{
-    return $this->hasOne(CustomerBank::class)->where('is_default', true);
-}
 }
