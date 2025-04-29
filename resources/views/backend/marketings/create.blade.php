@@ -22,7 +22,7 @@
                     </div>
                 @endif
                 
-                <form action="{{ route('marketings.store') }}" method="POST">
+                <form action="{{ route('marketings.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     
                     <!-- Tab Navigation -->
@@ -124,19 +124,15 @@
                                 
                                 <div class="flex flex-col gap-1">
                                     <label class="label label-required mb-1 font-medium" for="phone1">Primary Phone</label>
-                                    <input type="text" class="input" id="phone1" name="phone1" value="{{ old('phone1') }}" required />
+                                    <input type="number" class="input" id="phone1" name="phone1" value="{{ old('phone1') }}" required />
                                 </div>
                                 
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="phone2">Secondary Phone</label>
-                                    <input type="text" class="input" id="phone2" name="phone2" value="{{ old('phone2') }}" />
+                                    <input type="number" class="input" id="phone2" name="phone2" value="{{ old('phone2') }}" />
                                 </div>
                                 
-                                <div class="flex flex-col gap-1">
-                                    <label class="label mb-1 font-medium" for="email">Email</label>
-                                    <input type="email" class="input" id="email" name="email" value="{{ old('email') }}" />
-                                </div>
-                                
+                             
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="website">Website</label>
                                     <input type="url" class="input" id="website" name="website" value="{{ old('website') }}" placeholder="https://" />

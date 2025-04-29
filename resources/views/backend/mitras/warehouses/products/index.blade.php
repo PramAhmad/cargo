@@ -75,9 +75,20 @@
             </div>
         </div>
     </div>
+    @push('styles')
+    <style>
+        .swal2-confirm swal2-styled {
+        background-color: #4f46e5 !important;
+        color: #fff;
+        border: #4f46e5 !important;
+        border-radius: 0.375rem !important;
+    }
+    </style>
 
+    @endpush
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="sweetalert2.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
@@ -95,6 +106,10 @@
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Delete',
                     cancelButtonText: 'Cancel',
+                    customClass: {
+                    confirmButton: 'btn btn-primary mx-5',
+                    cancelButton: 'btn btn-secondary'
+                     },
                     reverseButtons: true,
                     focusCancel: true
                 }).then((result) => {

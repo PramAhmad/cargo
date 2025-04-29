@@ -4,6 +4,7 @@
 /public/storage
 /storage/clockwork
 /storage/*.key
+/data
 /vendor
 .env
 .env.backup

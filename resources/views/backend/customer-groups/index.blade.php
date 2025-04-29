@@ -33,12 +33,7 @@
 
             <!-- Customer Group Action Starts -->
             <div class="flex w-full items-center justify-between gap-x-4 md:w-auto">
-                <div class="flex items-center gap-x-4">
-                    <button class="btn bg-white font-medium shadow-sm dark:bg-slate-800">
-                        <i class="h-4" data-feather="upload"></i>
-                        <span class="hidden sm:inline-block">Export</span>
-                    </button>
-                </div>
+                
 
                 <a class="btn btn-primary" href="{{ route('customer-groups.create') }}" role="button">
                     <i data-feather="plus" height="1rem" width="1rem"></i>

@@ -185,13 +185,13 @@
                                 <!-- Phone 1 -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label label-required mb-1 font-medium" for="phone1">Primary Phone</label>
-                                    <input type="text" class="input" id="phone1" name="phone1" value="{{ old('phone1') }}" required />
+                                    <input type="number" class="input" id="phone1" name="phone1" value="{{ old('phone1') }}" required />
                                 </div>
                                 
                                 <!-- Phone 2 -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="phone2">Secondary Phone</label>
-                                    <input type="text" class="input" id="phone2" name="phone2" value="{{ old('phone2') }}" />
+                                    <input type="number" class="input" id="phone2" name="phone2" value="{{ old('phone2') }}" />
                                 </div>
                                 
                                 <!-- Email -->
@@ -267,7 +267,7 @@
                                 <!-- NPWP -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="npwp">NPWP</label>
-                                    <input type="text" class="input" id="npwp" name="npwp" value="{{ old('npwp') }}" />
+                                    <input type="number" class="input" id="npwp" name="npwp" value="{{ old('npwp') }}" />
                                 </div>
                                 
                                 <!-- Tax Address -->

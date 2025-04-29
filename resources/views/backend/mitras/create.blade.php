@@ -68,7 +68,7 @@
                                 
                                 <div class="flex flex-col gap-1">
                                     <div class="flex items-center justify-between">
-                                        <label class="label mb-1 font-medium" for="code">Code</label>
+                                        <label class="label mb-1 font-medium" for="code">Marking Code</label>
                                         <button type="button" id="generateCode" class="text-xs text-primary-600 hover:text-primary-700">
                                             Generate Code
                                         </button>
@@ -133,7 +133,7 @@
                                 
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="country">Country</label>
-                                    <select id="country" name="country[]" class="select2" multiple>
+                                    <select id="country" name="country[]" class="tom-select" multiple="">
                                         @foreach($countries as $country)
                                             <option value="{{ $country }}" 
                                                 {{ is_array(old('country')) && in_array($country, old('country')) ? 'selected' : '' }}>

@@ -28,39 +28,39 @@
                     
                     <!-- Tab Navigation -->
                     <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="mitraFormTabs" role="tablist">
-        <li class="mr-2" role="presentation">
-            <button class="inline-flex items-center p-4 border-b-2 rounded-t-lg active" id="basic-tab" data-tab="basic-content" type="button" role="tab" aria-controls="basic" aria-selected="true">
-                <i class="fas fa-info-circle mr-2"></i>
-                Basic Information
-            </button>
-        </li>
-        <li class="mr-2" role="presentation">
-            <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="contact-tab" data-tab="contact-content" type="button" role="tab" aria-controls="contact" aria-selected="false">
-                <i class="fas fa-address-book mr-2"></i>
-                Contact Information
-            </button>
-        </li>
-        <li class="mr-2" role="presentation">
-            <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="financial-tab" data-tab="financial-content" type="button" role="tab" aria-controls="financial" aria-selected="false">
-                <i class="fas fa-money-bill-wave mr-2"></i>
-                Financial Information
-            </button>
-        </li>
-        <li class="mr-2" role="presentation">
-            <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="warehouse-tab" data-tab="warehouse-content" type="button" role="tab" aria-controls="warehouse" aria-selected="false">
-                <i class="fas fa-warehouse mr-2"></i>
-                Warehouses
-            </button>
-        </li>
-        <li role="presentation">
-            <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="account-tab" data-tab="account-content" type="button" role="tab" aria-controls="account" aria-selected="false">
-                <i class="fas fa-user-shield mr-2"></i>
-                System Account
-            </button>
-        </li>
-    </ul>
-</div>
+                            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="mitraFormTabs" role="tablist">
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-flex items-center p-4 border-b-2 rounded-t-lg active" id="basic-tab" data-tab="basic-content" type="button" role="tab" aria-controls="basic" aria-selected="true">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Basic Information
+                                    </button>
+                                </li>
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="contact-tab" data-tab="contact-content" type="button" role="tab" aria-controls="contact" aria-selected="false">
+                                        <i class="fas fa-address-book mr-2"></i>
+                                        Contact Information
+                                    </button>
+                                </li>
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="financial-tab" data-tab="financial-content" type="button" role="tab" aria-controls="financial" aria-selected="false">
+                                        <i class="fas fa-money-bill-wave mr-2"></i>
+                                        Financial Information
+                                    </button>
+                                </li>
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="warehouse-tab" data-tab="warehouse-content" type="button" role="tab" aria-controls="warehouse" aria-selected="false">
+                                        <i class="fas fa-warehouse mr-2"></i>
+                                        Warehouses
+                                    </button>
+                                </li>
+                                <li role="presentation">
+                                    <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="account-tab" data-tab="account-content" type="button" role="tab" aria-controls="account" aria-selected="false">
+                                        <i class="fas fa-user-shield mr-2"></i>
+                                        System Account
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                     <!-- Tab Content -->
                     <div class="tab-content">
                         <!-- Basic Information Tab -->
@@ -116,16 +116,16 @@
                                 
                                 <!-- KTP -->
                                 <div class="flex flex-col gap-1">
-    <label class="label mb-1 font-medium" for="ktp">KTP</label>
-    <input type="file" class="input" id="ktp" name="ktp" />
-    @if($mitra->ktp)
-        <div class="mt-2 flex items-center">
-            <i class="fas fa-file  mr-2"></i>
-            <span class="text-sm">Current file: {{ basename($mitra->ktp) }}</span>
-            <a href="{{ asset('ktp/' .$mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
-        </div>
-    @endif
-</div>
+                                    <label class="label mb-1 font-medium" for="ktp">KTP</label>
+                                    <input type="file" class="input" id="ktp" name="ktp" />
+                                    @if($mitra->ktp)
+                                        <div class="mt-2 flex items-center">
+                                            <i class="fas fa-file  mr-2"></i>
+                                            <span class="text-sm">Current file: {{ basename($mitra->ktp) }}</span>
+                                            <a href="{{ asset('ktp/' .$mitra->ktp) }}" target="_blank" class="text-primary-500 hover:underline ml-2">View</a>
+                                        </div>
+                                    @endif
+                                </div>
                                 
                                 <!-- Payment Terms -->
                                 <div class="flex flex-col gap-1">
@@ -155,7 +155,7 @@
                                 <!-- Country -->
                                 <div class="flex flex-col gap-1">
                                     <label class="label mb-1 font-medium" for="country">Country</label>
-                                    <select id="country" name="country[]" class="select2" multiple>
+                                    <select id="country" name="country[]" class="tom-select" multiple="">
                                         @php 
                                             $selectedCountries = old('country', $mitra->countries ? $mitra->countries->pluck('name')->toArray() : []);
                                         @endphp
