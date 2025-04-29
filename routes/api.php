@@ -1,36 +1,32 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Resources\UserResource;
+use App\Http\Controllers\Api\CustomerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\MitraController;
+use App\Http\Controllers\Api\ShippingController;
+use App\Http\Controllers\Api\WarehouseController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
 */
 
-Route::prefix('v1')->group(function ()
-{
-    // Guest Route
-    Route::middleware('guest')->group(function ()
-    {
-        Route::post('login', [AuthController::class, 'login']);
-        Route::post('register', [RegisteredUserController::class, 'store']);
-    });
-
-    // Api Route with token
-    Route::middleware('auth:api')->get('/user', function (Request $request)
-    {
-        return new UserResource($request->user());
-    });
-
-    // Api Route with sanctum
-    Route::middleware(['auth:sanctum', 'verified'])->group(function ()
-    {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('profile', [AuthController::class, 'profile']);
-    });
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
 });
+Route::get('/customers/{customer}/banks', [CustomerController::class, 'getBanks']);
+
+// Mitra API routes
+Route::get('/mitras/{mitraId}/products', [MitraController::class, 'getProducts']);
+Route::get('/mitras/{mitraId}/warehouses', [MitraController::class, 'getWarehouses']);
+Route::get('/products/{productId}', [MitraController::class, 'getProductDetails']);
+Route::get('/shippings/generate-invoice', [ShippingController::class, 'generateInvoice']);
+Route::get('/warehouses/{warehouseId}/products', [WarehouseController::class, 'getProducts']);
+

@@ -15,7 +15,6 @@ import drawer from './components/drawer';
 import dropdown from './components/dropdown';
 import editor from './components/editor';
 import modal from './components/modal';
-import searchModal from './components/search-modal';
 import select from './components/select';
 import sidebar from './components/sidebar';
 import tabs from './components/tabs';
@@ -25,7 +24,6 @@ import uploader from './components/uploader';
 import toast from './components/toast';
 
 // Initialize searchModal
-searchModal.init();
 
 // Initialize themeSwitcher
 themeSwitcher.init();

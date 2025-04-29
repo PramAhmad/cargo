@@ -28,45 +28,7 @@
 
                 <!-- User Action Starts -->
                 <div class="flex w-full items-center justify-between gap-x-4 md:w-auto">
-                    <div class="flex items-center gap-x-4">
-                        <div class="dropdown" data-placement="bottom-end">
-                            <div class="dropdown-toggle">
-                                <button type="button" class="btn bg-white font-medium shadow-sm dark:bg-slate-800">
-                                    <i class="w-4" data-feather="filter"></i>
-                                    <span class="hidden sm:inline-block">Filter</span>
-                                    <i class="w-4" data-feather="chevron-down"></i>
-                                </button>
-                            </div>
-                            <div class="dropdown-content w-72 !overflow-visible">
-                                <ul class="dropdown-list space-y-4 p-4">
-                                    <li class="dropdown-list-item">
-                                        <h2 class="my-1 text-sm font-medium">Occupation</h2>
-                                        <select class="tom-select w-full" autocomplete="off">
-                                            <option value="">Select a Occupation</option>
-                                            <option value="1">Frontend Developer</option>
-                                            <option value="2">Full Stack Developer</option>
-                                            <option value="3">Web Developer</option>
-                                        </select>
-                                    </li>
-
-                                    <li class="dropdown-list-item">
-                                        <h2 class="my-1 text-sm font-medium">Status</h2>
-                                        <select class="select">
-                                            <option value="">Select to Status</option>
-                                            <option value="1">Active</option>
-                                            <option value="2">Inactive</option>
-                                            <option value="2">Prospect</option>
-                                            <option value="2">Suspended</option>
-                                        </select>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <button class="btn bg-white font-medium shadow-sm dark:bg-slate-800">
-                            <i class="h-4" data-feather="upload"></i>
-                            <span class="hidden sm:inline-block">Export</span>
-                        </button>
-                    </div>
+                      
                     @can('user.create')
                         <a class="btn btn-primary" href="{{ route('admin.user.create') }}" role="button">
                             <i data-feather="plus" height="1rem" width="1rem"></i>

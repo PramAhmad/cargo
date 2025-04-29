@@ -160,15 +160,5 @@ export class SearchModal {
   }
 }
 
-const searchModal = {
-  init() {
-    const triggers = document.querySelectorAll('[data-trigger="search-modal"]');
-    const target = document.getElementById('search-modal');
 
-    triggers.forEach((trigger) => {
-      new SearchModal(trigger, target);
-    });
-  },
-};
 
-export default searchModal;

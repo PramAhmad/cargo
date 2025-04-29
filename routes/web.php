@@ -5,6 +5,7 @@ use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\MitraWarehouseController;
 use App\Http\Controllers\ProfileController as UserProfileController;
 use App\Http\Controllers\WarehouseProductController;
+use App\Models\Shipping;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,6 +38,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('customers', CustomerController::class);
     Route::resource('mitras', \App\Http\Controllers\MitraController::class);
     Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
+    Route::resource('shippings', \App\Http\Controllers\ShippingController::class);
 
 });
 Route::get('mitras/export', [\App\Http\Controllers\MitraController::class, 'export'])->name('mitras.export');

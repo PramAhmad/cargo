@@ -78,7 +78,6 @@
         <!-- Wrapper Ends -->
 
         <!-- Search Modal Start -->
-        <x-search-modal />
         <!-- Search Modal Ends -->
     </div>
 

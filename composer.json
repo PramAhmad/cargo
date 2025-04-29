@@ -30,6 +30,7 @@
     "laravel/pulse": "^1.0@beta",
     "laravel/sanctum": "^4.0",
     "laravel/tinker": "^2.8",
+    "maatwebsite/excel": "^3.1",
     "opcodesio/log-viewer": "^3.1",
     "predis/predis": "^2.2",
     "realrashid/sweet-alert": "^7.1",

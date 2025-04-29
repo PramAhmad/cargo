@@ -130,7 +130,35 @@
                 @endcan
             </ul>
         </li>
-        
+        <!-- Shipping -->
+<li>
+    <a href="javascript:void(0);"
+        class="sidebar-menu {{ request()->routeIs(['shippings.*']) ? 'active' : '' }}">
+        <span class="sidebar-menu-icon">
+            <i data-feather="truck"></i>
+        </span>
+        <span class="sidebar-menu-text">Shipping</span>
+        <span class="sidebar-menu-arrow">
+            <i data-feather="chevron-right"></i>
+        </span>
+    </a>
+    <ul class="sidebar-submenu">
+        @can('shipping.view')
+            <li>
+                <a href="{{ route('shippings.index') }}"
+                    class="sidebar-submenu-item {{ request()->routeIs('shippings.index') ? 'active' : '' }}">
+                    Shipping List</a>
+            </li>
+        @endcan
+        @can('shipping.create')
+            <li>
+                <a href="{{ route('shippings.create') }}"
+                    class="sidebar-submenu-item {{ request()->routeIs('shippings.create') ? 'active' : '' }}">
+                    Create Shipping</a>
+            </li>
+        @endcan
+    </ul>
+</li>
         <!-- Customer -->
         <li>
             <a href="javascript:void(0);"
