@@ -24,9 +24,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/customers/{customer}/banks', [CustomerController::class, 'getBanks']);
 
 // Mitra API routes
+Route::get('/mitras/{mitraId}', [MitraController::class, 'index']);
 Route::get('/mitras/{mitraId}/products', [MitraController::class, 'getProducts']);
 Route::get('/mitras/{mitraId}/warehouses', [MitraController::class, 'getWarehouses']);
 Route::get('/products/{productId}', [MitraController::class, 'getProductDetails']);
 Route::get('/shippings/generate-invoice', [ShippingController::class, 'generateInvoice']);
+Route::get('/warehouses/{warehouseId}', [WarehouseController::class, 'getWarehouseDetails']);
 Route::get('/warehouses/{warehouseId}/products', [WarehouseController::class, 'getProducts']);
 

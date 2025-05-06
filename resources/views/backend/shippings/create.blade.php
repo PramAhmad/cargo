@@ -17,24 +17,26 @@
                 </div>
             @endif
             
-            <div class="grid  grid-cols-4 gap-6">
-                <!-- Left Column: Shipping Information -->
-                <div class="col-span-3">
+            <div class="grid grid-cols-4 gap-6">
+                <!-- Left Column: Main Information -->
+                <div class="col-span-4">
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title">Informasi Kirim Barang</h5>
+                        <div class="card-header bg-primary-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+                            <h5 class="card-title flex items-center">
+                                <i class="fas fa-truck-loading mr-2 text-primary-500"></i>
+                                Informasi Kirim Barang
+                            </h5>
                         </div>
                         <div class="card-body p-6">
-                            <div class="grid grid-cols-2 gap-6">
-                                <!-- No Invoice -->
+                            <div class="grid grid-cols-2 gap-5">
+                                <!-- Row 1 -->
                                 <div class="col-span-1">
-                                    <label for="invoice" class="label mb-1">No Invoice</label>
+                                    <label for="invoice" class="label mb-1 text-sm font-medium">No Invoice</label>
                                     <input type="text" id="invoice" name="invoice" class="input" value="{{ $defaultInvoice }}" readonly>
                                 </div>
                                 
-                                <!-- Status -->
                                 <div class="col-span-1">
-                                    <label for="status" class="label label-required mb-1">Pilih Status</label>
+                                    <label for="status" class="label label-required mb-1 text-sm font-medium">Status</label>
                                     <select id="status" name="status" class="select" required>
                                         @foreach(\App\Enums\ShippingStatus::cases() as $status)
                                             <option value="{{ $status->value }}" {{ $status->value == \App\Enums\ShippingStatus::waiting->value ? 'selected' : '' }}>
@@ -44,10 +46,10 @@
                                     </select>
                                 </div>
                                 
-                                <!-- Customer -->
+                                <!-- Row 2 -->
                                 <div class="col-span-1">
-                                    <label for="customer_id" class="label label-required mb-1">Customer</label>
-                                    <select id="customer_id" name="customer_id" class="tom-select"  required>
+                                    <label for="customer_id" class="label label-required mb-1 text-sm font-medium">Customer</label>
+                                    <select id="customer_id" name="customer_id" class="tom-select" required>
                                         <option value="">Pilih Customer</option>
                                         @foreach($customers as $customer)
                                             <option value="{{ $customer->id }}" data-marketing-id="{{ $customer->marketing_id }}">
@@ -57,32 +59,30 @@
                                     </select>
                                 </div>
                                 
-                                <!-- Marketing -->
                                 <div class="col-span-1">
-                                    <label for="marketing_id" class="label label-required mb-1">Marketing</label>
+                                    <label for="marketing_id" class="label label-required mb-1 text-sm font-medium">Marketing</label>
                                     <select id="marketing_id" name="marketing_id" class="select" required disabled>
                                         <option value="">Pilih Marketing</option>
                                         @foreach($marketings as $marketing)
-                                            <option value="{{ $marketing->id }}">{{ $marketing->name }}</option>
+                                            <option value="{{ $marketing->id }}" data-code="{{ $marketing->code ?? '' }}">{{ $marketing->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 
-                                <!-- Transaction Date -->
+                                <!-- Row 3 -->
                                 <div class="col-span-1">
-                                    <label for="transaction_date" class="label label-required mb-1">Tanggal Transaksi</label>
+                                    <label for="transaction_date" class="label label-required mb-1 text-sm font-medium">Tanggal Transaksi</label>
                                     <input type="date" id="transaction_date" name="transaction_date" class="input" value="{{ date('Y-m-d') }}" required>
                                 </div>
                                 
-                                <!-- Receipt Date -->
                                 <div class="col-span-1">
-                                    <label for="receipt_date" class="label mb-1">Tanggal Terima Barang</label>
+                                    <label for="receipt_date" class="label mb-1 text-sm font-medium">Tanggal Terima Barang</label>
                                     <input type="date" id="receipt_date" name="receipt_date" class="input" max="{{ date('Y-m-d') }}">
                                 </div>
                                 
-                                <!-- Payment Type -->
+                                <!-- Row 4 -->
                                 <div class="col-span-1">
-                                    <label for="payment_type" class="label label-required mb-1">Pembayaran</label>
+                                    <label for="payment_type" class="label label-required mb-1 text-sm font-medium">Pembayaran</label>
                                     <select id="payment_type" name="payment_type" class="select" required>
                                         @foreach(\App\Enums\PaymentType::cases() as $paymentType)
                                             <option value="{{ $paymentType->value }}" {{ $paymentType->value == \App\Enums\PaymentType::Transfer->value ? 'selected' : '' }}>
@@ -92,247 +92,65 @@
                                     </select>
                                 </div>
                                 
-                                <!-- Stuffing Date -->
                                 <div class="col-span-1">
-                                    <label for="stuffing_date" class="label mb-1">Tanggal Stuffing</label>
+                                    <label for="stuffing_date" class="label mb-1 text-sm font-medium">Tanggal Stuffing</label>
                                     <input type="date" id="stuffing_date" name="stuffing_date" class="input" max="{{ date('Y-m-d') }}">
                                 </div>
                                 
-                                <!-- TOP -->
+                                <!-- Row 5 -->
                                 <div class="col-span-1">
-                                    <label for="top" class="label mb-1">Term of Payment (TOP) (Hari)</label>
+                                    <label for="top" class="label mb-1 text-sm font-medium">Term of Payment (Hari)</label>
                                     <input type="number" id="top" name="top" class="input" min="0">
                                 </div>
                                 
-                                <!-- Due Date -->
                                 <div class="col-span-1">
-                                    <label for="due_date" class="label mb-1">Tanggal Jatuh Tempo</label>
+                                    <label for="due_date" class="label mb-1 text-sm font-medium">Tanggal Jatuh Tempo</label>
                                     <input type="date" id="due_date" name="due_date" class="input">
                                 </div>
                                 
-                                <!-- Description -->
+                                <!-- Row 6 -->
                                 <div class="col-span-1">
-                                    <label for="description" class="label mb-1">Keterangan</label>
-                                    <textarea id="description" name="description" class="textarea" rows="3" placeholder="Keterangan"></textarea>
-                                </div>
-                                <div class="col-span-1">
-                                    <label for="service" class="label mb-1">Layanan</label>
+                                    <label for="service" class="label mb-1 text-sm font-medium">Layanan</label>
                                     <select id="service" name="service" class="select">
                                         <option value="">Pilih Layanan</option>
                                         <option value="SEA">SEA</option>
                                         <option value="AIR">AIR</option>
                                     </select>
                                 </div>
-                                <!-- Bank -->
+                                
                                 <div class="col-span-1">
-                                    <label for="bank_id" class="label mb-1">Bank</label>
+                                    <label for="bank_id" class="label mb-1 text-sm font-medium">Bank</label>
                                     <select id="bank_id" name="bank_id" class="select">
                                         <option value="">Pilih Bank</option>
-                                     
                                     </select>
                                 </div>
-                            
-                   
-                               
+                                
+                                <!-- Row 7 -->
+                                <div class="col-span-2">
+                                    <label for="description" class="label mb-1 text-sm font-medium">Keterangan</label>
+                                    <textarea id="description" name="description" class="textarea" rows="2" placeholder="Keterangan pengiriman"></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Right Column: Detail & Biaya -->
-                <div class="col-span-1">
-                    <div class="card">
-                        <div class="card-header py-2">
-                            <h5 class="card-title text-sm">Detail Total Barang & Biaya</h5>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="grid grid-cols-1 gap-2">
-                                <div class="grid grid-cols-2 gap-2 mb-2">
-                                    <div class="col-span-1 text-center font-medium text-gray-600 dark:text-gray-400 text-xs">
-                                        Carton
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="text" id="carton_display" class="input input-sm h-7 text-right text-xs" value="0,00" readonly>
-                                    </div>
-
-                                    <div class="col-span-1 text-center font-medium text-gray-600 dark:text-gray-400 text-xs">
-                                        Gross Weight
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="text" id="gw_display" class="input input-sm h-7 text-right text-xs" value="0,00" readonly>
-                                    </div>
-
-                                    <div class="col-span-1 text-center font-medium text-gray-600 dark:text-gray-400 text-xs">
-                                        Volume
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="text" id="volume_display" class="input input-sm h-7 text-right text-xs" value="0,00" readonly>
-                                    </div>
-
-                                    <div class="col-span-1 text-center font-medium text-gray-600 dark:text-gray-400 text-xs">
-                                        CBM
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="text" id="cbm_display" class="input input-sm h-7 text-right text-xs" value="0,00" readonly>
-                                    </div>
-                                </div>
-
-                                <hr class="border-gray-200 dark:border-gray-700 my-1">
-                                
-                                <!-- Sup Agent -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="sup_agent" class="label mb-0 text-xs col-span-2">Sup-Agent</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="sup_agent" name="sup_agent" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Cukai -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="cukai" class="label mb-0 text-xs col-span-2">Cukai</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="cukai" name="cukai" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Tbh Bayar -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="tbh" class="label mb-0 text-xs col-span-2">Tbh Bayar</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="tbh" name="tbh" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- PPnBM -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="ppnbm" class="label mb-0 text-xs col-span-2">PPnBM</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="ppnbm" name="ppnbm" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Freight -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="freight" class="label mb-0 text-xs col-span-2">Freight</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="freight" name="freight" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- DO -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="do" class="label mb-0 text-xs col-span-2">DO</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="do" name="do" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- PFPD -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="pfpd" class="label mb-0 text-xs col-span-2">PFPD</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="pfpd" name="pfpd" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Charge TT -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="charge" class="label mb-0 text-xs col-span-2">Charge TT</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="charge" name="charge" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Jkt-Sda -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="jkt_sda" class="label mb-0 text-xs col-span-2">Jkt-Sda</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="jkt_sda" name="jkt_sda" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Sda-User -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="sda_user" class="label mb-0 text-xs col-span-2">Sda-User</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="sda_user" name="sda_user" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Jasa Bkr -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="bkr" class="label mb-0 text-xs col-span-2">Jasa Bkr</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="bkr" name="bkr" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <!-- Asuransi -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="asuransi" class="label mb-0 text-xs col-span-2">Asuransi</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="asuransi" name="asuransi" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
-                                    </div>
-                                </div>
-                                
-                                <hr class="border-gray-200 dark:border-gray-700 my-1">
-                                
-                                <!-- Nilai Barang -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="nilai" class="label mb-0 text-xs col-span-2">Nilai Barang</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="nilai" name="nilai" class="input input-sm h-7 pl-6 text-right text-xs money-mask" readonly>
-                                    </div>
-                                </div>
-                                
-                                <!-- Nilai Brg + Biaya -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="nilai_biaya" class="label mb-0 text-xs col-span-2">Nilai + Biaya</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="nilai_biaya" name="nilai_biaya" class="input input-sm h-7 pl-6 text-right text-xs money-mask" readonly>
-                                    </div>
-                                </div>
-                                
-                                <!-- Murni Biaya -->
-                                <div class="grid grid-cols-5 gap-1 items-center">
-                                    <label for="biaya" class="label mb-0 text-xs col-span-2">Murni Biaya</label>
-                                    <div class="relative col-span-3">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                                        <input type="text" id="biaya" name="biaya" class="input input-sm h-7 pl-6 text-right text-xs money-mask" readonly>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              
             </div>
-            
-            <!-- Tax Information -->
-         
             
             <!-- Barang Section -->
             <div class="card mt-5">
-                <div class="card-header">
-                    <h5 class="card-title">Input Barang</h5>
+                <div class="card-header bg-primary-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+                    <h5 class="card-title flex items-center">
+                        <i class="fas fa-boxes mr-2 text-primary-500"></i>
+                        Input Barang
+                    </h5>
                 </div>
                 <div class="card-body p-6">
                     <div class="grid grid-cols-12 gap-6">
                         <div class="col-span-6">
-                            <label for="mitra_id" class="label label-required mb-1">Mitra</label>
+                            <label for="mitra_id" class="label label-required mb-1 text-sm font-medium">Mitra</label>
                             <select id="mitra_id" name="mitra_id" class="tom-select" required>
                                 <option value="">Pilih Mitra</option>
                                 @foreach($mitras as $mitra)
@@ -341,33 +159,34 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="text-sm text-amber-600 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Pilih mitra untuk menampilkan kode marking
-                            </p>
                         </div>
                         
                         <!-- Warehouse -->
                         <div class="col-span-6">
-                            <label for="warehouse_id" class="label label-required mb-1">Gudang</label>
+                            <label for="warehouse_id" class="label label-required mb-1 text-sm font-medium">Gudang</label>
                             <select id="warehouse_id" name="warehouse_id" class="select" required disabled>
                                 <option value="">Pilih Gudang</option>
                             </select>
-                            <p class="text-sm text-gray-500 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Pilih gudang untuk melihat barang yang tersedia
-                            </p>
                         </div>
                         
                         <!-- Kode Marking -->
                         <div class="col-span-4">
-                            <label for="marking" class="label mb-1">Kode Marking</label>
-                            <input type="text" id="marking" name="marking" class="input" readonly>
+                            <label for="marking" class="label mb-1 text-sm font-medium">Kode Marking</label>
+                            <div class="relative">
+                                <input type="text" id="marking" name="marking" class="input">
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 text-sm">
+                                    <i class="fas fa-tag text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-amber-600 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Format: [MitraCode]/[MarketingCode]/[SEA atau AIR]
+                            </p>
                         </div>
                         
                         <!-- Jenis Kiriman -->
                         <div class="col-span-4">
-                            <label for="shipping_type" class="label label-required mb-1">Jenis Kiriman</label>
+                            <label for="shipping_type" class="label label-required mb-1 text-sm font-medium">Jenis Kiriman</label>
                             <select id="shipping_type" name="shipping_type" class="select" required>
                                 @foreach(\App\Enums\ShippingType::cases() as $type)
                                     <option value="{{ $type->value }}" {{ $type->value == \App\Enums\ShippingType::LCL->value ? 'selected' : '' }}>
@@ -375,27 +194,23 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="text-sm text-gray-500 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Nomor invoice akan otomatis terbentuk sesuai jenis kiriman
-                            </p>
                         </div>
                         
                         <!-- Supplier -->
                         <div class="col-span-4">
-                            <label for="supplier" class="label label-required mb-1">Supplier</label>
+                            <label for="supplier" class="label label-required mb-1 text-sm font-medium">Supplier</label>
                             <input type="text" id="supplier" name="supplier" class="input" required>
                         </div>
                         
                         <!-- Invoice File -->
                         <div class="col-span-6">
-                            <label for="invoice_file" class="label mb-1">Invoice File</label>
+                            <label for="invoice_file" class="label mb-1 text-sm font-medium">Invoice File</label>
                             <input type="file" id="invoice_file" name="invoice_file" class="input" accept="application/pdf,image/*">
                         </div>
                         
                         <!-- Package List File -->
                         <div class="col-span-6">
-                            <label for="packagelist_file" class="label label-required mb-1">Package List File</label>
+                            <label for="packagelist_file" class="label label-required mb-1 text-sm font-medium">Package List File</label>
                             <input type="file" id="packagelist_file" name="packagelist_file" class="input" accept="application/pdf,image/*" required>
                         </div>
                     </div>
@@ -404,13 +219,18 @@
 
             <!-- Available Warehouse Products -->
             <div id="warehouseProductsSection" class="card mt-4 hidden">
-                <div class="card-header bg-blue-50 dark:bg-slate-800">
-                    <h5 class="card-title">Barang Tersedia di Gudang</h5>
-                    <div class="mt-2 relative">
-                        <input type="text" id="product_search" class="input" placeholder="Cari barang...">
-                        <span class="absolute inset-y-0 right-0 flex items-center pr-3">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </span>
+                <div class="card-header bg-blue-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600">
+                    <div class="flex justify-between items-center">
+                        <h5 class="card-title flex items-center">
+                            <i class="fas fa-cubes mr-2 text-blue-500"></i>
+                            Barang Tersedia di Gudang
+                        </h5>
+                        <div class="w-1/3 relative">
+                            <input type="text" id="product_search" class="input input-sm pl-8" placeholder="Cari barang...">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -421,7 +241,6 @@
                                     <th>Nama Barang</th>
                                     <th class="text-center">Harga/KG</th>
                                     <th class="text-center">Harga/CBM</th>
-                                    <th class="text-center">Stock</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -442,98 +261,397 @@
                 </div>
             </div>
 
-            <!-- List Barang Table -->
-            <div class="card">
-                <div class="card-header bg-primary-50 dark:bg-slate-700">
-                    <h5 class="card-title">Transaksi</h5>
+            <!-- List Barang Cards -->
+            <div class="card mt-5">
+                <div class="card-header bg-primary-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+                    <h5 class="card-title flex items-center">
+                        <i class="fas fa-shopping-cart mr-2 text-primary-500"></i>
+                        Daftar Barang Transaksi
+                    </h5>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-4">
                     <div class="overflow-x-auto">
-                        <table class="table-default">
+                        <table class="table-default" id="productTransactionTable">
                             <thead>
-                                <tr class="bg-red-600 text-white">
-                                    <th class="text-center">NO</th>
+                                <tr class="bg-gray-100 dark:bg-slate-700">
+                                    <th class="text-center" width="80px">Gambar</th>
                                     <th>Nama Barang</th>
-                                    <th class="text-center">FOTO</th>
-                                    <th class="text-center">CTN / NO</th>
-                                    <th class="text-center">QTY / CTN</th>
-                                    <th class="text-center">CTNS</th>
-                                    <th class="text-center">QTY</th>
-                                    <th class="text-center">LENGTH</th>
-                                    <th class="text-center">WIDTH</th>
-                                    <th class="text-center">HIGH</th>
-                                    <th class="text-center">GW</th>
-                                    <th class="text-center">ACTION</th>
+                                    <th class="text-center" width="80px">CTN/NO</th>
+                                    <th class="text-center" width="80px">Qty/CTN</th>
+                                    <th class="text-center" width="80px">Total CTN</th>
+                                    <th class="text-center" width="80px">Total Qty</th>
+                                    <th class="text-center" width="60px">Panjang (cm)</th>
+                                    <th class="text-center" width="60px">Lebar (cm)</th>
+                                    <th class="text-center" width="60px">Tinggi (cm)</th>
+                                    <th class="text-center" width="100px">GW/CTN (kg)</th>
+                                    <th class="text-center" width="100px">Volume (m³)</th>
+                                    <th class="text-center" width="100px">Total GW (kg)</th>
+                                    <th class="text-center" width="100px">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="barangList">
-                                <!-- Dynamic rows will be added here -->
+                                <!-- Product items will be added here -->
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 py-5">
-                <div class="card">
-                    <div class="card-body p-6">
-                        <div class="grid grid-cols-2 gap-6">
-                            <!-- PPH Pasal 22 -->
-                            <div class="col-span-1">
-                                <label for="pph" class="label mb-1">PPH Pasal 22</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-                                    <input type="text" id="pph" name="pph" class="input pl-10 text-right money-mask" data-calculate-total="true">
-                                </div>
-                            </div>
                             
-                            <!-- Biaya Kirim -->
-                            <div class="col-span-1">
-                                <label for="biaya_kirim" class="label mb-1">Biaya Kirim (Total sblm pajak)</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-                                    <input type="text" id="biaya_kirim" name="biaya_kirim" class="input pl-10 text-right money-mask" data-calculate-total="true">
-                                </div>
-                            </div>
-                            
-                            <!-- PPN -->
-                            <div class="col-span-1 flex items-end">
-                                <div class="w-full">
-                                    <label for="ppn" class="label mb-1">PPN</label>
-                                    <div class="relative">
-                                        <input type="text" id="ppn" name="ppn" class="input pr-8 text-right" value="{{ $ppn }}" data-calculate-total="true">
-                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- PPN Total -->
-                            <div class="col-span-1">
-                                <label for="ppn_total" class="label mb-1">PPN (Total)</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-                                    <input type="text" id="ppn_total" name="ppn_total" class="input pl-10 text-right money-mask" readonly data-calculate-total="true">
-                                </div>
-                            </div>
-                            
-                            <!-- Nomor Faktur Pajak -->
-                            <div class="col-span-2">
-                                <label for="pajak" class="label mb-1">Nomor Faktur Pajak</label>
-                                <input type="text" id="pajak" name="pajak" class="input" placeholder="Input manual">
-                            </div>
-                            
-                            <!-- Grand Total -->
-                            <div class="col-span-2">
-                                <label for="grand_total" class="label mb-1 font-semibold">Grand Total</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
-                                    <input type="text" id="grand_total" name="grand_total" class="input pl-10 text-right text-lg font-bold money-mask" readonly>
-                                </div>
+                        <!-- Empty state message -->
+                        <div id="emptyProductState" class="text-center py-8">
+                            <div class="text-gray-400 dark:text-gray-500">
+                                <i class="fas fa-box-open text-4xl mb-2"></i>
+                                <p>Belum ada barang yang ditambahkan</p>
+                                <p class="text-sm">Pilih barang dari daftar di atas untuk menambahkan</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Submit Button -->
+
+            <!-- Shipping Cost Calculation Card - Hapus tombol "Terapkan Biaya Kirim" -->
+<div class="card mt-4" id="shippingCostCalculationCard">
+    <div class="card-header bg-green-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+        <h5 class="card-title flex items-center">
+            <i class="fas fa-calculator mr-2 text-green-500"></i>
+            Kalkulasi Ongkir
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <!-- Calculation methods -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+            <!-- Volume-based Calculation -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30 p-4">
+                <div class="flex items-center mb-2">
+                    <h6 class="text-sm font-medium flex items-center">
+                        <i class="fas fa-cube mr-2 text-blue-500"></i>
+                        Perhitungan Berdasarkan Volume
+                    </h6>
+                </div>
+                
+                <div class="grid grid-cols-12 gap-2 mb-3">
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Total Volume (m³)</div>
+                        <div class="font-medium" id="total_volume_display">0,00</div>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Harga per CBM</div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
+                            <input type="number" id="harga_ongkir_cbm" name="harga_ongkir_cbm" class="input input-sm h-7 pl-6 text-right" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Biaya Volume</div>
+                        <div class="font-medium text-blue-600" id="volume_cost_display">Rp 0,00</div>
+                    </div>
+                </div>
+                
+                <div class="text-xs text-blue-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Rumus: Total Volume (m³) × Harga per CBM
+                </div>
+            </div>
+            
+            <!-- Weight-based Calculation -->
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800/30 p-4">
+                <div class="flex items-center mb-2">
+                    <h6 class="text-sm font-medium flex items-center">
+                        <i class="fas fa-weight mr-2 text-green-500"></i>
+                        Perhitungan Berdasarkan Berat
+                    </h6>
+                </div>
+                
+                <div class="grid grid-cols-12 gap-2 mb-3">
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Total Berat (kg)</div>
+                        <div class="font-medium" id="total_weight_display">0,00</div>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Harga per KG</div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
+                            <input type="number" id="harga_ongkir_wg" name="harga_ongkir_wg" class="input input-sm h-7 pl-6 text-right" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="col-span-4">
+                        <div class="text-xs text-gray-500 mb-1">Biaya Berat</div>
+                        <div class="font-medium text-green-600" id="weight_cost_display">Rp 0,00</div>
+                    </div>
+                </div>
+                
+                <div class="text-xs text-green-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Rumus: Total Berat (kg) × Harga per KG
+                </div>
+            </div>
+        </div>
+        
+        <!-- Selected calculation method info -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800/30">
+            <div class="flex items-start">
+                <div class="mr-3 text-blue-500">
+                    <i class="fas fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-blue-800 dark:text-blue-400 mb-1">Metode Perhitungan yang Digunakan</div>
+                    <div class="text-xs text-blue-700 dark:text-blue-500" id="used_calculation_message">
+                        Menunggu kalkulasi...
+                    </div>
+                    <div class="text-xs text-blue-600 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <strong>Regulasi perhitungan:</strong> Jika total berat ≤ batas maksimum, menggunakan metode Volume. Jika total berat > batas maksimum, menggunakan metode Berat.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total shipping cost - Tanpa tombol terapkan, hanya tampilan -->
+        <div class="mt-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label for="selected_shipping_cost" class="text-sm font-medium">Total Biaya Kirim (Otomatis tersimpan)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
+                        <input type="text" id="selected_shipping_cost" name="selected_shipping_cost" class="input pl-10 text-right font-bold bg-gray-100 dark:bg-gray-800" readonly>
+                        <input type="hidden" id="calculation_method_used" name="calculation_method_used" value="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            
+            <!-- Informasi max weight -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-100 dark:border-yellow-800/30 mt-3 mb-3">
+                <div class="flex items-start">
+                    <div class="mr-3 text-yellow-500">
+                        <i class="fas fa-exclamation-triangle text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-1">Batas Maksimum Berat</div>
+                        <div class="text-xs text-yellow-700 dark:text-yellow-500" id="max_weight_info">
+                            Batas maksimum berat: <span id="max_weight_display">0,00</span> kg
+                            <input type="hidden" id="max_weight" name="max_weight" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+<div class="grid grid-cols-3 gap-4 py-5">
+    <!-- Left: Tax Information -->
+    <div class="col-span-2">
+        <div class="card h-full">
+            <div class="card-header bg-primary-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+                <h5 class="card-title flex items-center">
+                    <i class="fas fa-file-invoice-dollar mr-2 text-primary-500"></i>
+                    Informasi Pajak & Total
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label for="pph" class="label mb-1 text-sm font-medium">PPH Pasal 22</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
+                            <input type="text" id="pph" name="pph" class="input pl-10 text-right money-mask" data-calculate-total="true">
+                        </div>
+                    </div>
+                    
+                    <!-- PPN -->
+                    <div class="col-span-1">
+                        <label for="ppn" class="label mb-1 text-sm font-medium">PPN</label>
+                        <div class="relative">
+                            <input type="text" id="ppn" name="ppn" class="input pr-8 text-right" value="{{ $ppn }}" data-calculate-total="true">
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- PPN Total -->
+                    <div class="col-span-1">
+                        <label for="ppn_total" class="label mb-1 text-sm font-medium">PPN (Total)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
+                            <input type="text" id="ppn_total" name="ppn_total" class="input pl-10 text-right bg-gray-50 dark:bg-gray-800 money-mask" readonly data-calculate-total="true">
+                        </div>
+                    </div>
+                    
+                    <!-- Biaya Kirim -->
+                    <div class="col-span-1">
+                        <label for="biaya_kirim" class="label mb-1 text-sm font-medium">Biaya Kirim</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
+                            <input type="text" id="biaya_kirim" name="biaya_kirim" class="input pl-10 text-right bg-gray-50 dark:bg-gray-800 money-mask" readonly data-calculate-total="true">
+                        </div>
+                    </div>
+                    
+                    <!-- Nomor Faktur Pajak -->
+                    <div class="col-span-2">
+                        <label for="pajak" class="label mb-1 text-sm font-medium">Nomor Faktur Pajak</label>
+                        <input type="text" id="pajak" name="pajak" class="input" placeholder="Input manual">
+                    </div>
+                    
+                    <!-- Grand Total -->
+                    <div class="col-span-3 mt-4">
+                        <label for="grand_total" class="label mb-1 font-semibold">Grand Total</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
+                            <input type="text" id="grand_total" name="grand_total" class="input pl-10 text-right text-lg font-bold bg-blue-50 dark:bg-slate-700 money-mask" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right: Details and Cost -->
+    <div class="col-span-1">
+        <div class="card h-full">
+            <div class="card-header py-3 bg-primary-50 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+                <h5 class="card-title text-sm flex items-center">
+                    <i class="fas fa-calculator mr-2 text-primary-500"></i>
+                    Detail Total & Biaya
+                </h5>
+            </div>
+            <div class="card-body p-3">
+                <!-- Total Shipping Summary -->
+                <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 mb-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="col-span-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            Carton
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <input type="text" id="carton_display" class="input input-sm h-7 w-full text-right text-xs bg-gray-50 dark:bg-gray-800" value="0,00" readonly>
+                        </div>
+
+                        <div class="col-span-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            Gross Weight
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <input type="text" id="gw_display" class="input input-sm h-7 w-full text-right text-xs bg-gray-50 dark:bg-gray-800" value="0,00" readonly>
+                        </div>
+
+                        <div class="col-span-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            Volume
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <input type="text" id="volume_display" class="input input-sm h-7 w-full text-right text-xs bg-gray-50 dark:bg-gray-800" value="0,00" readonly>
+                        </div>
+
+                        <div class="col-span-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            CBM
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <input type="text" id="cbm_display" class="input input-sm h-7 w-full text-right text-xs bg-gray-50 dark:bg-gray-800" value="0,00" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fee Components Section with Ringkasan Biaya Integrated -->
+                <div class="bg-blue-50 dark:bg-slate-800 rounded-md p-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <h6 class="text-xs font-medium text-blue-600 dark:text-blue-400">Komponen Biaya</h6>
+                        <div class="text-xs text-gray-500 italic">
+                            Nilai Barang: <span id="nilai_simple" class="font-medium">Rp 0,00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Individual fee components - Compact Grid -->
+                    <div class="space-y-1">
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Sup-Agent</span>
+                                <input type="text" id="sup_agent" name="sup_agent" class="input input-sm h-7 pl-16 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Cukai</span>
+                                <input type="text" id="cukai" name="cukai" class="input input-sm h-7 pl-10 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Tbh</span>
+                                <input type="text" id="tbh" name="tbh" class="input input-sm h-7 pl-8 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">PPnBM</span>
+                                <input type="text" id="ppnbm" name="ppnbm" class="input input-sm h-7 pl-10 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Freight</span>
+                                <input type="text" id="freight" name="freight" class="input input-sm h-7 pl-11 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">DO</span>
+                                <input type="text" id="do" name="do" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">PFPD</span>
+                                <input type="text" id="pfpd" name="pfpd" class="input input-sm h-7 pl-9 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Charge</span>
+                                <input type="text" id="charge" name="charge" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Jkt-Sda</span>
+                                <input type="text" id="jkt_sda" name="jkt_sda" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Sda-User</span>
+                                <input type="text" id="sda_user" name="sda_user" class="input input-sm h-7 pl-14 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Jasa Bkr</span>
+                                <input type="text" id="bkr" name="bkr" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Asuransi</span>
+                                <input type="text" id="asuransi" name="asuransi" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Biaya footer -->
+                    <div class="mt-2 pt-2 border-t border-blue-200 dark:border-slate-700">
+                        <div class="grid grid-cols-2 gap-1 items-center">
+                            <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Total Murni Biaya</div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
+                                <input type="text" id="biaya" name="biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 font-medium money-mask" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-1 items-center mt-1">
+                            <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Nilai + Biaya</div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
+                                <input type="text" id="nilai_biaya" name="nilai_biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 money-mask" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="nilai" name="nilai" value="0">
+                <input type="hidden" id="selected_shipping_cost" name="selected_shipping_cost" value="0">
+                <input type="hidden" id="calculation_method_used" name="calculation_method_used" value="">
+            </div>
+        </div>
+    </div>
+</div>
+
+
             <div class="flex justify-end mt-6">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i> Simpan
@@ -662,534 +780,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Initialize Select2
-        $('.select2').select2({
-            width: '100%',
-            theme: document.documentElement.classList.contains('dark') ? 'classic' : 'default'
-        });
-        
-        // Initialize money inputs for formatting
-        function initMoneyInputs() {
-            $('.money-mask').each(function() {
-                new Cleave(this, {
-                    numeral: true,
-                    numeralThousandsGroupStyle: 'thousand',
-                    numeralDecimalMark: ',',
-                    delimiter: '.'
-                });
-            });
-        }
-        
-        initMoneyInputs();
-        
-        // Helper functions for number formatting/parsing
-        function formatNumber(number) {
-            if (!number) return '0,00';
-            return parseFloat(number).toLocaleString('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        
-        function parseNumberFromFormatted(formattedNumber) {
-            if (!formattedNumber) return 0;
-            return parseFloat(formattedNumber.replace(/\./g, '').replace(',', '.'));
-        }
-        
-        function normalizeNumber(formattedNumber) {
-            return parseNumberFromFormatted(formattedNumber).toString();
-        }
-        
-        // Initialize variables
-        let detailCounter = 0;
-        let warehouseProducts = [];
-        let currentPage = 1;
-        let itemsPerPage = 10;
-        let filteredProducts = [];
-        
-        $('#customer_id').on('change', function() {
-            const customerId = $(this).val();
-            const marketingId = $(this).find('option:selected').data('marketing-id');
-            
-            if (marketingId) {
-                $('#marketing_id').val(marketingId);
-            } else {
-                $('#marketing_id').val('').prop('disabled', true);
-            }
-            
-            if (customerId) {
-                $.get(`/api/customers/${customerId}/banks`, function(data) {
-                    const bankSelect = $('#bank_id');
-                    bankSelect.empty().append('<option value="">Pilih Bank</option>');
-                    
-                    if (data.length > 0) {
-                        data.forEach(bank => {
-                            const isDefault = bank.is_default ? ' (Default)' : '';
-                            bankSelect.append(`
-                                <option value="${bank.id}" ${bank.is_default ? 'selected' : ''}>
-                                    ${bank.bank.name} - ${bank.rek_name} - ${bank.rek_no}${isDefault}
-                                </option>
-                            `);
-                        });
-                    } else {
-                        bankSelect.append('<option value="" disabled>Customer tidak memiliki rekening bank</option>');
-                    }
-                });
-            } else {
-                $('#bank_id').empty().append('<option value="">Pilih Bank</option>');
-            }
-        });
-        
-        // Handle mitra selection to load warehouses
-        $('#mitra_id').on('change', function() {
-            const mitraId = $(this).val();
-            const markingCode = $(this).find('option:selected').data('marking-code') || '';
-            
-            $('#marking').val(markingCode);
-            
-            if (mitraId) {
-                // Load warehouses for this mitra
-                $.get(`/api/mitras/${mitraId}/warehouses`, function(data) {
-                    const warehouseSelect = $('#warehouse_id');
-                    warehouseSelect.empty().append('<option value="">Pilih Gudang</option>');
-                    
-                    data.forEach(warehouse => {
-                        warehouseSelect.append(`<option value="${warehouse.id}">${warehouse.name} - ${warehouse.products_count} item</option>`);
-                    });
-                    
-                    warehouseSelect.prop('disabled', false);
-                });
-                
-                // Hide the warehouse products section when mitra changes
-                $('#warehouseProductsSection').addClass('hidden');
-                $('#warehouseProductsList').empty();
-            } else {
-                $('#warehouse_id').empty().append('<option value="">Pilih Gudang</option>').prop('disabled', true);
-                $('#warehouseProductsSection').addClass('hidden');
-            }
-        });
-        
-        // Handle warehouse selection to load products and warehouse details
-        $('#warehouse_id').on('change', function() {
-            const warehouseId = $(this).val();
-            
-            // Clear the existing product list in the red table
-            $('#barangList').empty();
-            // Reset counters and totals
-            detailCounter = 0;
-            calculateTotals();
-            
-            if (warehouseId) {
-                // Load warehouse details
-                $.get(`/api/warehouses/${warehouseId}`, function(warehouse) {
-                    // Create and show warehouse info box if it doesn't exist
-                    if ($('#warehouse_info').length === 0) {
-                        const warehouseInfoHTML = `
-                            <div id="warehouse_info" class="mt-2 p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md">
-                                <h6 class="font-semibold mb-1">Informasi Gudang:</h6>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div><span class="font-medium">Nama:</span> ${warehouse.name}</div>
-                                    <div><span class="font-medium">Tipe:</span> ${warehouse.type || 'N/A'}</div>
-                                    <div class="col-span-2"><span class="font-medium">Alamat:</span> ${warehouse.address || 'N/A'}</div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Add warehouse info after the warehouse select
-                        $('#warehouse_id').closest('div').append(warehouseInfoHTML);
-                    } else {
-                        // Update existing warehouse info
-                        $('#warehouse_info').html(`
-                            <h6 class="font-semibold mb-1">Informasi Gudang:</h6>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div><span class="font-medium">Nama:</span> ${warehouse.name}</div>
-                                <div><span class="font-medium">Tipe:</span> ${warehouse.type || 'N/A'}</div>
-                                <div class="col-span-2"><span class="font-medium">Alamat:</span> ${warehouse.address || 'N/A'}</div>
-                            </div>
-                        `);
-                    }
-                });
-                
-                // Load products for this warehouse
-                $.get(`/api/warehouses/${warehouseId}/products`, function(data) {
-                    warehouseProducts = data;
-                    filteredProducts = [...warehouseProducts];
-                    currentPage = 1;
-                    
-                    // Show the warehouse products section
-                    $('#warehouseProductsSection').removeClass('hidden');
-                    
-                    // Render products with pagination
-                    renderProducts();
-                });
-            } else {
-                // Remove warehouse info box if no warehouse selected
-                $('#warehouse_info').remove();
-                $('#warehouseProductsSection').addClass('hidden');
-            }
-        });
-        
-        // Search products
-        $('#product_search').on('input', function() {
-            const searchTerm = $(this).val().toLowerCase().trim();
-            
-            if (searchTerm === '') {
-                filteredProducts = [...warehouseProducts];
-            } else {
-                filteredProducts = warehouseProducts.filter(product => 
-                    product.name.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            currentPage = 1;
-            renderProducts();
-        });
-        
-        // Render products with pagination
-        function renderProducts() {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-            
-            const productsList = $('#warehouseProductsList');
-            productsList.empty();
-            
-            if (paginatedProducts.length === 0) {
-                productsList.append(`<tr><td colspan="5" class="text-center py-4">Tidak ada barang tersedia</td></tr>`);
-            } else {
-                paginatedProducts.forEach(product => {
-                    productsList.append(`
-                        <tr data-product-id="${product.id}">
-                            <td>${product.name}</td>
-                            <td class="text-right">${formatNumber(product.price_kg)}</td>
-                            <td class="text-right">${formatNumber(product.price_cbm)}</td>
-                            <td class="text-center">${product.stock || 'N/A'}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-primary add-product-btn" data-product-id="${product.id}">
-                                    <i class="fas fa-plus mr-1"></i> Tambah
-                                </button>
-                            </td>
-                        </tr>
-                    `);
-                });
-            }
-            
-            // Update pagination info
-            $('#product-pagination-info').text(`Menampilkan ${startIndex + 1}-${Math.min(endIndex, filteredProducts.length)} dari ${filteredProducts.length} barang`);
-            
-            // Render pagination
-            renderPagination(totalPages);
-            
-            // Attach event listeners to add buttons
-            $('.add-product-btn').on('click', function() {
-                const productId = parseInt($(this).data('product-id'));
-                const product = warehouseProducts.find(p => p.id === productId);
-                if (product) {
-                    addProductToTable(product);
-                }
-            });
-        }
-        
-        // Render pagination controls
-        function renderPagination(totalPages) {
-            const pagination = $('#product-pagination');
-            pagination.empty();
-            
-            // Previous button
-            pagination.append(`
-                <button class="btn btn-sm ${currentPage === 1 ? 'btn-disabled' : 'btn-secondary'}" 
-                        ${currentPage === 1 ? 'disabled' : ''} data-page="prev">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            `);
-            
-            // Page numbers
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, startPage + 4);
-            
-            for (let i = startPage; i <= endPage; i++) {
-                pagination.append(`
-                    <button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-secondary'}" data-page="${i}">
-                        ${i}
-                    </button>
-                `);
-            }
-            
-            // Next button
-            pagination.append(`
-                <button class="btn btn-sm ${currentPage === totalPages ? 'btn-disabled' : 'btn-secondary'}" 
-                        ${currentPage === totalPages ? 'disabled' : ''} data-page="next">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            `);
-            
-            // Attach event listeners to pagination buttons
-            pagination.find('button').on('click', function() {
-                if ($(this).attr('disabled')) return;
-                
-                const page = $(this).data('page');
-                if (page === 'prev') {
-                    currentPage--;
-                } else if (page === 'next') {
-                    currentPage++;
-                } else {
-                    currentPage = page;
-                }
-                
-                renderProducts();
-            });
-        }
-        
-        // Add a product to the "List Barang" table
-        function addProductToTable(product) {
-            const rowIndex = detailCounter++;
-            const productImageUrl = product.image_url || '/images/no-image.jpg';
-            
-            const row = `
-                <tr data-index="${rowIndex}" data-product-id="${product.id}">
-                    <td class="text-center">${rowIndex + 1}</td>
-                    <td>${product.name}</td>
-                    <td class="text-center">
-                        <img src="${productImageUrl}" alt="${product.name}" class="h-10 w-10 rounded object-cover inline-block">
-                        <input type="file" name="barang[${rowIndex}][product_image]" class="hidden product-image-upload" accept="image/*">
-                        <button type="button" class="btn btn-xs btn-secondary upload-image-btn">
-                            <i class="fas fa-upload"></i>
-                        </button>
-                    </td>
-                    <td class="text-center">
-                        <input type="text" class="input input-sm" name="barang[${rowIndex}][ctn]" value="" placeholder="CTN">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm qty-per-ctn" name="barang[${rowIndex}][qty_per_ctn]" value="1" min="1" step="1">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm total-ctns" name="barang[${rowIndex}][ctns]" value="1" min="1" step="1">
-                    </td>
-                    <td class="text-center">
-                        <input type="text" class="input input-sm total-qty" name="barang[${rowIndex}][qty]" value="1" readonly>
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm dimension-input" name="barang[${rowIndex}][length]" value="" min="0.01" step="0.01" placeholder="L">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm dimension-input" name="barang[${rowIndex}][width]" value="" min="0.01" step="0.01" placeholder="W">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm dimension-input" name="barang[${rowIndex}][high]" value="" min="0.01" step="0.01" placeholder="H">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="input input-sm gw-per-ctn" name="barang[${rowIndex}][gw_per_ctn]" value="" min="0.01" step="0.01" placeholder="GW/CTN">
-                        <input type="hidden" class="total-gw" name="barang[${rowIndex}][total_gw]" value="0">
-                        <input type="hidden" class="volume" name="barang[${rowIndex}][volume]" value="0">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-icon btn-danger delete-barang">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <input type="hidden" name="barang[${rowIndex}][product_id]" value="${product.id}">
-                    </td>
-                </tr>
-            `;
-            
-            $('#barangList').append(row);
-            
-            // Attach event listeners to the new row
-            attachRowEventListeners($(`#barangList tr[data-index="${rowIndex}"]`));
-            
-            // Calculate totals
-            calculateTotals();
-        }
-        
-        // Attach event listeners to a row
-        function attachRowEventListeners(row) {
-            // Quantity calculations
-            row.find('.qty-per-ctn, .total-ctns').on('input', function() {
-                const qtyPerCtn = parseFloat(row.find('.qty-per-ctn').val()) || 0;
-                const totalCtns = parseFloat(row.find('.total-ctns').val()) || 0;
-                const totalQty = qtyPerCtn * totalCtns;
-                
-                row.find('.total-qty').val(totalQty);
-                
-                // Update GW if GW per CTN is set
-                const gwPerCtn = parseFloat(row.find('.gw-per-ctn').val()) || 0;
-                if (gwPerCtn > 0) {
-                    const totalGw = gwPerCtn * totalCtns;
-                    row.find('.total-gw').val(totalGw.toFixed(2));
-                }
-                
-                calculateTotals();
-            });
-            
-            // Dimension calculations for volume
-            row.find('.dimension-input').on('input', function() {
-                const length = parseFloat(row.find('input[name$="[length]"]').val()) || 0;
-                const width = parseFloat(row.find('input[name$="[width]"]').val()) || 0;
-                const height = parseFloat(row.find('input[name$="[high]"]').val()) || 0;
-                
-                // Volume in cubic meters (convert from cm to m)
-                const volumeCbm = (length * width * height) / 1000000;
-                row.find('.volume').val(volumeCbm.toFixed(6));
-                
-                calculateTotals();
-            });
-            
-            // GW calculations
-            row.find('.gw-per-ctn').on('input', function() {
-                const gwPerCtn = parseFloat($(this).val()) || 0;
-                const totalCtns = parseFloat(row.find('.total-ctns').val()) || 0;
-                const totalGw = gwPerCtn * totalCtns;
-                
-                row.find('.total-gw').val(totalGw.toFixed(2));
-                calculateTotals();
-            });
-            
-            // Image upload button click handler
-            row.find('.upload-image-btn').on('click', function() {
-                row.find('.product-image-upload').click();
-            });
-            
-            // Image file selected handler
-            row.find('.product-image-upload').on('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        row.find('img').attr('src', e.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // Delete button
-            row.find('.delete-barang').on('click', function() {
-                row.remove();
-                calculateTotals();
-            });
-        }
-        
-        // Delete barang from the list (event delegation for dynamically added elements)
-        $(document).on('click', '.delete-barang', function() {
-            $(this).closest('tr').remove();
-            calculateTotals();
-        });
-        
-        // Calculate total amounts
-        function calculateTotals() {
-            let totalCtns = 0;
-            let totalQty = 0;
-            let totalVolume = 0;
-            let totalGw = 0;
-            
-            $('#barangList tr').each(function() {
-                totalCtns += parseFloat($(this).find('.total-ctns').val()) || 0;
-                totalQty += parseFloat($(this).find('.total-qty').val()) || 0;
-                totalVolume += parseFloat($(this).find('.volume').val()) || 0;
-                totalGw += parseFloat($(this).find('.total-gw').val()) || 0;
-            });
-            
-            // Update display fields
-            $('#carton_display').val(formatNumber(totalCtns));
-            $('#gw_display').val(formatNumber(totalGw));
-            $('#volume_display').val(formatNumber(totalVolume));
-            $('#cbm_display').val(formatNumber(totalVolume)); // CBM is same as volume in m³
-            
-            // Update hidden inputs for form submission
-            $('#ctns_total').val(totalCtns);
-            $('#qty_total').val(totalQty);
-            $('#cbm_total').val(totalVolume);
-            $('#gw_total').val(totalGw);
-            
-            // Update calculation section
-            $('#gw_total_calc').val(formatNumber(totalGw));
-            $('#cbm_total_calc').val(formatNumber(totalVolume));
-            
-            // Recalculate pricing
-            calculateFees();
-        }
-        
-        // Calculate fees and biaya
-        function calculateFees() {
-            let totalFees = 0;
-            
-            $('[data-fee="true"]').each(function() {
-                totalFees += parseNumberFromFormatted($(this).val()) || 0;
-            });
-            
-            // Biaya is the total of all fees
-            $('#biaya').val(formatNumber(totalFees));
-            
-            // Calculate nilai_biaya
-            const nilaiBarang = parseNumberFromFormatted($('#nilai').val()) || 0;
-            $('#nilai_biaya').val(formatNumber(nilaiBarang + totalFees));
-            
-            // Update biaya kirim
-            $('#biaya_kirim').val(formatNumber(totalFees));
-            
-            // Update PPN and grand total
-            calculatePPN();
-            calculateGrandTotal();
-        }
-        
-        // Calculate PPN total
-        function calculatePPN() {
-            const biayaKirim = parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
-            const ppnRate = parseFloat($('#ppn').val()) || 0;
-            const ppnAmount = biayaKirim * (ppnRate / 100);
-            
-            $('#ppn_total').val(formatNumber(ppnAmount));
-        }
-        
-        // Calculate grand total
-        function calculateGrandTotal() {
-            const biayaKirim = parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
-            const pph = parseNumberFromFormatted($('#pph').val()) || 0;
-            const ppnTotal = parseNumberFromFormatted($('#ppn_total').val()) || 0;
-            
-            const grandTotal = biayaKirim + pph + ppnTotal;
-            $('#grand_total').val(formatNumber(grandTotal));
-        }
-        
-        // Fee calculation
-        $('[data-fee="true"]').on('input', calculateFees);
-        
-        // Tax calculations
-        $('#ppn, [data-calculate-total="true"]').on('input', function() {
-            calculatePPN();
-            calculateGrandTotal();
-        });
-        
-        // Handle shipping type change to update invoice number
-        $('#shipping_type').on('change', function() {
-            const shippingType = $(this).val();
-            $.get(`/api/shippings/generate-invoice?type=${shippingType}`, function(data) {
-                $('#invoice').val(data.invoice);
-            });
-        });
-        
-        // Handle TOP (Terms of Payment) change to calculate due date
-        $('#top, #transaction_date').on('change', function() {
-            const transactionDate = $('#transaction_date').val();
-            const top = parseInt($('#top').val()) || 0;
-            
-            if (transactionDate && top > 0) {
-                const dueDate = new Date(transactionDate);
-                dueDate.setDate(dueDate.getDate() + top);
-                
-                const year = dueDate.getFullYear();
-                const month = String(dueDate.getMonth() + 1).padStart(2, '0');
-                const day = String(dueDate.getDate()).padStart(2, '0');
-                
-                $('#due_date').val(`${year}-${month}-${day}`);
-            }
-        });
-        
-        // Initialize form
-        $('#shipping_type').trigger('change'); // Generate initial invoice number
-    });
-</script>
+<script src="{{ asset('js/shipping-form.js') }}"></script>
+
 @endpush
 </x-app-layout>
 

@@ -16,7 +16,8 @@ class Mitra extends Model
      * @var array
      */
     protected $fillable = [
-  
+  'harga_ongkir_wg',
+  'harga_ongkir_cbm',
         'mitra_group_id',
         'user_id',
         'code',
@@ -35,6 +36,7 @@ class Mitra extends Model
         'syarat_bayar',
         'batas_tempo',
         'status',
+        'max_wg'
     ];
 
     /**
@@ -155,5 +157,11 @@ public function defaultBank()
     public function warehouses()
     {
         return $this->hasMany(Warehouse::class);
+    }
+
+    // country
+    public function mitraCountry()
+    {
+        return $this->hasMany(CountryMitra::class);
     }
 }

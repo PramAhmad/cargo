@@ -29,7 +29,6 @@ class MitraController extends Controller
         
         $mitrasQuery = Mitra::with(['bank', 'mitraGroup', 'user']);
         
-        // Apply search filter if search term is provided
         if ($search) {
             $mitrasQuery->where(function($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -39,7 +38,6 @@ class MitraController extends Controller
             });
         }
         
-        // Apply group filter
         if ($groupFilter) {
             $mitrasQuery->where('mitra_group_id', $groupFilter);
         }
@@ -82,6 +80,9 @@ class MitraController extends Controller
             'phone2' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
+            'max_wg' => 'nullable|integer|min:0',
+            'harga_ongkir_cbm' => 'nullable|integer|min:0',
+            'harga_ongkir_wg' => 'nullable|integer|min:0',
             'ktp' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:20048',
             'npwp' => 'nullable|string|max:30',
             'tax_address' => 'nullable|string',
@@ -226,8 +227,12 @@ class MitraController extends Controller
         $banks = Bank::orderBy('name')->get();
         $mitraGroups = MitraGroup::orderBy('name')->get();
         $countries = $this->getCountriesList();
+        $warehouses = $mitra->warehouses()->with('countries')->get();
+        // return Mitra::with(['mitraCountry', 'mitraGroup', 'user'])
+        //     ->where('id', $mitra->id)
+        //     ->firstOrFail();
         
-        return view('backend.mitras.edit', compact('mitra', 'banks', 'mitraGroups', 'countries'));
+    return view('backend.mitras.edit', compact('mitra', 'banks', 'mitraGroups', 'countries','warehouses'));
     }
 
     /**
@@ -248,6 +253,9 @@ class MitraController extends Controller
             'website' => 'nullable|url|max:255',
             'ktp' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:20048', 
             'npwp' => 'nullable|string|max:30',
+            'max_wg' => 'nullable|integer|min:0',
+            'harga_ongkir_cbm' => 'nullable|integer|min:0',
+            'harga_ongkir_wg' => 'nullable|integer|min:0',
             'tax_address' => 'nullable|string',
             'birthdate' => 'nullable|date',
             'created_date' => 'nullable|date',
@@ -263,9 +271,7 @@ class MitraController extends Controller
             'deleted_bank_accounts' => 'nullable|array',
             'deleted_bank_accounts.*' => 'exists:mitra_banks,id',
         ];
-        
         $mitra = Mitra::findOrFail($id);
-        
         if ($request->has('create_account')) {
             if (!$mitra->user_id) {
                 $rules = array_merge($rules, [

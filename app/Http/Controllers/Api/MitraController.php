@@ -17,6 +17,18 @@ class MitraController extends Controller
      * @param int $mitraId
      * @return JsonResponse
      */
+
+    public function index(int $mitraId): JsonResponse
+    {
+        // Get the mitra
+        $mitra = Mitra::findOrFail($mitraId);
+        
+        // Get all products for this mitra
+
+        
+        return response()->json($mitra);
+    }
+
     public function getProducts(int $mitraId): JsonResponse
     {
         // Get the mitra

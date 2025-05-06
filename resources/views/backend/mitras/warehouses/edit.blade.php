@@ -36,6 +36,25 @@
                             </select>
                         </div>
                         
+                        <!-- Country Selection -->
+                        <div class="flex flex-col gap-1">
+                            <label class="label label-required mb-1 font-medium" for="country_name">Country</label>
+                            <select id="country_name" name="country_name" class="select" required>
+                                <option value="">Select Country</option>
+                                @foreach($countryNames as $countryName)
+                                    <option value="{{ $countryName }}" {{ old('country_name', $selectedCountryName) == $countryName ? 'selected' : '' }}>
+                                        {{ $countryName }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if(count($countryNames) == 0)
+                                <p class="text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    No countries available for this mitra. Please add countries first.
+                                </p>
+                            @endif
+                        </div>
+                        
                         <!-- Warehouse Address -->
                         <div class="flex flex-col gap-1 md:col-span-2">
                             <label class="label mb-1 font-medium" for="address">Warehouse Address</label>
@@ -48,7 +67,10 @@
                             <input type="file" class="input" id="address_photo" name="address_photo" accept="image/*" />
                             
                             @if($warehouse->address_photo)
-                                <img src="{{ asset($warehouse->address_photo) }}" class="max-w-[300px]" alt="Warehouse Image">
+                                <div class="mt-2">
+                                    <img src="{{ asset($warehouse->address_photo) }}" class="max-w-[300px] rounded-md border border-slate-200" alt="Warehouse Image">
+                                    <p class="text-xs text-slate-500 mt-1">Current warehouse image</p>
+                                </div>
                             @endif
                             
                             <p class="text-xs text-slate-500 mt-1">Upload an image of the warehouse location (JPEG, PNG, JPG, max 2MB)</p>

@@ -17,6 +17,10 @@ class Warehouse extends Model
         'mitra_id',
     ];
 
+    public function countries()
+    {
+        return $this->hasOne(CountryWarehouse::class);
+    }
     public function mitra()
     {
         return $this->belongsTo(Mitra::class);
@@ -32,4 +36,5 @@ class Warehouse extends Model
     {
         return $this->products()->count();
     }
+  
 }

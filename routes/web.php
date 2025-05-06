@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\MitraWarehouseController;
 use App\Http\Controllers\ProfileController as UserProfileController;
+use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\WarehouseProductController;
 use App\Models\Shipping;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,11 @@ Route::middleware('auth')->group(function () {
     
     Route::delete('/mitras/{mitra}/warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'destroy'])
         ->name('mitra.warehouses.products.destroy');
+    
+    // Shipping PDF Routes
+    Route::get('/shippings/{shipping}/surat-jalan', [ShippingController::class, 'suratJalan'])->name('shippings.surat-jalan');
+    Route::get('/shippings/{shipping}/faktur', [ShippingController::class, 'faktur'])->name('shippings.faktur');
+    Route::get('/shippings/{shipping}/invoice', [ShippingController::class, 'invoice'])->name('shippings.invoice');
 });
 
 require __DIR__.'/auth.php';

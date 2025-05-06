@@ -10,12 +10,21 @@ use Illuminate\Http\JsonResponse;
 
 class WarehouseController extends Controller
 {
-    /**
+   
+    public function getWarehouseDetails(int $warehouseId): JsonResponse
+    {
+        $warehouse = Warehouse::findOrFail($warehouseId);
+     
+        
+        return response()->json($warehouse);
+    }
+     /**
      * Get all products for a specific warehouse
      *
      * @param int $warehouseId
      * @return JsonResponse
      */
+
     public function getProducts(int $warehouseId): JsonResponse
     {
         // Get the warehouse

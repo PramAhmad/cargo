@@ -41,6 +41,12 @@
             </button>
         </li>
         <li class="mr-2" role="presentation">
+            <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="shipping-rates-tab" data-tab="shipping-rates-content" type="button" role="tab" aria-controls="shipping-rates" aria-selected="false">
+                <i class="fas fa-truck-loading mr-2"></i>
+                Shipping Rates
+            </button>
+        </li>
+        <li class="mr-2" role="presentation">
             <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="financial-tab" data-tab="financial-content" type="button" role="tab" aria-controls="financial" aria-selected="false">
                 <i class="fas fa-money-bill-wave mr-2"></i>
                 Financial Information
@@ -174,6 +180,87 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Shipping Rates Tab -->
+                        <div class="tab-pane hidden" id="shipping-rates-content" role="tabpanel" aria-labelledby="shipping-rates-tab">
+    <div class="p-4 mb-6 bg-blue-50 dark:bg-slate-700 rounded-lg border border-blue-100 dark:border-slate-600">
+        <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">
+            <i class="fas fa-tags mr-2 text-blue-500"></i>
+            Default Shipping Rates
+        </h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
+            These rates will be used as default values when creating shipments for this mitra.
+        </p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Volume-based Rate (CBM) -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                        <i class="fas fa-cube text-blue-500"></i>
+                    </div>
+                    <h4 class="text-md font-medium text-slate-700 dark:text-slate-300">Volume-Based Rate (CBM)</h4>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <label class="label mb-1 text-sm font-medium" for="harga_ongkir_cbm">Price per Cubic Meter</label>
+                    <div class="relative">
+                     
+                        <input type="number" class="input pl-10" id="harga_ongkir_cbm" name="harga_ongkir_cbm" 
+                               value="{{ old('harga_ongkir_cbm', 0) }}" min="0" />
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Used for shipping cost calculations based on volume (CBM)</p>
+                </div>
+            </div>
+            
+            <!-- Weight-based Rate (KG) -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                        <i class="fas fa-weight text-green-500"></i>
+                    </div>
+                    <h4 class="text-md font-medium text-slate-700 dark:text-slate-300">Weight-Based Rate (WG)</h4>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <!-- Tambahkan field max_wg di sini --> 
+                    <label class="label mb-1 text-sm font-medium" for="max_wg">Maximum Weight (KG)</label>
+                    <div class="relative">
+                       
+                        <input type="number" class="input pl-10" id="max_wg" name="max_wg" 
+                               value="{{ old('max_wg', 0) }}" min="0" />
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Maximum weight this mitra can handle (KG)</p>
+                    
+                    <label class="label mb-1 text-sm font-medium mt-3" for="harga_ongkir_wg">Price per Kilogram</label>
+                    <div class="relative">
+                     
+                        <input type="number" class="input pl-10" id="harga_ongkir_wg" name="harga_ongkir_wg" 
+                               value="{{ old('harga_ongkir_wg', 0) }}" min="0" />
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Used for shipping cost calculations based on weight (KG)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800/30">
+        <div class="flex items-start">
+            <div class="mr-3 text-yellow-500">
+                <i class="fas fa-info-circle text-xl"></i>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-400">About Shipping Rates</h4>
+                <p class="text-xs text-yellow-700 dark:text-yellow-500 mt-1">
+                    Setting these rates will allow the system to automatically calculate shipping costs when creating shipments.
+                    For CBM-based shipping, costs are calculated by multiplying the volume (m³) by the rate per cubic meter.
+                    For weight-based shipping, costs are calculated by multiplying the gross weight (kg) by the rate per kilogram.
+                    The maximum weight setting helps ensure shipments don't exceed the mitra's capacity.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
                         
                         <!-- Financial Information Tab -->
                         <div class="tab-pane hidden" id="financial-content" role="tabpanel" aria-labelledby="financial-tab">
@@ -331,8 +418,8 @@
             });
             
             // Tab functionality
-            const tabs = ['basic-tab', 'contact-tab', 'financial-tab', 'account-tab'];
-            const tabContents = ['basic-content', 'contact-content', 'financial-content', 'account-content'];
+            const tabs = ['basic-tab', 'contact-tab', 'shipping-rates-tab', 'financial-tab', 'account-tab'];
+            const tabContents = ['basic-content', 'contact-content', 'shipping-rates-content', 'financial-content', 'account-content'];
             let currentTabIndex = 0;
             
             function showTab(index) {
