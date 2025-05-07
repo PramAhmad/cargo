@@ -37,7 +37,6 @@ function initMoneyInputs() {
     });
 }
 
-// Main initialization
 $(document).ready(function() {
     // Initialize Select2
     $('.select2').select2({
@@ -49,40 +48,69 @@ $(document).ready(function() {
     initMoneyInputs();
     
     // Customer selection change
-    $('#customer_id').on('change', function() {
-        const customerId = $(this).val();
-        const marketingId = $(this).find('option:selected').data('marketing-id');
-        
-        if (marketingId) {
-            $('#marketing_id').val(marketingId).prop('disabled', false);
-            $('#marketing_id').trigger('change');
-        } else {
-            $('#marketing_id').val('').prop('disabled', true);
-            updateMarkingCode();
-        }
-        
-        if (customerId) {
-            $.get(`/api/customers/${customerId}/banks`, function(data) {
-                const bankSelect = $('#bank_id');
-                bankSelect.empty().append('<option value="">Pilih Bank</option>');
+// Customer selection change
+$('#customer_id').on('change', function() {
+    const customerId = $(this).val();
+    const marketingId = $(this).find('option:selected').data('marketing-id');
+    
+    if (marketingId) {
+        $('#marketing_id').val(marketingId).prop('disabled', false);
+        $('#marketing_id').trigger('change');
+    } else {
+        $('#marketing_id').val('').prop('disabled', true);
+        updateMarkingCode();
+    }
+    
+    if (customerId) {
+        $.get(`/api/customers/${customerId}/banks`, function(data) {
+            const bankSelect = $('#bank_id');
+            bankSelect.empty().append('<option value="">Pilih Bank</option>');
+            
+            if (data.length > 0) {
+                data.forEach(bank => {
+                    const isDefault = bank.is_default ? ' (Default)' : '';
+                    bankSelect.append(`
+                        <option value="${bank.id}" 
+                                data-rek-no="${bank.rek_no || ''}" 
+                                data-rek-name="${bank.rek_name || ''}"
+                                ${bank.is_default ? 'selected' : ''}>
+                            ${bank.bank.name} - ${bank.rek_name} - ${bank.rek_no}${isDefault}
+                        </option>
+                    `);
+                });
                 
-                if (data.length > 0) {
-                    data.forEach(bank => {
-                        const isDefault = bank.is_default ? ' (Default)' : '';
-                        bankSelect.append(`
-                            <option value="${bank.id}" ${bank.is_default ? 'selected' : ''}>
-                                ${bank.bank.name} - ${bank.rek_name} - ${bank.rek_no}${isDefault}
-                            </option>
-                        `);
-                    });
-                } else {
-                    bankSelect.append('<option value="" disabled>Customer tidak memiliki rekening bank</option>');
-                }
-            });
-        } else {
-            $('#bank_id').empty().append('<option value="">Pilih Bank</option>');
-        }
-    });
+                // Trigger change to populate rek_no and rek_name
+                bankSelect.trigger('change');
+            } else {
+                bankSelect.append('<option value="" disabled>Customer tidak memiliki rekening bank</option>');
+            }
+        });
+    } else {
+        $('#bank_id').empty().append('<option value="">Pilih Bank</option>');
+        $('#rek_no').val('');
+        $('#rek_name').val('');
+    }
+});
+
+// Improve bank selection change to use data attributes
+$('#bank_id').on('change', function() {
+    const bankId = $(this).val();
+    const selectedOption = $(this).find('option:selected');
+    
+    if (bankId) {
+        // Get values from data attributes
+        const rekNo = selectedOption.data('rek-no') || '';
+        const rekName = selectedOption.data('rek-name') || '';
+        
+        // Set values to hidden fields
+        $('#rek_no').val(rekNo);
+        $('#rek_name').val(rekName);
+    } else {
+        // Reset values
+        $('#rek_no').val('');
+        $('#rek_name').val('');
+    }
+});
     
     // Mitra selection change
     $('#mitra_id').on('change', function() {
@@ -289,6 +317,25 @@ $(document).ready(function() {
     // Initialize form
     $('#shipping_type').trigger('change'); // Generate initial invoice number
     updateNilaiDisplay();
+    
+    // Bank selection change
+    $('#bank_id').on('change', function() {
+        const bankId = $(this).val();
+        
+        if (bankId) {
+            // Ambil data bank untuk mengisi rekening
+            $.get(`/api/banks/${bankId}`, function(bank) {
+                if (bank) {
+                    $('#rek_no').val(bank.rek_no || '');
+                    $('#rek_name').val(bank.rek_name || '');
+                }
+            });
+        } else {
+            // Reset nilai
+            $('#rek_no').val('');
+            $('#rek_name').val('');
+        }
+    });
 });
 
 /**

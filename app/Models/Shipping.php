@@ -65,7 +65,8 @@ class Shipping extends Model
         'product_id',
         'warehouse_id',
         'customer_id',
-
+        'kode_resi',
+        'qr_resi',
     ];
 
     protected $casts = [
@@ -111,6 +112,7 @@ class Shipping extends Model
         'warehouse_id' => 'integer',
         'customer_id' => 'integer',
         'marketing_id' => 'integer',
+
     ];
 
     public function shippingDetails(): HasMany

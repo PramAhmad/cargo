@@ -73,6 +73,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/shippings/{shipping}/surat-jalan', [ShippingController::class, 'suratJalan'])->name('shippings.surat-jalan');
     Route::get('/shippings/{shipping}/faktur', [ShippingController::class, 'faktur'])->name('shippings.faktur');
     Route::get('/shippings/{shipping}/invoice', [ShippingController::class, 'invoice'])->name('shippings.invoice');
+    // Update shipping status
+    Route::post('shippings/{shipping}/update-status', [ShippingController::class, 'updateStatus'])
+        ->name('shippings.updateStatus');
 });
 
 require __DIR__.'/auth.php';

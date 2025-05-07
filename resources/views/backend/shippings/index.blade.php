@@ -207,17 +207,8 @@
                             <span class="text-sm font-medium">{{ number_format($shipping->grand_total, 0, ',', '.') }}</span>
                         </td>
                         <td>
-                            @php
-                                $statusClass = match($shipping->status->value) {
-                                    'waiting' => 'badge-soft-warning',
-                                    'process' => 'badge-soft-info',
-                                    'completed' => 'badge-soft-success',
-                                    'canceled' => 'badge-soft-danger',
-                                    default => 'badge-soft-secondary'
-                                };
-                            @endphp
-                            <span class="badge {{ $statusClass }}">
-                                {{ $shipping->status }}
+                            <span class="badge badge-{{ $shipping->status->getColor() }}">
+                                {{ $shipping->status->getLabel() }}
                             </span>
                         </td>
                         <td>

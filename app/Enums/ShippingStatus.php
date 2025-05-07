@@ -34,7 +34,7 @@ enum ShippingStatus: string
     public function getColor(): string | array | null
     {
         return match ($this) {
-            self::waiting => 'gray',
+            self::waiting => 'primary',
             self::rejected => 'danger',
             self::sendAgentWarehouse => 'dark',
             self::sendIndonesia => 'warning',

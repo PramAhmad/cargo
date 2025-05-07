@@ -642,6 +642,8 @@
                         </div>
                     </div>
                 </div>
+                <input type="hidden" id="rek_no" name="rek_no" value="">
+                <input type="hidden" id="rek_name" name="rek_name" value="">
                 
                 <input type="hidden" id="nilai" name="nilai" value="0">
                 <input type="hidden" id="selected_shipping_cost" name="selected_shipping_cost" value="0">

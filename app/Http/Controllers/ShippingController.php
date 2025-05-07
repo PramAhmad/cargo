@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\App;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ShippingController extends Controller
 {
@@ -102,7 +103,6 @@ class ShippingController extends Controller
     {
         // dd($request->all());
         try {
-            // Validasi data
             $validator = Validator::make($request->all(), [
                 'invoice' => 'required|string|unique:shippings,invoice',
                 'customer_id' => 'required|exists:customers,id',
@@ -110,6 +110,9 @@ class ShippingController extends Controller
                 'warehouse_id' => 'required|exists:warehouses,id',
                 'transaction_date' => 'required|date',
                 'barang' => 'required|array|min:1',
+                'barang.*.product_image' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048',
+                'invoice_file' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+                'packagelist_file' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
             ]);
             
             if ($validator->fails()) {
@@ -120,13 +123,28 @@ class ShippingController extends Controller
                 ], 422);
             }
             
-            // Log input data untuk debugging
-            Log::info('Received shipping data', ['request' => $request->all()]);
+            // generate resi
+            $resi = 'RESI-' . strtoupper(ShippingType::LCL->value) . '-' . date('dmy') . str_pad(Shipping::count() + 1, 3, '0', STR_PAD_LEFT);
+            $request->merge(['kode_resi' => $resi]);
+             $qrPath = 'shipping/qrcodes';
+             $qrFullPath = public_path($qrPath);
+             $qrFileName = 'qr_' . time() . '_' . $resi . '.png';
+             if (!file_exists($qrFullPath)) {
+                 mkdir($qrFullPath, 0755, true);
+             }
+             
+             QrCode::format('png')
+                  ->size(300)
+                  ->errorCorrection('H')
+                  ->margin(1)
+                  ->generate($resi, $qrFullPath . '/' . $qrFileName);
+             
             
             DB::beginTransaction();
             
-            // Simpan data shipping menggunakan ORM dengan metode create
             $shippingData = [
+                'kode_resi' => $request->input('kode_resi'),
+                'qr_resi' => $qrFileName,
                 'invoice' => $request->input('invoice'),
                 'customer_id' => $request->input('customer_id'),
                 'marketing_id' => $request->input('marketing_id'),
@@ -146,6 +164,8 @@ class ShippingController extends Controller
                 'supplier' => $request->input('supplier'),
                 'description' => $request->input('description'),
                 'pajak' => $request->input('pajak'),
+                'rek_no' => $request->input('rek_no'),
+                'rek_name' => $request->input('rek_name'),
                 
                 // Komponsen biaya
                 'nilai' => $this->parseAmount($request->input('nilai')),
@@ -191,17 +211,26 @@ class ShippingController extends Controller
             // Simpan file invoice jika ada
             if ($request->hasFile('invoice_file')) {
                 $invoiceFile = $request->file('invoice_file');
-                $invoiceFileName = 'invoice_' . time() . '.' . $invoiceFile->getClientOriginalExtension();
-                $invoiceFile->storeAs('public/shipping/invoices', $invoiceFileName);
+                $invoiceFileName = 'invoice_' . time() . '_' . $invoiceFile->getClientOriginalName();
+                
+                $uploadPath = public_path('shipping/invoices');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $invoiceFile->move($uploadPath, $invoiceFileName);
                 $shipping->invoice_file = $invoiceFileName;
                 $shipping->save();
             }
             
-            // Simpan file packagelist jika ada
             if ($request->hasFile('packagelist_file')) {
                 $packagelistFile = $request->file('packagelist_file');
-                $packagelistFileName = 'packagelist_' . time() . '.' . $packagelistFile->getClientOriginalExtension();
-                $packagelistFile->storeAs('public/shipping/packagelists', $packagelistFileName);
+                $packagelistFileName = 'packagelist_' . time() . '_' . $packagelistFile->getClientOriginalName();
+                
+                $uploadPath = public_path('shipping/packagelists');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                $packagelistFile->move($uploadPath, $packagelistFileName);
                 $shipping->packagelist_file = $packagelistFileName;
                 $shipping->save();
             }
@@ -229,10 +258,13 @@ class ShippingController extends Controller
                     // Simpan gambar produk jika ada
                     if (isset($request->file('barang')[$index]['product_image'])) {
                         $productImage = $request->file('barang')[$index]['product_image'];
-                        $imageFileName = 'product_' . $shipping->id . '_' . $index . '_' . time() . '.' . $productImage->getClientOriginalExtension();
-                        $productImage->storeAs('shipping/products', $imageFileName);
-                        $detail->product_image = $imageFileName;
-                        $detail->save();
+                        $imageFileName = 'product_' . $shipping->id . '_' . $index . '_' . time() . '_' . $productImage->getClientOriginalName();
+
+                        $uploadPath = public_path('shipping/products');
+                        if (!file_exists($uploadPath)) {
+                            mkdir($uploadPath, 0755, true);
+                        }
+                        $productImage->move($uploadPath, $imageFileName);
                     }
                 }
             }
@@ -263,12 +295,50 @@ class ShippingController extends Controller
         }
     }
 
+   
     /**
      * Display the specified resource.
      */
     public function show(Shipping $shipping)
     {
-        //
+        $shipping->load([
+            'customer', 
+            'marketing', 
+            'mitra', 
+            'warehouse', 
+            'bank', 
+            'shippingDetails.product', 
+            'logs.user'
+        ]);
+        
+        return view('backend.shippings.show', compact('shipping'));
+    }
+    
+    /**
+     * Update shipping status
+     */
+    public function updateStatus(Request $request, Shipping $shipping)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+        // dd($validated);
+        
+        $oldStatus = $shipping->status;
+        $shipping->status = $validated['status'];
+        $shipping->save();
+        
+        // Log activity
+        $this->logShippingActivity(
+            $shipping->id, 
+            $validated['status'],
+            $validated['notes'] ?? 'Status updated from ' . $oldStatus->name . ' to ' . $shipping->status->name
+        );
+        
+        return redirect()
+            ->route('shippings.show', $shipping->id)
+            ->with('success', 'Shipping status has been updated successfully');
     }
 
     /**
@@ -284,7 +354,257 @@ class ShippingController extends Controller
      */
     public function update(Request $request, Shipping $shipping)
     {
-        //
+        try {
+            // Validasi data
+            $validator = Validator::make($request->all(), [
+                'invoice' => 'required|string|unique:shippings,invoice,' . $shipping->id,
+                'customer_id' => 'required|exists:customers,id',
+                'mitra_id' => 'required|exists:mitras,id',
+                'warehouse_id' => 'required|exists:warehouses,id',
+                'transaction_date' => 'required|date',
+                'barang' => 'required|array|min:1',
+                'barang.*.product_image' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048',
+                'invoice_file' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+                'packagelist_file' => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:2048',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            
+            DB::beginTransaction();
+            
+            // Update data shipping
+            $shippingData = [
+                'invoice' => $request->input('invoice'),
+                'customer_id' => $request->input('customer_id'),
+                'marketing_id' => $request->input('marketing_id'),
+                'mitra_id' => $request->input('mitra_id'),
+                'warehouse_id' => $request->input('warehouse_id'),
+                'transaction_date' => $request->input('transaction_date'),
+                'receipt_date' => $request->input('receipt_date'),
+                'stuffing_date' => $request->input('stuffing_date'),
+                'due_date' => $request->input('due_date'),
+                'top' => $request->input('top'),
+                'payment_type' => $request->input('payment_type'),
+                'service' => $request->input('service'),
+                'bank_id' => $request->input('bank_id'),
+                'rek_no' => $request->input('rek_no'),
+                'rek_name' => $request->input('rek_name'),
+
+                'marking' => $request->input('marking'),
+                'shipping_type' => $request->input('shipping_type'),
+                'supplier' => $request->input('supplier'),
+                'description' => $request->input('description'),
+                'pajak' => $request->input('pajak'),
+                
+                // Komponsen biaya
+                'nilai' => $this->parseAmount($request->input('nilai')),
+                'sup_agent' => $this->parseAmount($request->input('sup_agent')),
+                'cukai' => $this->parseAmount($request->input('cukai')),
+                'tbh' => $this->parseAmount($request->input('tbh')),
+                'ppnbm' => $this->parseAmount($request->input('ppnbm')),
+                'freight' => $this->parseAmount($request->input('freight')),
+                'do' => $this->parseAmount($request->input('do')),
+                'pfpd' => $this->parseAmount($request->input('pfpd')),
+                'charge' => $this->parseAmount($request->input('charge')),
+                'jkt_sda' => $this->parseAmount($request->input('jkt_sda')),
+                'sda_user' => $this->parseAmount($request->input('sda_user')),
+                'bkr' => $this->parseAmount($request->input('bkr')),
+                'asuransi' => $this->parseAmount($request->input('asuransi')),
+                
+                // Biaya total
+                'biaya' => $this->parseAmount($request->input('biaya')),
+                'nilai_biaya' => $this->parseAmount($request->input('nilai_biaya')),
+                'pph' => $this->parseAmount($request->input('pph')),
+                'ppn' => $request->input('ppn'),
+                'ppn_total' => $this->parseAmount($request->input('ppn_total')),
+                'biaya_kirim' => $this->parseAmount($request->input('biaya_kirim')),
+                'grand_total' => $this->parseAmount($request->input('grand_total')),
+                
+                // Informasi summary
+                'ctns_total' => $this->parseAmount($request->input('summary.total_carton')),
+                'gw_total' => $this->parseAmount($request->input('summary.total_weight')),
+                'cbm_total' => $this->parseAmount($request->input('summary.total_volume')),
+                
+                // Metode kalkulasi
+                'calculation_method' => $request->input('calculation_method_used'),
+                'cbm_price' => $this->parseAmount($request->input('harga_ongkir_cbm')),
+                'kg_price' => $this->parseAmount($request->input('harga_ongkir_wg')),
+            ];
+            
+            // Hitung total price berdasarkan kedua metode
+            $shippingData['total_price_cbm'] = $shippingData['cbm_total'] * $shippingData['cbm_price'];
+            $shippingData['total_price_gw'] = $shippingData['gw_total'] * $shippingData['kg_price'];
+            
+            $shipping->update($shippingData);
+            
+            // Update file invoice jika ada
+            if ($request->hasFile('invoice_file')) {
+                // Hapus file lama jika ada
+                if ($shipping->invoice_file) {
+                    $oldFilePath = public_path('shipping/invoices/' . $shipping->invoice_file);
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+                
+                $invoiceFile = $request->file('invoice_file');
+                $invoiceFileName = 'invoice_' . time() . '_' . $invoiceFile->getClientOriginalName();
+                
+                // Buat direktori jika belum ada
+                $uploadPath = public_path('shipping/invoices');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                // Pindahkan file ke direktori public
+                $invoiceFile->move($uploadPath, $invoiceFileName);
+                $shipping->invoice_file = $invoiceFileName;
+                $shipping->save();
+            }
+            
+            // Update file packagelist jika ada
+            if ($request->hasFile('packagelist_file')) {
+                // Hapus file lama jika ada
+                if ($shipping->packagelist_file) {
+                    $oldFilePath = public_path('shipping/packagelists/' . $shipping->packagelist_file);
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath);
+                    }
+                }
+                
+                $packagelistFile = $request->file('packagelist_file');
+                $packagelistFileName = 'packagelist_' . time() . '_' . $packagelistFile->getClientOriginalName();
+                
+                // Buat direktori jika belum ada
+                $uploadPath = public_path('shipping/packagelists');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                // Pindahkan file ke direktori public
+                $packagelistFile->move($uploadPath, $packagelistFileName);
+                $shipping->packagelist_file = $packagelistFileName;
+                $shipping->save();
+            }
+            
+            // Update atau tambahkan detail barang
+            if (isset($request->barang) && is_array($request->barang)) {
+                // Collect IDs of details that should be kept
+                $existingDetailIds = [];
+                
+                foreach ($request->barang as $index => $item) {
+                    if (isset($item['id'])) {
+                        // Update existing detail
+                        $detail = ShippingDetail::find($item['id']);
+                        if ($detail && $detail->shipping_id == $shipping->id) {
+                            $detail->update([
+                                'product_id' => $item['product_id'],
+                                'name' => $item['name'] ?? null,
+                                'ctn' => $item['ctn'],
+                                'qty_per_ctn' => $item['qty_per_ctn'],
+                                'ctns' => $item['ctns'],
+                                'qty' => $item['qty'],
+                                'length' => $item['length'],
+                                'width' => $item['width'],
+                                'high' => $item['high'],
+                                'gw_per_ctn' => $item['gw_per_ctn'],
+                                'volume' => $this->parseAmount($item['volume']),
+                                'total_gw' => $this->parseAmount($item['total_gw']),
+                            ]);
+                            $existingDetailIds[] = $detail->id;
+                        }
+                    } else {
+                        // Create new detail
+                        $detailData = [
+                            'shipping_id' => $shipping->id,
+                            'product_id' => $item['product_id'],
+                            'name' => $item['name'] ?? null,
+                            'ctn' => $item['ctn'],
+                            'qty_per_ctn' => $item['qty_per_ctn'],
+                            'ctns' => $item['ctns'],
+                            'qty' => $item['qty'],
+                            'length' => $item['length'],
+                            'width' => $item['width'],
+                            'high' => $item['high'],
+                            'gw_per_ctn' => $item['gw_per_ctn'],
+                            'volume' => $this->parseAmount($item['volume']),
+                            'total_gw' => $this->parseAmount($item['total_gw']),
+                        ];
+                        
+                        $detail = ShippingDetail::create($detailData);
+                        $existingDetailIds[] = $detail->id;
+                    }
+                    
+                    // Update product image if provided
+                    if (isset($request->file('barang')[$index]['product_image'])) {
+                        // Delete old image if exists
+                        if ($detail->product_image) {
+                            $oldImagePath = public_path('shipping/products/' . $detail->product_image);
+                            if (file_exists($oldImagePath)) {
+                                unlink($oldImagePath);
+                            }
+                        }
+                        
+                        $productImage = $request->file('barang')[$index]['product_image'];
+                        $imageFileName = 'product_' . $shipping->id . '_' . $index . '_' . time() . '_' . $productImage->getClientOriginalName();
+                        
+                        // Buat direktori jika belum ada
+                        $uploadPath = public_path('shipping/products');
+                        if (!file_exists($uploadPath)) {
+                            mkdir($uploadPath, 0755, true);
+                        }
+                        
+                        // Pindahkan file ke direktori public
+                        $productImage->move($uploadPath, $imageFileName);
+                        $detail->product_image = $imageFileName;
+                        $detail->save();
+                    }
+                }
+                
+                // Remove details that are not in the request
+                $shipping->shippingDetails()->whereNotIn('id', $existingDetailIds)->each(function ($detail) {
+                    // Delete product image if exists
+                    if ($detail->product_image) {
+                        $imagePath = public_path('shipping/products/' . $detail->product_image);
+                        if (file_exists($imagePath)) {
+                            unlink($imagePath);
+                        }
+                    }
+                    $detail->delete();
+                });
+            }
+            
+            $this->logShippingActivity($shipping->id, 'update', 'Data shipping diupdate');
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data shipping berhasil diupdate',
+                'shipping_id' => $shipping->id,
+                'redirect_url' => route('shippings.show', $shipping->id)
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            Log::error('Error updating shipping data', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -326,15 +646,14 @@ class ShippingController extends Controller
     /**
      * Log shipping activity
      */
-    private function logShippingActivity($shippingId, $action, $description = '')
+    private function logShippingActivity($shippingId, $status, $notes = '')
     {
         ShippingLog::create([
             'shipping_id' => $shippingId,
             'user_id' => Auth::id() ?? 1,
-            'action' => $action,
-            'description' => $description,
-            'old_data' => null,
-            'new_data' => null
+            'status' => $status,
+            'notes' => $notes,
+           
         ]);
     }
 
