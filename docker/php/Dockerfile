@@ -26,15 +26,31 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm && \
-    docker-php-ext-install zip pcntl pdo pdo_mysql mysqli gd
+# Fix for GD installation - make sure all dependencies are available
+RUN apt-get update && apt-get install -y \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libgd-dev \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
 
-# Verify GD installation
-RUN php -m | grep gd
+# Configure and install GD properly
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp \
+    --with-xpm && \
+    docker-php-ext-install -j$(nproc) gd
 
-# Enable GD extension
-RUN echo "extension=gd" > /usr/local/etc/php/conf.d/gd.ini
+# Install other PHP extensions
+RUN docker-php-ext-install zip pcntl pdo pdo_mysql mysqli
+
+# Verify GD installation - this should now work
+RUN php -r 'var_dump(gd_info());'
+
+# Copy custom php.ini
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html
