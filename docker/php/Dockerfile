@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-MAINTAINER Anichur Rahaman
+MAINTAINER pram
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
@@ -29,6 +29,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm && \
     docker-php-ext-install zip pcntl pdo pdo_mysql mysqli gd
+
+# Verify GD installation
+RUN php -m | grep gd
 
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html
