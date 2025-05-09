@@ -43,11 +43,19 @@ RUN docker-php-ext-configure gd \
     --with-xpm && \
     docker-php-ext-install -j$(nproc) gd
 
+# Install ImageMagick dependencies and extension
+RUN apt-get update && apt-get install -y \
+    libmagickwand-dev --no-install-recommends && \
+    pecl install imagick && \
+    docker-php-ext-enable imagick && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install other PHP extensions
 RUN docker-php-ext-install zip pcntl pdo pdo_mysql mysqli
 
-# Verify GD installation - this should now work
-RUN php -r 'var_dump(gd_info());'
+# Verify GD and ImageMagick installations
+RUN php -r 'var_dump(gd_info());' && \
+    php -r 'var_dump(class_exists("Imagick"));'
 
 # Copy custom php.ini
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
