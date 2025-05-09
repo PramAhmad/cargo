@@ -62,7 +62,11 @@ COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html
-
+RUN chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html/public/shipping
+RUN chmod -R 755 /var/www/html/public/shipping
+RUN chown -R www-data:www-data /var/www/html/public/shipping/qrcodes
+RUN chmod -R 755 /var/www/html/public/shipping/qrcodes
 # Copy composer from official image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
