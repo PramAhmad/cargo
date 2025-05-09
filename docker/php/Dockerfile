@@ -33,6 +33,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-x
 # Verify GD installation
 RUN php -m | grep gd
 
+# Enable GD extension
+RUN echo "extension=gd" > /usr/local/etc/php/conf.d/gd.ini
+
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html
 
