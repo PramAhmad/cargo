@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Shipping;
 use App\Models\User;
+use App\Observers\ShippingObserver;
+use App\Observers\UserObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -34,5 +37,8 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
+
+        User::observe(UserObserver::class);
+        Shipping::observe(ShippingObserver::class);
     }
 }

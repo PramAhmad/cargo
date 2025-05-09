@@ -11,6 +11,8 @@ use App\Models\Mitra;
 use App\Models\Shipping;
 use App\Models\ShippingDetail;
 use App\Models\ShippingLog;
+use App\Models\User;
+use App\Notifications\ShippingStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Notification;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ShippingController extends Controller
@@ -323,9 +326,9 @@ class ShippingController extends Controller
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
-        // dd($validated);
         
-        $oldStatus = $shipping->status;
+        $oldStatus = $shipping->status->value;
+        $oldStatusName = $shipping->status->name;
         $shipping->status = $validated['status'];
         $shipping->save();
         
@@ -333,8 +336,32 @@ class ShippingController extends Controller
         $this->logShippingActivity(
             $shipping->id, 
             $validated['status'],
-            $validated['notes'] ?? 'Status updated from ' . $oldStatus->name . ' to ' . $shipping->status->name
+            $validated['notes'] ?? 'Status updated from ' . $oldStatusName . ' to ' . $shipping->status->name
         );
+        
+        // Kirim notifikasi perubahan status
+        $recipients = User::with('roles')
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('name', ['superadmin', 'admin', 'marketing']);
+            })
+            ->get();
+            
+        // Tambahkan marketing terkait jika ada
+        if ($shipping->marketing_id) {
+            $marketing = User::find($shipping->marketing_id);
+            if ($marketing && !$recipients->contains('id', $marketing->id)) {
+                $recipients->push($marketing);
+            }
+        }
+        
+        // Tambahkan pembuat shipping jika ada
+        $shipping->load('logs.user');
+        $creatorLog = $shipping->logs->where('status', 'waiting')->first();
+        if ($creatorLog && $creatorLog->user && !$recipients->contains('id', $creatorLog->user->id)) {
+            $recipients->push($creatorLog->user);
+        }
+        
+        Notification::send($recipients, new ShippingStatusNotification($shipping, $oldStatusName, $shipping->status->name));
         
         return redirect()
             ->route('shippings.show', $shipping->id)

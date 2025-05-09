@@ -373,7 +373,7 @@ $(document).ready(function() {
         // Tampilkan loading
         showLoading();
         
-        // Kirim data dengan AJAX
+        // Kirim data dengan AJAX - perbaiki handler sukses dan error
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
@@ -384,14 +384,8 @@ $(document).ready(function() {
                 hideLoading();
                 
                 if (response.success) {
-                    showSuccessMessage(response.message || 'Data berhasil disimpan');
-                    
-                    // Redirect ke halaman detail jika ada redirect URL
-                    if (response) {
-                        setTimeout(function() {
-                            window.location.href = response.redirect_url;
-                        }, 1500);
-                    }
+                    showSuccessMessage(response.message || 'Data berhasil disimpan', response.redirect_url);
+                    // Remove the setTimeout redirect since we're now handling it in the alert
                 } else {
                     showErrorMessage(response.message || 'Terjadi kesalahan saat menyimpan data');
                 }
@@ -402,16 +396,19 @@ $(document).ready(function() {
                 // Cek apakah response berisi validation errors
                 if (xhr.status === 422) {
                     const errors = xhr.responseJSON.errors;
-                    let errorMessage = '<ul class="list-disc pl-5">';
+                    let errorMessage = '<div class="text-left"><ul class="list-disc pl-5 space-y-1">';
                     
                     for (const key in errors) {
-                        errorMessage += `<li>${errors[key][0]}</li>`;
+                        errorMessage += `<li class="text-red-600">${errors[key][0]}</li>`;
                     }
                     
-                    errorMessage += '</ul>';
-                    showErrorMessage('Validasi gagal:', errorMessage);
+                    errorMessage += '</ul></div>';
+                    showErrorMessage('Validasi gagal', errorMessage);
                 } else {
-                    showErrorMessage('Terjadi kesalahan pada server. Silakan coba lagi nanti.');
+                    showErrorMessage(
+                        'Terjadi kesalahan', 
+                        xhr.responseJSON?.message || 'Terjadi kesalahan pada server. Silakan coba lagi nanti.'
+                    );
                 }
             }
         });
@@ -470,18 +467,20 @@ $(document).ready(function() {
     }
     
     // Fungsi untuk menampilkan pesan sukses
-    function showSuccessMessage(message) {
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
-        
-        Toast.fire({
+    function showSuccessMessage(message, redirectUrl) {
+        Swal.fire({
             icon: 'success',
-            title: message
+            title: 'Berhasil!',
+            text: message,
+            showCancelButton: true,
+            confirmButtonText: 'Lihat Detail',
+            cancelButtonText: 'Tetap di Halaman Ini',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed && redirectUrl) {
+                window.location.href = redirectUrl;
+            }
         });
     }
     
@@ -491,7 +490,8 @@ $(document).ready(function() {
             icon: 'error',
             title: title,
             html: message,
-            confirmButtonText: 'OK'
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#ef4444'
         });
     }
     

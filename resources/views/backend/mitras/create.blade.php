@@ -317,45 +317,7 @@
                             </div>
                         </div>
                         
-                        <!-- System Account Tab -->
-                        <div class="tab-pane hidden" id="account-content" role="tabpanel" aria-labelledby="account-tab">
-                            <!-- User Account Checkbox -->
-                            <div class="mb-6">
-                                <div class="flex items-start">
-                                    <div class="flex h-5 items-center">
-                                        <input id="create_account" name="create_account" type="checkbox" class="checkbox" 
-                                               {{ old('create_account') ? 'checked' : '' }} />
-                                    </div>
-                                    <div class="ml-3 text-sm">
-                                        <label for="create_account" class="font-medium text-primary-600 cursor-pointer">
-                                            Create user account for this mitra
-                                        </label>
-                                        <p class="text-slate-500">This will allow the mitra to log in to the system</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- User Account Section -->
-                            <div id="account_section" class="grid grid-cols-1 md:grid-cols-2 gap-6 border-l-4 border-primary-500 pl-4 py-4 {{ old('create_account') ? '' : 'hidden' }}">
-                                <div class="col-span-1 md:col-span-2">
-                                    <p class="text-sm text-primary-600 font-medium mb-3">
-                                        <i class="inline-block h-4 w-4 mr-1" data-feather="alert-circle"></i>
-                                        Create a user account for this mitra using the provided email.
-                                    </p>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1">
-                                    <label class="label label-required mb-1 font-medium" for="password">Password</label>
-                                    <input type="password" class="input" id="password" name="password" {{ old('create_account') ? 'required' : '' }} />
-                                    <p class="text-xs text-slate-500 mt-1">Password must be at least 8 characters</p>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1">
-                                    <label class="label label-required mb-1 font-medium" for="password_confirmation">Confirm Password</label>
-                                    <input type="password" class="input" id="password_confirmation" name="password_confirmation" {{ old('create_account') ? 'required' : '' }} />
-                                </div>
-                            </div>
-                        </div>
+                   
                     </div>
                     
                     <div class="mt-6 flex items-center justify-between  pt-4">

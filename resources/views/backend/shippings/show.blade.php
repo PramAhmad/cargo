@@ -393,7 +393,7 @@
                                                     @if(in_array($log->status, \App\Enums\ShippingStatus::cases()))
                                                         {{ \App\Enums\ShippingStatus::from($log->status)->getLabel() }}
                                                     @else
-                                                        {{ $log->status }}
+                                                        {{ \App\Enums\ShippingStatus::from($log->status)->getLabel() }}
                                                     @endif
                                                 </span>
                                             </div>
