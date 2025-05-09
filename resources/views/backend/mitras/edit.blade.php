@@ -59,12 +59,12 @@
                                         Shipping Rates
                                     </button>
                                 </li>
-                                <li role="presentation">
+                                {{-- <li role="presentation">
                                     <button class="inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" id="account-tab" data-tab="account-content" type="button" role="tab" aria-controls="account" aria-selected="false">
                                         <i class="fas fa-user-shield mr-2"></i>
                                         System Account
                                     </button>
-                                </li>
+                                </li> --}}
                             </ul>
                         </div>
                     <!-- Tab Content -->
@@ -323,7 +323,7 @@
                         </div>
                         
                         <!-- System Account Tab -->
-                        <div class="tab-pane hidden" id="account-content" role="tabpanel" aria-labelledby="account-tab">
+                        {{-- <div class="tab-pane hidden" id="account-content" role="tabpanel" aria-labelledby="account-tab">
                             <!-- User Account Checkbox -->
                             <div class="mb-6">
                                 <div class="flex items-start">
@@ -379,7 +379,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+                         --}}
                         <!-- Warehouse Tab -->
                         <div class="tab-pane hidden" id="warehouse-content" role="tabpanel" aria-labelledby="warehouse-tab">
                             <div class="mb-6">
