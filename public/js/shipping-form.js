@@ -540,6 +540,17 @@ function renderProducts() {
         const product = warehouseProducts.find(p => p.id === productId);
         if (product) {
             addProductToTable(product);
+            
+            // Highlight the corresponding row in the barangList if it exists
+            setTimeout(() => {
+                const existingRow = $('#barangList').find(`tr[data-product-id="${productId}"]`);
+                if (existingRow.length > 0) {
+                    existingRow.addClass('bg-green-50 dark:bg-green-900/20');
+                    setTimeout(() => {
+                        existingRow.removeClass('bg-green-50 dark:bg-green-900/20');
+                    }, 1500);
+                }
+            }, 100);
         }
     });
 }
@@ -596,8 +607,22 @@ function renderPagination(totalPages) {
 
 // Add a product to the "List Barang" table
 function addProductToTable(product) {
+    // First check if the product already exists in the table
+    const existingRow = $('#barangList').find(`tr[data-product-id="${product.id}"]`);
+    
+    if (existingRow.length > 0) {
+        // Product already exists, just increment the quantity instead of adding a new row
+        const currentCtns = parseInt(existingRow.find('.total-ctns').val()) || 1;
+        existingRow.find('.total-ctns').val(currentCtns + 1).trigger('input');
+        
+        // Show feedback to user
+        showToast(`Jumlah ${product.name} ditambahkan`, 'success');
+        return;
+    }
+    
+    // If product doesn't exist yet, continue with adding a new row
     const rowIndex = detailCounter++;
-    const productImageUrl = product.image_url || '/images/no-image.jpg';
+    const productImageUrl = product.image_url || '/noimage.jpg';
     
     // Buat row produk
     const row = `
@@ -678,6 +703,45 @@ function addProductToTable(product) {
     
     // Calculate totals
     calculateTotals();
+    
+    // Show feedback to user
+    showToast(`${product.name} ditambahkan ke daftar`, 'success');
+}
+
+// Add a simple toast notification function
+function showToast(message, type = 'info') {
+    // Remove existing toasts to prevent stacking
+    $('.toast-notification').remove();
+    
+    // Create toast element
+    const toast = $(`
+        <div class="toast-notification fixed bottom-4 right-4 z-50 p-3 rounded-md shadow-lg min-w-[300px] 
+                    ${type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 
+                      type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : 
+                      'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'}">
+            <div class="flex items-center">
+                <div class="mr-2">
+                    ${type === 'success' ? '<i class="fas fa-check-circle text-lg"></i>' : 
+                      type === 'error' ? '<i class="fas fa-exclamation-circle text-lg"></i>' : 
+                      '<i class="fas fa-info-circle text-lg"></i>'}
+                </div>
+                <div>${message}</div>
+            </div>
+        </div>
+    `);
+    
+    // Add to body
+    $('body').append(toast);
+    
+    // Animate in
+    toast.css('opacity', 0).animate({opacity: 1}, 300);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.animate({opacity: 0}, 300, function() {
+            $(this).remove();
+        });
+    }, 3000);
 }
 
 // Attach event listeners to a row

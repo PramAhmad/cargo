@@ -69,6 +69,11 @@ class MitraController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'max_wg' => intval(str_replace('.', '', $request->max_wg)),
+            'harga_ongkir_cbm' => intval(str_replace('.', '', $request->harga_ongkir_cbm)),
+            'harga_ongkir_wg' => intval(str_replace('.', '', $request->harga_ongkir_wg)),
+        ]);
         $rules = [
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:20|unique:mitras',
@@ -80,9 +85,9 @@ class MitraController extends Controller
             'phone2' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
-            'max_wg' => 'nullable|integer|min:0',
-            'harga_ongkir_cbm' => 'nullable|integer|min:0',
-            'harga_ongkir_wg' => 'nullable|integer|min:0',
+            'max_wg' => 'nullable', 
+            'harga_ongkir_cbm' => 'nullable', 
+            'harga_ongkir_wg' => 'nullable', 
             'ktp' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:20048',
             'npwp' => 'nullable|string|max:30',
             'tax_address' => 'nullable|string',
@@ -121,6 +126,7 @@ class MitraController extends Controller
             $mitraData = $request->except(['country', 'password', 'password_confirmation', 'create_account', 'bank_accounts', 'ktp']);
             $mitraData['code'] = $code;
             
+          
             if ($request->hasFile('ktp')) {
                 $file = $request->file('ktp');
                 $filename = time() . '_' . $file->getClientOriginalName();
@@ -240,6 +246,12 @@ class MitraController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->merge([
+            'max_wg' => intval(str_replace('.', '', $request->max_wg)),
+            'harga_ongkir_cbm' => intval(str_replace('.', '', $request->harga_ongkir_cbm)),
+            'harga_ongkir_wg' => intval(str_replace('.', '', $request->harga_ongkir_wg)),
+        ]);
+
         $rules = [
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:20|unique:mitras,code,' . $id,
@@ -253,9 +265,9 @@ class MitraController extends Controller
             'website' => 'nullable|url|max:255',
             'ktp' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:20048', 
             'npwp' => 'nullable|string|max:30',
-            'max_wg' => 'nullable|integer|min:0',
-            'harga_ongkir_cbm' => 'nullable|integer|min:0',
-            'harga_ongkir_wg' => 'nullable|integer|min:0',
+            'max_wg' => 'nullable', 
+            'harga_ongkir_cbm' => 'nullable', 
+            'harga_ongkir_wg' => 'nullable', 
             'tax_address' => 'nullable|string',
             'birthdate' => 'nullable|date',
             'created_date' => 'nullable|date',
@@ -299,6 +311,7 @@ class MitraController extends Controller
             DB::beginTransaction();
             
             $mitraData = $request->except(['country', 'password', 'password_confirmation', 'create_account', 'bank_accounts', 'deleted_bank_accounts', 'ktp']);
+       
             
             if ($request->hasFile('ktp')) {
                 if ($mitra->ktp && file_exists(public_path('ktp/' . $mitra->ktp))) {
@@ -459,4 +472,5 @@ class MitraController extends Controller
         
         return Excel::download(new MitrasExport($search, $groupId), $filename);
     }
+   
 }

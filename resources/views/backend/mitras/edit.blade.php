@@ -498,8 +498,8 @@
                     <label class="label mb-1 text-sm font-medium" for="harga_ongkir_cbm">Price per Cubic Meter</label>
                     <div class="relative">
                       
-                        <input type="number" class="input pl-10" id="harga_ongkir_cbm" name="harga_ongkir_cbm" 
-                               value="{{ old('harga_ongkir_cbm', $mitra->harga_ongkir_cbm) }}" min="0" />
+                        <input type="text" class="input pl-10" id="harga_ongkir_cbm" name="harga_ongkir_cbm" 
+                               value="{{ old('harga_ongkir_cbm', $mitra->harga_ongkir_cbm) }}"  />
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Used for shipping cost calculations based on volume (CBM)</p>
                 </div>
@@ -518,16 +518,16 @@
                     <label class="label mb-1 text-sm font-medium" for="max_wg">Maximum Weight (KG)</label>
                     <div class="relative">
                    
-                        <input type="number" class="input pl-10" id="max_wg" name="max_wg" 
-                               value="{{ old('max_wg', $mitra->max_wg) }}" min="0" />
+                        <input type="text" class="input pl-10" id="max_wg" name="max_wg" 
+                               value="{{ old('max_wg', $mitra->max_wg) }}"  />
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Maximum weight this mitra can handle (KG)</p>
                     
                     <label class="label mb-1 text-sm font-medium mt-3" for="harga_ongkir_wg">Price per Kilogram</label>
                     <div class="relative">
                       
-                        <input type="number" class="input pl-10" id="harga_ongkir_wg" name="harga_ongkir_wg" 
-                               value="{{ old('harga_ongkir_wg', $mitra->harga_ongkir_wg) }}" min="0" />
+                        <input type="text" class="input pl-10" id="harga_ongkir_wg" name="harga_ongkir_wg" 
+                               value="{{ old('harga_ongkir_wg', $mitra->harga_ongkir_wg) }}"  />
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Used for shipping cost calculations based on weight (KG)</p>
                 </div>
@@ -631,6 +631,30 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="sweetalert2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
+<script>
+    // cleave shpipping rates
+    var cleave = new Cleave('#harga_ongkir_cbm', {
+        numeral: true,
+        numeralThousandsGroupStyle: 'thousand',
+        numeralDecimalMark: ',',
+        delimiter: '.'
+    });
+    var cleave = new Cleave('#harga_ongkir_wg', {
+        numeral: true,
+        numeralThousandsGroupStyle: 'thousand',
+        numeralDecimalMark: ',',
+        delimiter: '.'
+    });
+
+    // max wg
+    var cleave = new Cleave('#max_wg', {
+        numeral: true,
+        numeralThousandsGroupStyle: 'thousand',
+        numeralDecimalMark: ',',
+        delimiter: '.'
+    });
+</script>
 
 
 <script>
