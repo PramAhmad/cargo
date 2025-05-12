@@ -128,6 +128,14 @@
                             Category Product </a>
                     </li>
                 @endcan
+                <li>
+                    {{-- taxes --}}
+                    <a href="{{ route('taxes.index') }}"
+                        class="sidebar-submenu-item {{ request()->routeIs(['taxes.*']) ? 'active' : '' }}"
+                        >
+                            Taxes                       
+                    </a>
+                </li>
             </ul>
         </li>
         <!-- Shipping -->
