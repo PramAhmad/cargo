@@ -36,6 +36,10 @@ function initMoneyInputs() {
         });
     });
 }
+loadTaxData();
+$('#nilai').on('change', function() {
+    calculatePPH();
+});
 
 $(document).ready(function() {
     // Initialize Select2
@@ -54,7 +58,7 @@ $('#customer_id').on('change', function() {
     const marketingId = $(this).find('option:selected').data('marketing-id');
     
     if (marketingId) {
-        $('#marketing_id').val(marketingId).prop('disabled', false);
+        $('#marketing_id').val(marketingId).prop('disabled', true);
         $('#marketing_id').trigger('change');
     } else {
         $('#marketing_id').val('').prop('disabled', true);
@@ -336,6 +340,9 @@ $('#bank_id').on('change', function() {
             $('#rek_name').val('');
         }
     });
+    
+    // Load tax data
+    loadTaxData();
 });
 
 /**
@@ -361,6 +368,7 @@ $(document).ready(function() {
         formData.append('summary[total_weight]', parseNumberFromFormatted($('#gw_display').val()));
         formData.append('summary[total_volume]', parseNumberFromFormatted($('#volume_display').val()));
         formData.append('summary[total_cbm]', parseNumberFromFormatted($('#cbm_display').val()));
+        
         
         // Tambahkan informasi biaya yang dihitung
         formData.append('cost_info[biaya]', parseNumberFromFormatted($('#biaya').val()));
@@ -985,12 +993,16 @@ function updateMarkingCode() {
     const marketingCode = $('#marketing_id option:selected').data('code') || '';
     const serviceType = $('#service').val() || '';
     
+    const customerCode = $('#customer_id option:selected').data('code') || '';
+    
     let markingCode = '';
     
-    if (mitraCode || marketingCode || serviceType) {
+    if (mitraCode) {
         const parts = [];
-        if (mitraCode) parts.push(mitraCode);
+        parts.push(mitraCode);
+        parts.push('WMLC'); 
         if (marketingCode) parts.push(marketingCode);
+        if (customerCode) parts.push(customerCode);
         if (serviceType) parts.push(serviceType);
         
         markingCode = parts.join('/');
@@ -1003,4 +1015,90 @@ function updateMarkingCode() {
 function updateNilaiDisplay() {
     const nilaiValue = parseNumberFromFormatted($('#nilai').val()) || 0;
     $('#nilai_simple').text('Rp ' + formatNumber(nilaiValue));
+    
+    calculatePPH();
+}
+// Function to load tax data
+function loadTaxData() {
+    // Fetch all active taxes
+    $.get('/api/taxes', function(response) {
+        if (response.success && response.data) {
+            const taxes = response.data;
+            
+            // Look for PPN tax
+            const ppnTax = taxes.find(tax => tax.name.toLowerCase().includes('ppn'));
+            if (ppnTax) {
+                $('#ppn').val(ppnTax.type === 'percentage' ? ppnTax.value : 0);
+                $('#ppn').closest('div').attr('title', `PPN ${ppnTax.value}% (ID: ${ppnTax.id})`);
+            }
+            
+            // Look for PPH tax
+            const pphTax = taxes.find(tax => tax.name.toLowerCase().includes('pph'));
+            if (pphTax) {
+                console.log('PPH Tax found:', pphTax);
+                
+                // Store the PPH tax information in data attributes instead of hidden fields
+                $('#pph').data('tax-type', pphTax.type);
+                $('#pph').data('tax-value', pphTax.value);
+                $('#pph').data('tax-id', pphTax.id);
+                
+                // Update tooltip with tax info
+                let tooltipText = '';
+                if (pphTax.type === 'percentage') {
+                    tooltipText = `PPH ${pphTax.value}% (ID: ${pphTax.id})`;
+                } else {
+                    tooltipText = `PPH Fixed Rp ${formatNumber(pphTax.value)} (ID: ${pphTax.id})`;
+                }
+                $('#pph').closest('div').attr('title', tooltipText);
+                
+                // If it's a fixed amount, directly set the value
+                if (pphTax.type === 'fixed') {
+                    $('#pph').val(formatNumber(pphTax.value));
+                } else {
+                    // For percentage, we'll calculate it based on nilai
+                    calculatePPH();
+                }
+            }
+            
+            // Recalculate values
+            calculatePPN();
+            calculateGrandTotal();
+        }
+    }).fail(function(error) {
+        console.error('Error loading tax data:', error);
+    });
+}
+
+// Calculate PPH based on percentage and nilai barang
+function calculatePPH() {
+    const pphType = $('#pph').data('tax-type');
+    const pphValue = parseFloat($('#pph').data('tax-value')) || 0;
+    const nilaiBarang = parseNumberFromFormatted($('#nilai').val()) || 0;
+    
+    let pphAmount = 0;
+    
+    if (pphType === 'percentage') {
+        // Calculate as percentage
+        if (pphValue > 0 && nilaiBarang > 0) {
+            pphAmount = nilaiBarang * (pphValue / 100);
+        }
+    } else if (pphType === 'fixed') {
+        // Use the fixed amount directly
+        pphAmount = pphValue;
+    }
+    
+    // Update the PPH field
+    $('#pph').val(formatNumber(pphAmount));
+    
+    // Update grand total
+    calculateGrandTotal();
+}
+
+// Update the calculatePPN function to use the new tax data
+function calculatePPN() {
+    const biayaKirim = parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
+    const ppnRate = parseFloat($('#ppn').val()) || 0;
+    const ppnAmount = biayaKirim * (ppnRate / 100);
+    
+    $('#ppn_total').val(formatNumber(ppnAmount));
 }

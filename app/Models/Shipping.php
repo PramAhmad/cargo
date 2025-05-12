@@ -67,6 +67,7 @@ class Shipping extends Model
         'customer_id',
         'kode_resi',
         'qr_resi',
+        'marketing_id',
     ];
 
     protected $casts = [

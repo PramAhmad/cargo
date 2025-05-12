@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::get('/customers/{customer}/banks', [CustomerController::class, 'getBanks']);
-
+Route::get('/taxes', [\App\Http\Controllers\Api\TaxController::class, 'index']);
 // Mitra API routes
 Route::get('/mitras/{mitraId}', [MitraController::class, 'index']);
 Route::get('/mitras/{mitraId}/products', [MitraController::class, 'getProducts']);

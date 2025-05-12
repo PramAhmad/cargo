@@ -184,7 +184,13 @@ class MarketingController extends Controller
     {
         $marketing->load(['banks.bank', 'marketingGroup', 'user']);
         
-        return view('backend.marketings.show', compact('marketing'));
+        $recentShipments = $marketing->shipments()
+            ->with(['customer', 'mitra', 'warehouse'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        return view('backend.marketings.show', compact('marketing', 'recentShipments'));
     }
 
     /**

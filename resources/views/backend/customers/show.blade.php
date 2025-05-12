@@ -277,21 +277,129 @@
                     </div>
                 </div>
                 
-                <!-- Order History Section (Placeholder for future integration) -->
+                <!-- Order History Section -->
                 <div class="card">
                     <div class="card-header border-b border-slate-200 dark:border-slate-700">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <i class="mr-2 h-5 w-5 text-primary-500" data-feather="shopping-bag"></i>
-                                <h4 class="card-title">Recent Orders</h4>
+                                <h4 class="card-title">Recent Shipments</h4>
                             </div>
-                            <a href="#" class="text-sm text-primary-500 hover:underline">View All Orders</a>
+                            <a href="{{ route('shippings.index', ['customer_id' => $customer->id]) }}" class="text-sm text-primary-500 hover:underline">View All Shipments</a>
                         </div>
                     </div>
                     <div class="card-body p-6">
-                        <div class="flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-md">
-                            <p class="text-slate-500 dark:text-slate-400">No orders found for this customer</p>
+                        @if(isset($recentShipments) && $recentShipments->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Invoice</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total</th>
+                                            <th class="px-3 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                                        @foreach($recentShipments as $shipping)
+                                            <tr>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-200">
+                                                    {{ $shipping->invoice }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                                                    {{ $shipping->transaction_date ? $shipping->transaction_date->format('d M Y') : '-' }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap">
+                                                    <span class="badge {{ $shipping->status == 'completed' ? 'badge-success' : 
+                                                                       ($shipping->status == 'pending' ? 'badge-warning' : 
+                                                                       ($shipping->status == 'cancelled' ? 'badge-danger' : 'badge-info')) }}">
+                                                        {{ $shipping->status ? ucfirst($shipping->status->value) : 'N/A' }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                                                    {{ number_format($shipping->grand_total, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-right text-sm">
+                                                    <a href="{{ route('shippings.show', $shipping->id) }}" class="text-primary-500 hover:text-primary-700">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-md">
+                                <p class="text-slate-500 dark:text-slate-400">No shipments found for this customer</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
+                <!-- Recent Shipments Section -->
+                <div class="card">
+                    <div class="card-header border-b border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="mr-2 h-5 w-5 text-primary-500" data-feather="shopping-bag"></i>
+                                <h4 class="card-title">Recent Shipments</h4>
+                            </div>
+                            <a href="{{ route('shippings.index', ['marketing_id' => $marketing->id]) }}" class="text-sm text-primary-500 hover:underline">View All Shipments</a>
                         </div>
+                    </div>
+                    <div class="card-body p-6">
+                        @if(isset($recentShipments) && $recentShipments->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Invoice</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Customer</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total</th>
+                                            <th class="px-3 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                                        @foreach($recentShipments as $shipping)
+                                            <tr>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-200">
+                                                    {{ $shipping->invoice }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                                                    {{ $shipping->customer ? $shipping->customer->name : 'N/A' }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                                                    {{ $shipping->transaction_date ? $shipping->transaction_date->format('d M Y') : '-' }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap">
+                                                    <span class="badge {{ $shipping->status == 'completed' ? 'badge-success' : 
+                                                                       ($shipping->status == 'pending' ? 'badge-warning' : 
+                                                                       ($shipping->status == 'cancelled' ? 'badge-danger' : 'badge-info')) }}">
+                                                        {{ $shipping->status ? ucfirst($shipping->status->value) : 'N/A' }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                                                    {{ number_format($shipping->grand_total, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-3 py-3 whitespace-nowrap text-right text-sm">
+                                                    <a href="{{ route('shippings.show', $shipping->id) }}" class="text-primary-500 hover:text-primary-700">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-md">
+                                <p class="text-slate-500 dark:text-slate-400">No shipments found for this marketing representative</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

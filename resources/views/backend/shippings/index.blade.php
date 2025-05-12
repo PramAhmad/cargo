@@ -54,47 +54,46 @@
             </div>
 
             <!-- Date Filter Starts -->
-            <div class="flex w-full flex-wrap md:flex-nowrap items-center gap-2 md:w-auto">
-                <div class="flex items-center gap-2">
-                    <label for="date_from" class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">From:</label>
+            <div class="flex w-full items-center gap-2 md:w-auto">
+                <div class="relative">
                     <input 
-                        type="date" 
-                        id="date_from" 
-                        name="date_from" 
-                        value="{{ $dateFrom ?? '' }}" 
-                        class="h-10 rounded-primary border border-transparent bg-white shadow-sm text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-transparent dark:bg-slate-800 dark:focus:border-primary-500 px-3"
-                        onchange="applyFilters()"
+                        id="date_range" 
+                        type="text" 
+                        class="input input-date-range h-10 w-full md:w-64 rounded-primary border border-transparent bg-white shadow-sm text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-transparent dark:bg-slate-800 dark:focus:border-primary-500 px-3"
+                        placeholder="Select date range"
+                        value="{{ ($dateFrom && $dateTo) ? date('Y-m-d', strtotime($dateFrom)) . ' to ' . date('Y-m-d', strtotime($dateTo)) : '' }}"
+                        readonly
                     >
+                    <input type="hidden" id="date_from" name="date_from" value="{{ $dateFrom ?? '' }}">
+                    <input type="hidden" id="date_to" name="date_to" value="{{ $dateTo ?? '' }}">
+                    
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i class="h-4 w-4" data-feather="calendar"></i>
+                    </div>
                 </div>
-
-                <div class="flex items-center gap-2">
-                    <label for="date_to" class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">To:</label>
-                    <input 
-                        type="date" 
-                        id="date_to" 
-                        name="date_to" 
-                        value="{{ $dateTo ?? '' }}" 
-                        class="h-10 rounded-primary border border-transparent bg-white shadow-sm text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-transparent dark:bg-slate-800 dark:focus:border-primary-500 px-3"
-                        onchange="applyFilters()"
-                    >
+                
+                <div class="flex space-x-1">
+                    <button type="button" class="date-preset btn btn-xs btn-secondary" data-range="today">Today</button>
+                    <button type="button" class="date-preset btn btn-xs btn-secondary" data-range="week">This Week</button>
+                    <button type="button" class="date-preset btn btn-xs btn-secondary" data-range="month">This Month</button>
                 </div>
+                
+                <button type="button" id="apply-date-filter" class="btn btn-xs btn-primary">
+                    <i class="h-3.5 mr-1" data-feather="filter"></i>
+                    Filter
+                </button>
 
                 @if($dateFrom || $dateTo)
                     <a href="{{ route('shippings.index', ['search' => $search ?? '', 'status' => $statusFilter ?? '']) }}" class="text-xs text-danger-500 hover:underline flex items-center">
                         <i class="h-3.5 mr-1" data-feather="x"></i>
-                        Clear Dates
+                        Clear
                     </a>
                 @endif
             </div>
             <!-- Date Filter Ends -->
 
             <!-- Shipping Action Starts -->
-            <div class="flex w-full items-center justify-between gap-x-4 md:w-auto">
-                <a class="btn btn-primary" href="{{ route('shippings.create') }}" role="button">
-                    <i data-feather="plus" height="1rem" width="1rem"></i>
-                    <span class="hidden sm:inline-block">Add Shipping</span>
-                </a>
-            </div>
+           
             <!-- Shipping Action Ends -->
         </div>
         <!-- Shipping Header Ends -->
@@ -312,3 +311,130 @@
         }
     </script>
 </x-app-layout>
+
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<style>
+    .daterangepicker {
+        font-family: inherit;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .daterangepicker .ranges li.active {
+        background-color: #3b82f6;
+    }
+    .daterangepicker td.active, .daterangepicker td.active:hover {
+        background-color: #3b82f6;
+    }
+    .daterangepicker .drp-buttons .btn {
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    .daterangepicker .drp-buttons .applyBtn {
+        background-color: #3b82f6;
+        color: white;
+    }
+    .daterangepicker .drp-buttons .cancelBtn {
+        background-color: #f1f5f9;
+        color: #334155;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize the daterangepicker
+        $('#date_range').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                format: 'YYYY-MM-DD',
+                cancelLabel: 'Clear',
+                applyLabel: 'Apply',
+                separator: ' to '
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        });
+
+        $('#date_range').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            $('#date_from').val(picker.startDate.format('YYYY-MM-DD'));
+            $('#date_to').val(picker.endDate.format('YYYY-MM-DD'));
+            applyFilters();
+        });
+
+        $('#date_range').on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+            $('#date_from').val('');
+            $('#date_to').val('');
+            applyFilters();
+        });
+
+        // Preset date buttons
+        $('.date-preset').on('click', function() {
+            const range = $(this).data('range');
+            let startDate, endDate;
+            
+            switch(range) {
+                case 'today':
+                    startDate = moment();
+                    endDate = moment();
+                    break;
+                case 'week':
+                    startDate = moment().startOf('week');
+                    endDate = moment().endOf('week');
+                    break;
+                case 'month':
+                    startDate = moment().startOf('month');
+                    endDate = moment().endOf('month');
+                    break;
+            }
+            
+            $('#date_range').val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+            $('#date_from').val(startDate.format('YYYY-MM-DD'));
+            $('#date_to').val(endDate.format('YYYY-MM-DD'));
+            applyFilters();
+        });
+    });
+
+    // Update the existing applyFilters function
+    function applyFilters() {
+        const statusFilter = document.getElementById('status-filter').value;
+        const dateFrom = document.getElementById('date_from').value;
+        const dateTo = document.getElementById('date_to').value;
+        const searchParam = '{{ $search ?? "" }}';
+        
+        let url = '{{ route('shippings.index') }}?';
+        
+        if (searchParam) {
+            url += `search=${searchParam}&`;
+        }
+        
+        if (statusFilter) {
+            url += `status=${statusFilter}&`;
+        }
+        
+        if (dateFrom) {
+            url += `date_from=${dateFrom}&`;
+        }
+        
+        if (dateTo) {
+            url += `date_to=${dateTo}`;
+        }
+        
+        window.location.href = url;
+    }
+</script>
+@endpush

@@ -61,6 +61,10 @@ class Marketing extends Model
     return $this->hasMany(MarketingBank::class);
 }
 
+public function shipments()
+{
+    return $this->hasMany(Shipping::class);
+}
 /**
  * Get the default bank account for the marketing.
  */

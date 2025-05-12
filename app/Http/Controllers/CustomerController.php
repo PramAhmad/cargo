@@ -217,7 +217,14 @@ class CustomerController extends Controller
     {
         $customer->load(['banks', 'marketing', 'customerGroup', 'customerCategory', 'user']);
         
-        return view('backend.customers.show', compact('customer'));
+        // Get recent shipments for this customer (last 5)
+        $recentShipments = $customer->shipments()
+            ->with(['bank', 'warehouse', 'mitra'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        return view('backend.customers.show', compact('customer', 'recentShipments'));
     }
 
     /**

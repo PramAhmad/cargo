@@ -105,6 +105,7 @@ class ShippingController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+        
         try {
             $validator = Validator::make($request->all(), [
                 'invoice' => 'required|string|unique:shippings,invoice',
@@ -144,13 +145,13 @@ class ShippingController extends Controller
              
             
             DB::beginTransaction();
-            
+            $marketingId = Customer::find($request->input('customer_id'))->marketing_id;
             $shippingData = [
                 'kode_resi' => $request->input('kode_resi'),
                 'qr_resi' => $qrFileName,
                 'invoice' => $request->input('invoice'),
                 'customer_id' => $request->input('customer_id'),
-                'marketing_id' => $request->input('marketing_id'),
+                'marketing_id' => $marketingId,
                 'mitra_id' => $request->input('mitra_id'),
                 'warehouse_id' => $request->input('warehouse_id'),
                 'status' => ShippingStatus::waiting->value,

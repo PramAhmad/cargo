@@ -52,7 +52,7 @@
                                     <select id="customer_id" name="customer_id" class="tom-select" required>
                                         <option value="">Pilih Customer</option>
                                         @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}" data-marketing-id="{{ $customer->marketing_id }}">
+                                            <option value="{{ $customer->id }}" data-marketing-id="{{ $customer->marketing_id }}" data-code="{{ $customer->code ?? '' }}">
                                                 {{ $customer->name }}
                                             </option>
                                         @endforeach
@@ -180,7 +180,7 @@
                             </div>
                             <p class="text-xs text-amber-600 mt-1">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Format: [MitraCode]/[MarketingCode]/[SEA atau AIR]
+                                Format: [Mitra]/WMLC/[Marketing]/[Customer]/[Layanan]
                             </p>
                         </div>
                         
@@ -458,10 +458,10 @@
                     
                     <!-- PPN -->
                     <div class="col-span-1">
-                        <label for="ppn" class="label mb-1 text-sm font-medium">PPN</label>
+                        <label for="ppn" class="label mb-1 text-sm font-medium">PPN (%)</label>
                         <div class="relative">
-                            <input type="text" id="ppn" name="ppn" class="input pr-8 text-right" value="{{ $ppn }}" data-calculate-total="true">
-                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">%</span>
+                            <input type="text" id="ppn" name="ppn" class="input pr-8 text-right" data-calculate-total="true" >
+                            
                         </div>
                     </div>
                     

@@ -49,6 +49,10 @@ class Customer extends Model
         'borndate' => 'date',
         'created_date' => 'date',
     ];
+    public function shipments()
+    {
+        return $this->hasMany(Shipping::class);
+    }
 
     /**
      * Get the marketing that owns the customer.

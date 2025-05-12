@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TaxController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\MitraWarehouseController;
@@ -40,7 +41,9 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('mitras', \App\Http\Controllers\MitraController::class);
     Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
     Route::resource('shippings', \App\Http\Controllers\ShippingController::class);
-
+    Route::get('/taxes', [TaxController::class, 'index'])->name('taxes.index');
+    Route::post('/taxes/{tax}/toggle', [TaxController::class, 'toggle'])->name('taxes.toggle');
+    Route::post('/taxes/{tax}/update-fields', [TaxController::class, 'updateFields'])->name('taxes.update-fields');
 });
 Route::get('mitras/export', [\App\Http\Controllers\MitraController::class, 'export'])->name('mitras.export');
 Route::middleware(['auth'])->prefix('mitras/{mitra}/warehouses')->name('mitra.warehouses.')->group(function () {
