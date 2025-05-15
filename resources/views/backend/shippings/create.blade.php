@@ -698,8 +698,8 @@
                                 <input type="text" id="lain_lain" name="lainlain" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
                             </div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Peletakan</span>
-                                <input type="text" id="peletakan" name="peletakan" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Pelet</span>
+                                <input type="text" id="pelet" name="pelet" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
                             </div>
                         </div>
                     </div>
