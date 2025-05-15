@@ -629,86 +629,69 @@
                         <div class="grid grid-cols-2 gap-x-2">
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Sup-Agent</span>
-                                <input type="text" id="sup_agent" name="sup_agent" class="input input-sm h-7 pl-16 text-right text-xs money-mask" data-fee="true">
                             </div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Cukai</span>
-                                <input type="text" id="cukai" name="cukai" class="input input-sm h-7 pl-10 text-right text-xs money-mask" data-fee="true">
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-x-2">
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Tbh</span>
-                                <input type="text" id="tbh" name="tbh" class="input input-sm h-7 pl-8 text-right text-xs money-mask" data-fee="true">
                             </div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">PPnBM</span>
-                                <input type="text" id="ppnbm" name="ppnbm" class="input input-sm h-7 pl-10 text-right text-xs money-mask" data-fee="true">
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-x-2">
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Freight</span>
-                                <input type="text" id="freight" name="freight" class="input input-sm h-7 pl-11 text-right text-xs money-mask" data-fee="true">
-                            </div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">DO</span>
-                                <input type="text" id="do" name="do" class="input input-sm h-7 pl-6 text-right text-xs money-mask" data-fee="true">
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-x-2">
+                            <!-- BKR Field -->
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">PFPD</span>
-                                <input type="text" id="pfpd" name="pfpd" class="input input-sm h-7 pl-9 text-right text-xs money-mask" data-fee="true">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">BKR</span>
+                                <input type="text" id="bkr" name="bkr" class="input input-sm h-7 w-full text-right pl-10 money-mask" data-fee="true" data-calculate-total="true">
                             </div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Charge</span>
-                                <input type="text" id="charge" name="charge" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-x-2">
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Jkt-Sda</span>
-                                <input type="text" id="jkt_sda" name="jkt_sda" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
-                            </div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Sda-User</span>
-                                <input type="text" id="sda_user" name="sda_user" class="input input-sm h-7 pl-14 text-right text-xs money-mask" data-fee="true">
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-x-2">
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Jasa Bkr</span>
-                                <input type="text" id="bkr" name="bkr" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
-                            </div>
+                            
+                            <!-- Asuransi Field -->
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Asuransi</span>
-                                <input type="text" id="asuransi" name="asuransi" class="input input-sm h-7 pl-12 text-right text-xs money-mask" data-fee="true">
+                                <input type="text" id="asuransi" name="asuransi" class="input input-sm h-7 w-full text-right pl-16 money-mask" data-fee="true" data-calculate-total="true">
+                            </div>
+                        </div>
+                        
+                        <!-- New Row for Pelet and Lainlain -->
+                        <div class="grid grid-cols-2 gap-x-2">
+                            <!-- Pelet Field -->
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Pelet</span>
+                                <input type="text" id="pelet" name="pelet" class="input input-sm h-7 w-full text-right pl-10 money-mask" data-fee="true" data-calculate-total="true">
+                            </div>
+                            
+                            <!-- Lainlain Field -->
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Lain-lain</span>
+                                <input type="text" id="lainlain" name="lainlain" class="input input-sm h-7 w-full text-right pl-16 money-mask" data-fee="true" data-calculate-total="true">
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Total Biaya footer -->
-                    <div class="mt-2 pt-2 border-t border-blue-200 dark:border-slate-700">
-                        <div class="grid grid-cols-2 gap-1 items-center">
-                            <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Total Murni Biaya</div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
-                                <input type="text" id="biaya" name="biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 font-medium money-mask" readonly>
-                            </div>
+                </div>
+                
+                <!-- Total Biaya footer -->
+                <div class="mt-2 pt-2 border-t border-blue-200 dark:border-slate-700">
+                    <div class="grid grid-cols-2 gap-1 items-center">
+                        <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Total Murni Biaya</div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
+                            <input type="text" id="biaya" name="biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 font-medium money-mask" readonly>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-1 items-center mt-1">
-                            <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Nilai + Biaya</div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
-                                <input type="text" id="nilai_biaya" name="nilai_biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 money-mask" readonly>
-                            </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-1 items-center mt-1">
+                        <div class="text-xs font-medium text-blue-800 dark:text-blue-400">Nilai + Biaya</div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-blue-500 text-xs">Rp</span>
+                            <input type="text" id="nilai_biaya" name="nilai_biaya" class="input input-sm h-7 pl-6 text-right text-xs bg-blue-100 dark:bg-slate-800 money-mask" readonly>
                         </div>
                     </div>
                 </div>
