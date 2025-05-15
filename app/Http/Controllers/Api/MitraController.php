@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CategoryProduct;
 use App\Models\Mitra;
 use App\Models\Product;
 use App\Models\Warehouse;
@@ -103,5 +104,30 @@ class MitraController extends Controller
             'category' => $product->category ? $product->category->name : null,
             'parent' => $product->parent ? $product->parent->name : null
         ]);
+    }
+
+    /**
+     * Get all categories belonging to a mitra
+     * 
+     * @param int $mitraId
+     * @return JsonResponse
+     */
+    public function getCategories(int $mitraId): JsonResponse
+    {
+        $categories = CategoryProduct::where('mitra_id', $mitraId)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'mit_price_cbm' => $category->mit_price_cbm,
+                    'mit_price_kg' => $category->mit_price_kg,
+                    'cust_price_cbm' => $category->cust_price_cbm,
+                    'cust_price_kg' => $category->cust_price_kg,
+                ];
+            });
+        
+        return response()->json($categories);
     }
 }

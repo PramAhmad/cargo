@@ -40,6 +40,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function ()
     Route::resource('customers', CustomerController::class);
     Route::resource('mitras', \App\Http\Controllers\MitraController::class);
     Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
+    Route::post('/category-products/store-ajax', [\App\Http\Controllers\CategoryProductController::class, 'storeAjax'])->name('category-products.store-ajax');
     Route::resource('shippings', \App\Http\Controllers\ShippingController::class);
     Route::get('/taxes', [TaxController::class, 'index'])->name('taxes.index');
     Route::post('/taxes/{tax}/toggle', [TaxController::class, 'toggle'])->name('taxes.toggle');

@@ -109,15 +109,7 @@
                                 </div>
                                 
                                 <!-- Row 6 -->
-                                <div class="col-span-1">
-                                    <label for="service" class="label mb-1 text-sm font-medium">Layanan</label>
-                                    <select id="service" name="service" class="select">
-                                        <option value="">Pilih Layanan</option>
-                                        <option value="SEA">SEA</option>
-                                        <option value="AIR">AIR</option>
-                                    </select>
-                                </div>
-                                
+                             
                                 <div class="col-span-1">
                                     <label for="bank_id" class="label mb-1 text-sm font-medium">Bank</label>
                                     <select id="bank_id" name="bank_id" class="select">
@@ -149,6 +141,7 @@
                 </div>
                 <div class="card-body p-6">
                     <div class="grid grid-cols-12 gap-6">
+                        <!-- Mitra Selection -->
                         <div class="col-span-6">
                             <label for="mitra_id" class="label label-required mb-1 text-sm font-medium">Mitra</label>
                             <select id="mitra_id" name="mitra_id" class="tom-select" required>
@@ -161,7 +154,7 @@
                             </select>
                         </div>
                         
-                        <!-- Warehouse -->
+                        <!-- Warehouse Selection -->
                         <div class="col-span-6">
                             <label for="warehouse_id" class="label label-required mb-1 text-sm font-medium">Gudang</label>
                             <select id="warehouse_id" name="warehouse_id" class="select" required disabled>
@@ -169,8 +162,37 @@
                             </select>
                         </div>
                         
+                        <!-- Category Selection & Warehouse Info in the same row -->
+                        <div class="col-span-12">
+                            <div class="grid grid-cols-12 gap-6">
+                                <!-- Category Selection -->
+                                <div class="col-span-6">
+                                    <label for="category_id" class="label label-required mb-1 text-sm font-medium">Kategori Produk</label>
+                                    <div class="flex gap-2">
+                                        <select id="category_id" name="category_id" class="select w-full" required disabled>
+                                            <option value="">Pilih Kategori</option>
+                                        </select>
+                                        <div id="categoryInfoBtn" class="hidden">
+                                            <button type="button" class="btn btn-icon btn-secondary h-10 w-10" title="Lihat Informasi Kategori">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Warehouse Info container will be inserted here by JavaScript -->
+                                    <div id="warehouse_info_container"></div>
+                                </div>
+                                
+                                <!-- Warehouse Information (move to the right column) -->
+                                <div class="col-span-6" id="warehouse_category_container">
+                                    <!-- This area will be populated by JavaScript 
+                                         It will contain the warehouse details and available categories -->
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Kode Marking -->
-                        <div class="col-span-4">
+                        <div class="col-span-6">
                             <label for="marking" class="label mb-1 text-sm font-medium">Kode Marking</label>
                             <div class="relative">
                                 <input type="text" id="marking" name="marking" class="input">
@@ -185,7 +207,7 @@
                         </div>
                         
                         <!-- Jenis Kiriman -->
-                        <div class="col-span-4">
+                        <div class="col-span-6">
                             <label for="shipping_type" class="label label-required mb-1 text-sm font-medium">Jenis Kiriman</label>
                             <select id="shipping_type" name="shipping_type" class="select" required>
                                 @foreach(\App\Enums\ShippingType::cases() as $type)
@@ -195,12 +217,23 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-span-6">
+                            <label for="service" class="label mb-1 text-sm font-medium">Layanan</label>
+                            <select id="service" name="service" class="select">
+                                <option value="">Pilih Layanan</option>
+                                <option value="SEA">SEA</option>
+                                <option value="AIR">AIR</option>
+                            </select>
+                        </div>
                         
                         <!-- Supplier -->
-                        <div class="col-span-4">
+                        <div class="col-span-6">
                             <label for="supplier" class="label label-required mb-1 text-sm font-medium">Supplier</label>
                             <input type="text" id="supplier" name="supplier" class="input" required>
                         </div>
+                        
+                        <!-- Service Type -->
+                      
                         
                         <!-- Invoice File -->
                         <div class="col-span-6">
@@ -214,10 +247,42 @@
                             <input type="file" id="packagelist_file" name="packagelist_file" class="input" accept="application/pdf,image/*" required>
                         </div>
                     </div>
+                    
+                    <!-- Selected Category Info -->
+                    <div id="selectedCategoryInfo" class="mt-4 p-4 border border-amber-200 rounded-md bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800/30 hidden">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 text-amber-500 mr-3">
+                                <i class="fas fa-tag text-xl"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <h6 class="font-medium text-amber-800 dark:text-amber-400 mb-1" id="categoryName">Nama Kategori</h6>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-1">Harga per CBM (Mitra):</p>
+                                        <p class="font-medium" id="categoryPriceCbm">Rp 0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-1">Harga per KG (Mitra):</p>
+                                        <p class="font-medium" id="categoryPriceKg">Rp 0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-1">Harga per CBM (Customer):</p>
+                                        <p class="font-medium" id="categoryCustPriceCbm">Rp 0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-1">Harga per KG (Customer):</p>
+                                        <p class="font-medium" id="categoryCustPriceKg">Rp 0</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-amber-600 mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Semua produk dalam transaksi ini akan menggunakan harga kategori ini untuk perhitungan biaya.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Available Warehouse Products -->
+            </div>            <!-- Available Warehouse Products - Update this section -->
             <div id="warehouseProductsSection" class="card mt-4 hidden">
                 <div class="card-header bg-blue-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600">
                     <div class="flex justify-between items-center">
@@ -225,11 +290,16 @@
                             <i class="fas fa-cubes mr-2 text-blue-500"></i>
                             Barang Tersedia di Gudang
                         </h5>
-                        <div class="w-1/3 relative">
-                            <input type="text" id="product_search" class="input input-sm pl-8" placeholder="Cari barang...">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </span>
+                        <div class="flex gap-2">
+                            <div id="categoryFilterContainer">
+                                <!-- Category filter will be dynamically added here -->
+                            </div>
+                            <div class="w-48 relative">
+                                <input type="text" id="product_search" class="input input-sm pl-8" placeholder="Cari barang...">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -317,12 +387,12 @@
     <div class="card-body p-4">
         <!-- Calculation methods -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-            <!-- Volume-based Calculation -->
+            <!-- Volume-based Calculation - Updated to use category pricing -->
             <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30 p-4">
                 <div class="flex items-center mb-2">
                     <h6 class="text-sm font-medium flex items-center">
                         <i class="fas fa-cube mr-2 text-blue-500"></i>
-                        Perhitungan Berdasarkan Volume
+                        Perhitungan Berdasarkan Volume (Kategori)
                     </h6>
                 </div>
                 
@@ -332,10 +402,10 @@
                         <div class="font-medium" id="total_volume_display">0,00</div>
                     </div>
                     <div class="col-span-4">
-                        <div class="text-xs text-gray-500 mb-1">Harga per CBM</div>
+                        <div class="text-xs text-gray-500 mb-1">Harga Kategori/CBM</div>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-1 text-gray-500 text-xs">Rp</span>
-                            <input type="number" id="harga_ongkir_cbm" name="harga_ongkir_cbm" class="input input-sm h-7 pl-6 text-right" value="0" min="0">
+                            <input type="number" id="harga_ongkir_cbm" name="harga_ongkir_cbm" class="input input-sm h-7 pl-6 text-right" value="0" min="0" readonly>
                         </div>
                     </div>
                     <div class="col-span-4">
@@ -346,7 +416,7 @@
                 
                 <div class="text-xs text-blue-600">
                     <i class="fas fa-info-circle mr-1"></i>
-                    Rumus: Total Volume (m³) × Harga per CBM
+                    Rumus: Total Volume (m³) × Harga Kategori per CBM
                 </div>
             </div>
             

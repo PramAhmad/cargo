@@ -27,8 +27,11 @@ Route::get('/taxes', [\App\Http\Controllers\Api\TaxController::class, 'index']);
 Route::get('/mitras/{mitraId}', [MitraController::class, 'index']);
 Route::get('/mitras/{mitraId}/products', [MitraController::class, 'getProducts']);
 Route::get('/mitras/{mitraId}/warehouses', [MitraController::class, 'getWarehouses']);
+Route::get('/mitras/{mitraId}/categories', [MitraController::class, 'getCategories']);
 Route::get('/products/{productId}', [MitraController::class, 'getProductDetails']);
 Route::get('/shippings/generate-invoice', [ShippingController::class, 'generateInvoice']);
 Route::get('/warehouses/{warehouseId}', [WarehouseController::class, 'getWarehouseDetails']);
 Route::get('/warehouses/{warehouseId}/products', [WarehouseController::class, 'getProducts']);
+Route::get('/warehouses/{warehouseId}/products-by-category', [WarehouseController::class, 'getWarehouseProducts']);
+Route::get('/warehouses/{warehouseId}/categories/{categoryId}/products', [WarehouseController::class, 'getProductsByCategory']);
 

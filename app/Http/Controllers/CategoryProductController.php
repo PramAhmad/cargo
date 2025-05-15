@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CategoryProduct;
+use App\Models\Mitra;
 use Illuminate\Http\Request;
 
 class CategoryProductController extends Controller
@@ -14,13 +15,18 @@ class CategoryProductController extends Controller
     {
         // Get the search query
         $search = $request->input('search');
+        $mitraFilter = $request->input('mitra_id');
         
         // Build the query
-        $categoryProductsQuery = CategoryProduct::query();
+        $categoryProductsQuery = CategoryProduct::with('mitra');
         
-        // Apply search filter if search term is provided
+        // Apply filters if provided
         if ($search) {
             $categoryProductsQuery->where('name', 'like', "%{$search}%");
+        }
+        
+        if ($mitraFilter) {
+            $categoryProductsQuery->where('mitra_id', $mitraFilter);
         }
         
         // Order and paginate results
@@ -28,7 +34,9 @@ class CategoryProductController extends Controller
             ->paginate(10)
             ->withQueryString(); // This preserves the search parameter in pagination links
             
-        return view('backend.category-products.index', compact('categoryProducts', 'search'));
+        $mitras = Mitra::orderBy('name')->get();
+            
+        return view('backend.category-products.index', compact('categoryProducts', 'search', 'mitras', 'mitraFilter'));
     }
 
     /**
@@ -36,7 +44,8 @@ class CategoryProductController extends Controller
      */
     public function create()
     {
-        return view('backend.category-products.create');
+        $mitras = Mitra::orderBy('name')->get();
+        return view('backend.category-products.create', compact('mitras'));
     }
 
     /**
@@ -46,6 +55,11 @@ class CategoryProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'mitra_id' => 'required|exists:mitras,id',
+            'mit_price_cbm' => 'nullable|numeric|min:0',
+            'mit_price_kg' => 'nullable|numeric|min:0',
+            'cust_price_cbm' => 'nullable|numeric|min:0',
+            'cust_price_kg' => 'nullable|numeric|min:0',
         ]);
 
         CategoryProduct::create($validated);
@@ -55,10 +69,51 @@ class CategoryProductController extends Controller
     }
 
     /**
+     * Store a newly created category via AJAX.
+     */
+    public function storeAjax(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'mitra_id' => 'required|exists:mitras,id',
+                'mit_price_cbm' => 'nullable|numeric|min:0',
+                'mit_price_kg' => 'nullable|numeric|min:0',
+                'cust_price_cbm' => 'nullable|numeric|min:0',
+                'cust_price_kg' => 'nullable|numeric|min:0',
+            ]);
+
+            $category = CategoryProduct::create($validated);
+            $category->load('mitra'); // Load the mitra relationship
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Category created successfully',
+                'data' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'mitra_id' => $category->mitra_id,
+                    'mitra_name' => $category->mitra->name,
+                    'mit_price_cbm' => $category->mit_price_cbm,
+                    'mit_price_kg' => $category->mit_price_kg,
+                    'cust_price_cbm' => $category->cust_price_cbm,
+                    'cust_price_kg' => $category->cust_price_kg,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(CategoryProduct $categoryProduct)
     {
+        $categoryProduct->load('mitra');
         return view('backend.category-products.show', compact('categoryProduct'));
     }
 
@@ -67,7 +122,8 @@ class CategoryProductController extends Controller
      */
     public function edit(CategoryProduct $categoryProduct)
     {
-        return view('backend.category-products.edit', compact('categoryProduct'));
+        $mitras = Mitra::orderBy('name')->get();
+        return view('backend.category-products.edit', compact('categoryProduct', 'mitras'));
     }
 
     /**
@@ -77,6 +133,11 @@ class CategoryProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'mitra_id' => 'required|exists:mitras,id',
+            'mit_price_cbm' => 'nullable|numeric|min:0',
+            'mit_price_kg' => 'nullable|numeric|min:0',
+            'cust_price_cbm' => 'nullable|numeric|min:0',
+            'cust_price_kg' => 'nullable|numeric|min:0',
         ]);
 
         $categoryProduct->update($validated);

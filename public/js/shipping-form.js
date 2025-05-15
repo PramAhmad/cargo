@@ -9,8 +9,10 @@ let warehouseProducts = [];
 let currentPage = 1;
 let itemsPerPage = 10;
 let filteredProducts = [];
-let mitraOngkirCbm = 0;
-let mitraOngkirWg = 0;
+let mitraCategories = [];
+let selectedMitraId = null;
+let selectedWarehouseId = null;
+let selectedCategoryId = null;
 
 // Helper functions
 function formatNumber(number) {
@@ -36,10 +38,6 @@ function initMoneyInputs() {
         });
     });
 }
-loadTaxData();
-$('#nilai').on('change', function() {
-    calculatePPH();
-});
 
 $(document).ready(function() {
     // Initialize Select2
@@ -51,119 +49,137 @@ $(document).ready(function() {
     // Initialize money inputs for formatting
     initMoneyInputs();
     
+    // Load tax data
+    loadTaxData();
+    
     // Customer selection change
-// Customer selection change
-$('#customer_id').on('change', function() {
-    const customerId = $(this).val();
-    const marketingId = $(this).find('option:selected').data('marketing-id');
-    
-    if (marketingId) {
-        $('#marketing_id').val(marketingId).prop('disabled', true);
-        $('#marketing_id').trigger('change');
-    } else {
-        $('#marketing_id').val('').prop('disabled', true);
-        updateMarkingCode();
-    }
-    
-    if (customerId) {
-        $.get(`/api/customers/${customerId}/banks`, function(data) {
-            const bankSelect = $('#bank_id');
-            bankSelect.empty().append('<option value="">Pilih Bank</option>');
-            
-            if (data.length > 0) {
-                data.forEach(bank => {
-                    const isDefault = bank.is_default ? ' (Default)' : '';
-                    bankSelect.append(`
-                        <option value="${bank.id}" 
-                                data-rek-no="${bank.rek_no || ''}" 
-                                data-rek-name="${bank.rek_name || ''}"
-                                ${bank.is_default ? 'selected' : ''}>
-                            ${bank.bank.name} - ${bank.rek_name} - ${bank.rek_no}${isDefault}
-                        </option>
-                    `);
-                });
-                
-                // Trigger change to populate rek_no and rek_name
-                bankSelect.trigger('change');
-            } else {
-                bankSelect.append('<option value="" disabled>Customer tidak memiliki rekening bank</option>');
-            }
-        });
-    } else {
-        $('#bank_id').empty().append('<option value="">Pilih Bank</option>');
-        $('#rek_no').val('');
-        $('#rek_name').val('');
-    }
-});
-
-// Improve bank selection change to use data attributes
-$('#bank_id').on('change', function() {
-    const bankId = $(this).val();
-    const selectedOption = $(this).find('option:selected');
-    
-    if (bankId) {
-        // Get values from data attributes
-        const rekNo = selectedOption.data('rek-no') || '';
-        const rekName = selectedOption.data('rek-name') || '';
+    $('#customer_id').on('change', function() {
+        const customerId = $(this).val();
+        const marketingId = $(this).find('option:selected').data('marketing-id');
         
-        // Set values to hidden fields
-        $('#rek_no').val(rekNo);
-        $('#rek_name').val(rekName);
-    } else {
-        // Reset values
-        $('#rek_no').val('');
-        $('#rek_name').val('');
-    }
-});
+        if (marketingId) {
+            $('#marketing_id').val(marketingId).prop('disabled', true);
+            $('#marketing_id').trigger('change');
+        } else {
+            $('#marketing_id').val('').prop('disabled', true);
+            updateMarkingCode();
+        }
+        
+        if (customerId) {
+            $.get(`/api/customers/${customerId}/banks`, function(data) {
+                const bankSelect = $('#bank_id');
+                bankSelect.empty().append('<option value="">Pilih Bank</option>');
+                
+                if (data.length > 0) {
+                    data.forEach(bank => {
+                        const isDefault = bank.is_default ? ' (Default)' : '';
+                        bankSelect.append(`
+                            <option value="${bank.id}" 
+                                    data-rek-no="${bank.rek_no || ''}" 
+                                    data-rek-name="${bank.rek_name || ''}"
+                                    ${bank.is_default ? 'selected' : ''}>
+                                ${bank.bank.name} - ${bank.rek_name} - ${bank.rek_no}${isDefault}
+                            </option>
+                        `);
+                    });
+                    
+                    // Trigger change to populate rek_no and rek_name
+                    bankSelect.trigger('change');
+                } else {
+                    bankSelect.append('<option value="" disabled>Customer tidak memiliki rekening bank</option>');
+                }
+            });
+        } else {
+            $('#bank_id').empty().append('<option value="">Pilih Bank</option>');
+            $('#rek_no').val('');
+            $('#rek_name').val('');
+        }
+    });
+
+    // Bank selection change
+    $('#bank_id').on('change', function() {
+        const bankId = $(this).val();
+        const selectedOption = $(this).find('option:selected');
+        
+        if (bankId) {
+            // Get values from data attributes
+            const rekNo = selectedOption.data('rek-no') || '';
+            const rekName = selectedOption.data('rek-name') || '';
+            
+            // Set values to hidden fields
+            $('#rek_no').val(rekNo);
+            $('#rek_name').val(rekName);
+        } else {
+            // Reset values
+            $('#rek_no').val('');
+            $('#rek_name').val('');
+        }
+    });
     
     // Mitra selection change
     $('#mitra_id').on('change', function() {
         const mitraId = $(this).val();
         const markingCode = $(this).find('option:selected').data('marking-code') || '';
         
+        selectedMitraId = mitraId;
         $('#marking').val(markingCode);
         
         if (mitraId) {
+            // Reset the warehouse selection and product display
+            $('#warehouse_id').empty().append('<option value="">Pilih Gudang</option>').prop('disabled', true);
+            $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+            $('#warehouseProductsSection').addClass('hidden');
+            $('#warehouseProductsList').empty();
+            $('#mitra_categories_section').remove();
+            
+            // Show loading indicator
+            showMitraLoading();
+            
             // Load warehouses for this mitra
-            $.get(`/api/mitras/${mitraId}/warehouses`, function(data) {
+            $.get(`/api/mitras/${mitraId}/warehouses`, function(warehouses) {
                 const warehouseSelect = $('#warehouse_id');
                 warehouseSelect.empty().append('<option value="">Pilih Gudang</option>');
                 
-                data.forEach(warehouse => {
-                    warehouseSelect.append(`<option value="${warehouse.id}">${warehouse.name} - ${warehouse.products_count} item</option>`);
-                });
-                
-                warehouseSelect.prop('disabled', false);
+                if (warehouses.length > 0) {
+                    warehouses.forEach(warehouse => {
+                        warehouseSelect.append(`<option value="${warehouse.id}">${warehouse.name} (${warehouse.type}) - ${warehouse.products_count} item</option>`);
+                    });
+                    
+                    warehouseSelect.prop('disabled', false);
+                } else {
+                    warehouseSelect.append('<option value="" disabled>Tidak ada gudang tersedia</option>');
+                }
             });
             
-            // Ambil data harga ongkir dan max_wg dari mitra
-            $.get(`/api/mitras/${mitraId}`, function(data) {
-                // Set nilai default untuk input harga ongkir dan max_wg
-                mitraOngkirCbm = parseFloat(data.harga_ongkir_cbm) || 0;
-                mitraOngkirWg = parseFloat(data.harga_ongkir_wg) || 0;
-                const maxWeight = parseFloat(data.max_wg) || 0;
+            // Load categories for this mitra
+            $.get(`/api/mitras/${mitraId}/categories`, function(categories) {
+                mitraCategories = categories;
                 
-                $('#harga_ongkir_cbm').val(mitraOngkirCbm);
-                $('#harga_ongkir_wg').val(mitraOngkirWg);
+                // Display categories section
+                if (categories.length > 0) {
+                    displayMitraCategories(categories);
+                }
+            });
+            
+            // Get mitra data
+            $.get(`/api/mitras/${mitraId}`, function(data) {
+                // Remove loading once all data is fetched
+                hideMitraLoading();
+                
+                // Set max weight value
+                const maxWeight = parseFloat(data.max_wg) || 0;
                 $('#max_weight').val(maxWeight);
                 $('#max_weight_display').text(formatNumber(maxWeight));
-                
-                // Update tampilan kalkulasi ongkir
-                updateShippingCostCalculation();
             });
-            
-            // Hide the warehouse products section when mitra changes
-            $('#warehouseProductsSection').addClass('hidden');
-            $('#warehouseProductsList').empty();
         } else {
+            // Reset everything if no mitra selected
+            selectedMitraId = null;
             $('#warehouse_id').empty().append('<option value="">Pilih Gudang</option>').prop('disabled', true);
+            $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
             $('#warehouseProductsSection').addClass('hidden');
+            $('#mitra_categories_section').remove();
             
-            // Reset harga ongkir dan max_weight
-            mitraOngkirCbm = 0;
-            mitraOngkirWg = 0;
-            $('#harga_ongkir_cbm').val(0);
-            $('#harga_ongkir_wg').val(0);
+            // Reset max weight
             $('#max_weight').val(0);
             $('#max_weight_display').text('0,00');
         }
@@ -175,22 +191,26 @@ $('#bank_id').on('change', function() {
     // Warehouse selection change
     $('#warehouse_id').on('change', function() {
         const warehouseId = $(this).val();
+        selectedWarehouseId = warehouseId;
         
+        // Reset category selection and product display
+        $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
         $('#barangList').empty();
         detailCounter = 0;
         calculateTotals();
         
         if (warehouseId) {
-            // Tampilkan informasi warehouse
-            $.get(`/api/warehouses/${warehouseId}`, function(warehouse) {
+            // Get warehouse details with categories
+            $.get(`/api/warehouses/${warehouseId}`, function(response) {
+                // Display warehouse info
                 if ($('#warehouse_info').length === 0) {
                     const warehouseInfoHTML = `
                         <div id="warehouse_info" class="mt-2 p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md">
                             <h6 class="font-semibold mb-1">Informasi Gudang:</h6>
                             <div class="grid grid-cols-2 gap-2">
-                                <div><span class="font-medium">Nama:</span> ${warehouse.name}</div>
-                                <div><span class="font-medium">Tipe:</span> ${warehouse.type || 'N/A'}</div>
-                                <div class="col-span-2"><span class="font-medium">Alamat:</span> ${warehouse.address || 'N/A'}</div>
+                                <div><span class="font-medium">Nama:</span> ${response.warehouse.name}</div>
+                                <div><span class="font-medium">Tipe:</span> ${response.warehouse.type || 'N/A'}</div>
+                                <div class="col-span-2"><span class="font-medium">Alamat:</span> ${response.warehouse.address || 'N/A'}</div>
                             </div>
                         </div>
                     `;
@@ -200,31 +220,87 @@ $('#bank_id').on('change', function() {
                     $('#warehouse_info').html(`
                         <h6 class="font-semibold mb-1">Informasi Gudang:</h6>
                         <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium">Nama:</span> ${warehouse.name}</div>
-                            <div><span class="font-medium">Tipe:</span> ${warehouse.type || 'N/A'}</div>
-                            <div class="col-span-2"><span class="font-medium">Alamat:</span> ${warehouse.address || 'N/A'}</div>
+                            <div><span class="font-medium">Nama:</span> ${response.warehouse.name}</div>
+                            <div><span class="font-medium">Tipe:</span> ${response.warehouse.type || 'N/A'}</div>
+                            <div class="col-span-2"><span class="font-medium">Alamat:</span> ${response.warehouse.address || 'N/A'}</div>
                         </div>
                     `);
                 }
-            });
-            
-            // Load products untuk warehouse ini - PERBAIKAN
-            $.get(`/api/warehouses/${warehouseId}/products`, function(data) {
-                console.log("Products loaded:", data.length, "items");
-                warehouseProducts = data;
-                filteredProducts = [...warehouseProducts];
-                currentPage = 1;
                 
-                // Show the warehouse products section - PERBAIKAN SELECTOR
-                $('#warehouseProductsSection').removeClass('hidden');
+                // Highlight available categories for this warehouse
+                highlightWarehouseCategories(response.categories);
                 
-                // Render products with pagination
-                renderProducts();
-            }).fail(function(error) {
-                console.error("Error loading products:", error);
+                // Populate category select dropdown
+                const categorySelect = $('#category_id');
+                categorySelect.empty().append('<option value="">Pilih Kategori</option>');
+                
+                if (response.categories && response.categories.length > 0) {
+                    response.categories.forEach(category => {
+                        categorySelect.append(`
+                            <option value="${category.id}" 
+                                    data-price-cbm="${category.mit_price_cbm}" 
+                                    data-price-kg="${category.mit_price_kg}">
+                                ${category.name} - Rp ${formatNumber(category.mit_price_cbm)}/CBM, Rp ${formatNumber(category.mit_price_kg)}/KG
+                            </option>
+                        `);
+                    });
+                    
+                    categorySelect.prop('disabled', false);
+                } else {
+                    categorySelect.append('<option value="" disabled>Tidak ada kategori tersedia</option>');
+                }
             });
         } else {
+            selectedWarehouseId = null;
             $('#warehouse_info').remove();
+            $('#warehouseProductsSection').addClass('hidden');
+        }
+    });
+    
+    // Category selection change
+    $('#category_id').on('change', function() {
+        const categoryId = $(this).val();
+        selectedCategoryId = categoryId;
+        
+        if (categoryId && selectedWarehouseId) {
+            // Get category pricing info
+            const priceCbm = $(this).find('option:selected').data('price-cbm') || 0;
+            const priceKg = $(this).find('option:selected').data('price-kg') || 0;
+            
+            // Update pricing inputs
+            $('#harga_ongkir_cbm').val(priceCbm);
+            $('#harga_ongkir_wg').val(priceKg);
+            
+            // Show products section
+            $('#warehouseProductsSection').removeClass('hidden');
+            $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-circle-notch fa-spin mr-2"></i> Memuat data produk...</td></tr>');
+            
+            // Load products for this warehouse and category
+            $.get(`/api/warehouses/${selectedWarehouseId}/categories/${categoryId}/products`, function(products) {
+                console.log("Products loaded:", products);
+                
+                // Process products for display
+                warehouseProducts = products.map(product => {
+                    return {
+                        ...product,
+                        categoryName: $('#category_id option:selected').text().split(' - ')[0],
+                        price_cbm: priceCbm,
+                        price_kg: priceKg
+                    };
+                });
+                
+                // Initialize display
+                filteredProducts = [...warehouseProducts];
+                currentPage = 1;
+                renderProducts();
+                
+                // Reset product search
+                $('#product_search').val('');
+            }).fail(function(error) {
+                console.error("Error loading products:", error);
+                $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i> Gagal memuat data produk</td></tr>');
+            });
+        } else {
             $('#warehouseProductsSection').addClass('hidden');
         }
     });
@@ -288,7 +364,7 @@ $('#bank_id').on('change', function() {
     // Service change
     $('#service').on('change', updateMarkingCode);
     
-    // Event handler for input harga ongkir
+    // Event handler for harga ongkir inputs
     $('#harga_ongkir_cbm, #harga_ongkir_wg').on('input', updateShippingCostCalculation);
     
     // Delete calculation row event delegation
@@ -322,34 +398,13 @@ $('#bank_id').on('change', function() {
     $('#shipping_type').trigger('change'); // Generate initial invoice number
     updateNilaiDisplay();
     
-    // Bank selection change
-    $('#bank_id').on('change', function() {
-        const bankId = $(this).val();
-        
-        if (bankId) {
-            // Ambil data bank untuk mengisi rekening
-            $.get(`/api/banks/${bankId}`, function(bank) {
-                if (bank) {
-                    $('#rek_no').val(bank.rek_no || '');
-                    $('#rek_name').val(bank.rek_name || '');
-                }
-            });
-        } else {
-            // Reset nilai
-            $('#rek_no').val('');
-            $('#rek_name').val('');
-        }
-    });
-    
     // Load tax data
     loadTaxData();
 });
 
 /**
  * Shipping Form Submission Handler
- * Menangani submit form shipping ke controller
  */
-
 $(document).ready(function() {
     // Form submit handler
     $('#shippingForm').on('submit', function(e) {
@@ -369,7 +424,6 @@ $(document).ready(function() {
         formData.append('summary[total_volume]', parseNumberFromFormatted($('#volume_display').val()));
         formData.append('summary[total_cbm]', parseNumberFromFormatted($('#cbm_display').val()));
         
-        
         // Tambahkan informasi biaya yang dihitung
         formData.append('cost_info[biaya]', parseNumberFromFormatted($('#biaya').val()));
         formData.append('cost_info[nilai_biaya]', parseNumberFromFormatted($('#nilai_biaya').val()));
@@ -378,10 +432,13 @@ $(document).ready(function() {
         formData.append('cost_info[grand_total]', parseNumberFromFormatted($('#grand_total').val()));
         formData.append('cost_info[shipping_method]', $('#calculation_method_used').val());
         
+        // Tambahkan informasi kategori yang dipilih
+        formData.append('category_id', selectedCategoryId || '');
+        
         // Tampilkan loading
         showLoading();
         
-        // Kirim data dengan AJAX - perbaiki handler sukses dan error
+        // Kirim data dengan AJAX
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
@@ -393,7 +450,6 @@ $(document).ready(function() {
                 
                 if (response.success) {
                     showSuccessMessage(response.message || 'Data berhasil disimpan', response.redirect_url);
-                    // Remove the setTimeout redirect since we're now handling it in the alert
                 } else {
                     showErrorMessage(response.message || 'Terjadi kesalahan saat menyimpan data');
                 }
@@ -432,6 +488,15 @@ $(document).ready(function() {
         // Validasi produk, pastikan setidaknya ada satu produk ditambahkan
         if ($('#barangList tr').length === 0) {
             showErrorMessage('Setidaknya satu barang harus ditambahkan ke daftar');
+            isValid = false;
+        }
+        
+        // Validasi kategori, pastikan kategori dipilih
+        if (!selectedCategoryId) {
+            $('#category_id').addClass('border-red-500');
+            $(`<div class="text-xs text-red-500 mt-1 error-message">
+                <i class="fas fa-exclamation-circle mr-1"></i>Kategori wajib dipilih
+            </div>`).insertAfter($('#category_id'));
             isValid = false;
         }
         
@@ -523,9 +588,16 @@ function renderProducts() {
         paginatedProducts.forEach(product => {
             productsList.append(`
                 <tr data-product-id="${product.id}">
-                    <td>${product.name}</td>
-                    <td class="text-right">${formatNumber(product.price_kg)}</td>
-                    <td class="text-right">${formatNumber(product.price_cbm)}</td>
+                    <td>
+                        <div class="flex flex-col">
+                            <span class="font-medium">${product.name}</span>
+                            <span class="text-xs text-gray-500">
+                                <span class="badge badge-soft-primary">${product.categoryName || 'Tanpa Kategori'}</span>
+                            </span>
+                        </div>
+                    </td>
+                    <td class="text-right">Rp ${formatNumber(product.price_kg)}</td>
+                    <td class="text-right">Rp ${formatNumber(product.price_cbm)}</td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-primary add-product-btn" data-product-id="${product.id}">
                             <i class="fas fa-plus mr-1"></i> Tambah
@@ -632,7 +704,7 @@ function addProductToTable(product) {
     const rowIndex = detailCounter++;
     const productImageUrl = product.image_url || '/noimage.jpg';
     
-    // Buat row produk
+    // Buat row produk dengan informasi kategori
     const row = `
         <tr data-index="${rowIndex}" data-product-id="${product.id}" class="product-row">
             <td class="text-center" style="min-width: 80px;">
@@ -645,11 +717,18 @@ function addProductToTable(product) {
                 </div>
             </td>
             <td>
-                ${product.name}
+                <div class="flex flex-col">
+                    <span class="font-medium">${product.name}</span>
+                    <span class="text-xs text-gray-500">
+                        <span class="badge badge-soft-primary">${product.categoryName || 'Tanpa Kategori'}</span>
+                    </span>
+                </div>
                 <input type="hidden" name="barang[${rowIndex}][product_id]" value="${product.id}">
                 <input type="hidden" name="barang[${rowIndex}][name]" value="${product.name}">
                 <input type="hidden" name="barang[${rowIndex}][price_kg]" value="${product.price_kg || 0}">
                 <input type="hidden" name="barang[${rowIndex}][price_cbm]" value="${product.price_cbm || 0}">
+                <input type="hidden" name="barang[${rowIndex}][category_id]" value="${selectedCategoryId || 0}">
+                <input type="hidden" name="barang[${rowIndex}][category_name]" value="${product.categoryName || ''}">
             </td>
             <td class="text-center">
                 <input type="text" class="input input-sm" name="barang[${rowIndex}][ctn]" value="" placeholder="CTN">
@@ -820,7 +899,7 @@ function calculateRowVolume(row) {
     const totalCtns = parseFloat(row.find('.total-ctns').val()) || 0;
     
     // Volume in cubic meters (L*W*H in cm / 1,000,000) x jumlah carton
-    const volumeCbm = length * width * height * totalCtns;
+    const volumeCbm = (length * width * height / 1000000) * totalCtns;
     
     row.find('.volume').val(volumeCbm.toFixed(6));
     row.find('.volume-display').val(formatNumber(volumeCbm));
@@ -866,29 +945,33 @@ function calculateTotals() {
 function updateShippingCostCalculation() {
     const totalVolume = parseNumberFromFormatted($('#volume_display').val()) || 0;
     const totalWeight = parseNumberFromFormatted($('#gw_display').val()) || 0;
-    const hargaOngkirCbm = parseFloat($('#harga_ongkir_cbm').val()) || 0;
-    const hargaOngkirWg = parseFloat($('#harga_ongkir_wg').val()) || 0;
-    const maxWeight = parseFloat($('#max_weight').val()) || 0;
     
-    // Hitung biaya berdasarkan volume
-    const volumeCost = totalVolume * hargaOngkirCbm;
+    // Get pricing from currently selected category (via input fields)
+    const priceCbm = parseFloat($('#harga_ongkir_cbm').val()) || 0;
+    const priceKg = parseFloat($('#harga_ongkir_wg').val()) || 0;
+    
+    // Calculate costs
+    const volumeCost = totalVolume * priceCbm;
+    const weightCost = totalWeight * priceKg;
+    
+    // Display the costs
     $('#volume_cost_display').text(`Rp ${formatNumber(volumeCost)}`);
-    
-    // Hitung biaya berdasarkan berat
-    const weightCost = totalWeight * hargaOngkirWg;
     $('#weight_cost_display').text(`Rp ${formatNumber(weightCost)}`);
     
-    // Tentukan metode kalkulasi berdasarkan regulasi max_wg
+    // Get max weight from mitra
+    const maxWeight = parseFloat($('#max_weight').val()) || 0;
+    
+    // Determine calculation method
     let selectedMethod = '';
     let selectedCost = 0;
     
-    // Styling untuk metode yang dipilih
+    // Styling for selected method
     $('.bg-blue-50').removeClass('border-blue-500 border-2');
     $('.bg-green-50').removeClass('border-green-500 border-2');
     
-    // Otomatis tentukan berdasarkan regulasi max_wg
+    // Automatically determine based on regulation
     if (maxWeight === 0) {
-        // Jika max_weight tidak ditentukan (0), gunakan perhitungan yang lebih tinggi
+        // If max_weight not set, use the higher cost calculation
         if (volumeCost >= weightCost) {
             selectedMethod = 'volume';
             selectedCost = volumeCost;
@@ -899,21 +982,22 @@ function updateShippingCostCalculation() {
             $('.bg-green-50').addClass('border-green-500 border-2');
         }
     } else if (totalWeight <= maxWeight) {
-        // Jika total berat <= max_weight, gunakan perhitungan CBM
+        // If weight is under max, use volume calculation
         selectedMethod = 'volume';
         selectedCost = volumeCost;
         $('.bg-blue-50').addClass('border-blue-500 border-2');
     } else {
-        // Jika total berat > max_weight, gunakan perhitungan berat
+        // If weight exceeds max, use weight calculation
         selectedMethod = 'weight';
         selectedCost = weightCost;
         $('.bg-green-50').addClass('border-green-500 border-2');
     }
     
-    // Update message dan total cost
+    // Update message and total cost
     let message = '';
     if (selectedMethod === 'volume') {
-        message = `<span class="text-blue-700 font-medium">Menggunakan perhitungan Volume</span>: ${formatNumber(totalVolume)} m³ × Rp ${formatNumber(hargaOngkirCbm)} = <span class="font-bold">Rp ${formatNumber(selectedCost)}</span><br>`;
+        message = `<span class="text-blue-700 font-medium">Menggunakan perhitungan Volume</span>: 
+                   Total Biaya CBM = <span class="font-bold">Rp ${formatNumber(volumeCost)}</span><br>`;
         
         if (maxWeight === 0) {
             message += `<span class="mt-1 block text-xs opacity-80">Alasan: Tidak ada batas maksimum berat yang ditentukan dan nilai ongkir volume lebih tinggi</span>`;
@@ -921,7 +1005,8 @@ function updateShippingCostCalculation() {
             message += `<span class="mt-1 block text-xs opacity-80">Alasan: Berat total ${formatNumber(totalWeight)} kg masih di bawah batas maksimum ${formatNumber(maxWeight)} kg</span>`;
         }
     } else {
-        message = `<span class="text-green-700 font-medium">Menggunakan perhitungan Berat</span>: ${formatNumber(totalWeight)} kg × Rp ${formatNumber(hargaOngkirWg)} = <span class="font-bold">Rp ${formatNumber(selectedCost)}</span><br>`;
+        message = `<span class="text-green-700 font-medium">Menggunakan perhitungan Berat</span>: 
+                   Total Biaya KG = <span class="font-bold">Rp ${formatNumber(weightCost)}</span><br>`;
         
         if (maxWeight === 0) {
             message += `<span class="mt-1 block text-xs opacity-80">Alasan: Tidak ada batas maksimum berat yang ditentukan dan nilai ongkir berat lebih tinggi</span>`;
@@ -930,15 +1015,15 @@ function updateShippingCostCalculation() {
         }
     }
     
-    // Update UI untuk perhitungan yang digunakan
+    // Update UI elements
     $('#used_calculation_message').html(message);
     $('#selected_shipping_cost').val(formatNumber(selectedCost));
     $('#calculation_method_used').val(selectedMethod);
     
-    // Otomatis update biaya kirim (tanpa perlu tombol apply)
+    // Automatically update shipping cost (no need for apply button)
     $('#jkt_sda').val(formatNumber(selectedCost));
     
-    // Hitung ulang semua biaya
+    // Recalculate all fees
     calculateFees();
 }
 
@@ -1018,6 +1103,7 @@ function updateNilaiDisplay() {
     
     calculatePPH();
 }
+
 // Function to load tax data
 function loadTaxData() {
     // Fetch all active taxes
@@ -1035,9 +1121,7 @@ function loadTaxData() {
             // Look for PPH tax
             const pphTax = taxes.find(tax => tax.name.toLowerCase().includes('pph'));
             if (pphTax) {
-                console.log('PPH Tax found:', pphTax);
-                
-                // Store the PPH tax information in data attributes instead of hidden fields
+                // Store the PPH tax information in data attributes
                 $('#pph').data('tax-type', pphTax.type);
                 $('#pph').data('tax-value', pphTax.value);
                 $('#pph').data('tax-id', pphTax.id);
@@ -1094,11 +1178,211 @@ function calculatePPH() {
     calculateGrandTotal();
 }
 
-// Update the calculatePPN function to use the new tax data
-function calculatePPN() {
-    const biayaKirim = parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
-    const ppnRate = parseFloat($('#ppn').val()) || 0;
-    const ppnAmount = biayaKirim * (ppnRate / 100);
+// Display loading indicator while fetching mitra data
+function showMitraLoading() {
+    $('#mitra_loading').remove();
     
-    $('#ppn_total').val(formatNumber(ppnAmount));
+    const loadingHTML = `
+        <div id="mitra_loading" class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800/30">
+            <div class="flex items-center justify-center">
+                <div class="animate-spin mr-3 h-5 w-5 text-blue-500">
+                    <i class="fas fa-circle-notch"></i>
+                </div>
+                <p class="text-sm text-blue-600 dark:text-blue-400">Memuat data mitra...</p>
+            </div>
+        </div>
+    `;
+    
+    $('#mitra_id').closest('.col-span-6').after(loadingHTML);
+}
+
+function hideMitraLoading() {
+    $('#mitra_loading').remove();
+}
+
+// Display mitra categories in a new section with improved styling
+function displayMitraCategories(categories) {
+    // Remove existing section if any
+    $('#mitra_categories_section').remove();
+    
+    const categoryHTML = `
+        <div id="mitra_categories_section" class="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-100 dark:border-amber-800/30 w-full">
+            <h6 class="text-sm font-medium text-amber-800 dark:text-amber-400 mb-2">
+                <i class="fas fa-tags mr-1"></i> Kategori Mitra (${categories.length})
+            </h6>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                ${categories.map(category => `
+                    <div class="text-xs bg-white dark:bg-slate-800 p-3 rounded flex justify-between items-center relative w-full border border-amber-100 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-700/50">
+                        <span class="font-medium text-sm">${category.name}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-gray-600 dark:text-gray-300">Rp ${formatNumber(category.mit_price_cbm)}/CBM</span>
+                            <span class="text-gray-600 dark:text-gray-300">Rp ${formatNumber(category.mit_price_kg)}/KG</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Place after warehouse selection in a full-width container
+    $('#warehouse_category_container').html(categoryHTML);
+}
+
+// Highlight which categories are available in the selected warehouse
+function highlightWarehouseCategories(warehouseCategories) {
+    if (!$('#mitra_categories_section').length) return;
+    
+    // First reset all categories to normal style
+    $('#mitra_categories_section .grid > div').removeClass('border-2 border-green-500')
+        .find('.badge-active').remove();
+    
+    // Get all category IDs from the warehouse
+    const categoryIds = warehouseCategories.map(cat => cat.id);
+    
+    // Add highlight class to categories that are used in this warehouse
+    $('#mitra_categories_section .grid > div').each(function(index) {
+        const category = mitraCategories[index];
+        if (category && categoryIds.includes(category.id)) {
+            $(this).addClass('border-2 border-green-500');
+            
+            // Add active badge
+            if ($(this).find('.badge-active').length === 0) {
+                $(this).append(`
+                    <span class="badge-active absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 h-5 w-5 flex items-center justify-center rounded-full bg-green-500 text-white text-xs shadow-sm">
+                        <i class="fas fa-check"></i>
+                    </span>
+                `);
+            }
+        }
+    });
+}
+
+// Update warehouse selection change handler to place warehouse info and categories side by side
+$('#warehouse_id').on('change', function() {
+    const warehouseId = $(this).val();
+    selectedWarehouseId = warehouseId;
+    
+    // Reset dependent fields
+    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+    $('#categoryInfoBtn').addClass('hidden');
+    $('#selectedCategoryInfo').addClass('hidden');
+    $('#warehouseProductsSection').addClass('hidden');
+    $('#warehouseProductsList').empty();
+    $('#barangList').empty();
+    $('#warehouse_category_container').empty();
+    detailCounter = 0;
+    
+    if (warehouseId) {
+        // Show loading indicator for categories
+        const loadingHtml = '<option value="">Loading...</option>';
+        $('#category_id').html(loadingHtml);
+        
+        // Show loading in warehouse info container
+        $('#warehouse_category_container').html(`
+            <div class="p-3 bg-blue-50 dark:bg-slate-700 rounded-md flex items-center justify-center w-full">
+                <div class="animate-spin mr-3 h-5 w-5 text-blue-500">
+                    <i class="fas fa-circle-notch"></i>
+                </div>
+                <p class="text-sm text-blue-600 dark:text-blue-400">Memuat informasi gudang...</p>
+            </div>
+        `);
+        
+        // Load warehouse details
+        $.get(`/api/warehouses/${warehouseId}`, function(response) {
+            // Display warehouse info in the new container
+            const warehouseInfoHTML = `
+                <div id="warehouse_info" class="p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md w-full mb-3">
+                    <h6 class="font-semibold mb-2">Informasi Gudang:</h6>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div><span class="font-medium">Nama:</span> ${response.warehouse.name}</div>
+                        <div><span class="font-medium">Tipe:</span> ${response.warehouse.type || 'N/A'}</div>
+                        <div><span class="font-medium">Alamat:</span> ${response.warehouse.address || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+            
+            $('#warehouse_category_container').html(warehouseInfoHTML);
+            
+            // Display mitra categories
+            if (mitraCategories.length > 0) {
+                displayMitraCategories(mitraCategories);
+                
+                // Highlight available categories
+                highlightWarehouseCategories(response.categories);
+            }
+            
+            // Load categories for the dropdown
+            if (response.categories && response.categories.length > 0) {
+                $('#category_id').empty().append('<option value="">Pilih Kategori</option>');
+                
+                response.categories.forEach(category => {
+                    $('#category_id').append(`
+                        <option value="${category.id}" 
+                                data-price-cbm="${category.mit_price_cbm}" 
+                                data-price-kg="${category.mit_price_kg}"
+                                data-cust-price-cbm="${category.cust_price_cbm}" 
+                                data-cust-price-kg="${category.cust_price_kg}">
+                            ${category.name} - Rp ${formatNumber(category.mit_price_cbm)}/CBM, Rp ${formatNumber(category.mit_price_kg)}/KG
+                        </option>
+                    `);
+                });
+                
+                $('#category_id').prop('disabled', false);
+                $('#categoryInfoBtn').removeClass('hidden');
+            } else {
+                $('#category_id').empty().append('<option value="">Tidak ada kategori tersedia</option>');
+                
+                // Show no categories message
+                $('#warehouse_category_container').append(`
+                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md w-full">
+                        <p class="text-sm text-gray-500 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tidak ada kategori tersedia untuk gudang ini
+                        </p>
+                    </div>
+                `);
+            }
+        }).fail(function(error) {
+            console.error("Error loading warehouse details:", error);
+            $('#warehouse_category_container').html(`
+                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-md w-full">
+                    <p class="text-sm text-red-600 dark:text-red-400 text-center">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Gagal memuat informasi gudang
+                    </p>
+                </div>
+            `);
+            $('#category_id').empty().append('<option value="">Error memuat kategori</option>');
+        });
+    } else {
+        // Reset everything if no warehouse selected
+        resetWarehouseAndCategorySection();
+    }
+    
+    calculateTotals();
+});
+function highlightWarehouseCategories(warehouseCategories) {
+    if (!$('#mitra_categories_section').length) return;
+    
+    // First reset all categories to normal style
+    $('#mitra_categories_section .grid > div').removeClass('border-2 border-green-500')
+        .find('.badge-active').remove();
+    
+    const categoryIds = warehouseCategories.map(cat => cat.id);
+    
+    $('#mitra_categories_section .grid > div').each(function(index) {
+        const category = mitraCategories[index];
+        if (category && categoryIds.includes(category.id)) {
+            $(this).addClass('border-2 border-green-500');
+            
+            //  active badge
+            if ($(this).find('.badge-active').length === 0) {
+                $(this).append(`
+                    <span class="badge-active absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 h-5 w-5 flex items-center justify-center rounded-full bg-green-500 text-white text-xs">
+                        <i class="fas fa-check"></i>
+                    </span>
+                `);
+            }
+        }
+    });
 }

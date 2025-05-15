@@ -10,10 +10,6 @@ class Product extends Model
 {
     protected $fillable = [
         'name',
-        'mit_price_cbm',
-        'mit_price_kg',
-        'cust_price_cbm',
-        'cust_price_kg',
         'parent_id',
         'warehouse_id',
         'category_product_id',
@@ -24,13 +20,7 @@ class Product extends Model
      *
      * @var array
      */
-    protected $casts = [
-        'mit_price_cbm' => 'double',
-        'mit_price_kg' => 'double',
-        'cust_price_cbm' => 'double',
-        'cust_price_kg' => 'double',
-    ];
-
+  
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);

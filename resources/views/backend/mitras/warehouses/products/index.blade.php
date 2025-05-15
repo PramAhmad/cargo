@@ -39,6 +39,48 @@
                     <div class="alert alert-danger mb-4">{{ session('error') }}</div>
                 @endif
 
+                <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                    <div class="w-full md:w-1/3">
+                        <form method="GET" action="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}">
+                            <div class="flex gap-2">
+                                <select name="category" class="select w-full" onchange="this.form.submit()">
+                                    <option value="">All Categories</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @if(request('category'))
+                                    <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" 
+                                       class="btn btn-icon btn-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                        <form method="GET" action="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}">
+                            @if(request('category'))
+                                <input type="hidden" name="category" value="{{ request('category') }}">
+                            @endif
+                            <div class="flex gap-2">
+                                <input type="text" name="search" class="input w-full" placeholder="Search products..." value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-icon btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                @if(request('search'))
+                                    <a href="{{ route('mitra.warehouses.products.index', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id, 'category' => request('category')]) }}" 
+                                       class="btn btn-icon btn-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 @if($products->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="table" id="productTable">
@@ -65,7 +107,15 @@
                         <div class="mb-4">
                             <i class="fas fa-box text-5xl text-slate-400 mb-4"></i>
                             <h3 class="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">No Products Found</h3>
-                            <p class="text-slate-500">This warehouse doesn't have any products yet.</p>
+                            <p class="text-slate-500">
+                                @if(request('search'))
+                                    No products matching "{{ request('search') }}"
+                                @elseif(request('category'))
+                                    No products in this category
+                                @else
+                                    This warehouse doesn't have any products yet.
+                                @endif
+                            </p>
                         </div>
                         <a href="{{ route('mitra.warehouses.products.create', ['mitra' => $mitra->id, 'warehouse' => $warehouse->id]) }}" class="btn btn-primary">
                             <i class="fas fa-plus mr-2"></i> Add First Product
@@ -77,18 +127,17 @@
     </div>
     @push('styles')
     <style>
-        .swal2-confirm swal2-styled {
-        background-color: #4f46e5 !important;
-        color: #fff;
-        border: #4f46e5 !important;
-        border-radius: 0.375rem !important;
-    }
+        .swal2-confirm.swal2-styled {
+            background-color: #4f46e5 !important;
+            color: #fff;
+            border: #4f46e5 !important;
+            border-radius: 0.375rem !important;
+        }
     </style>
-
     @endpush
+    
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="sweetalert2.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
@@ -107,9 +156,9 @@
                     confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Delete',
                     cancelButtonText: 'Cancel',
                     customClass: {
-                    confirmButton: 'btn btn-primary mx-5',
-                    cancelButton: 'btn btn-secondary'
-                     },
+                        confirmButton: 'btn btn-primary mx-5',
+                        cancelButton: 'btn btn-secondary'
+                    },
                     reverseButtons: true,
                     focusCancel: true
                 }).then((result) => {
@@ -136,7 +185,7 @@
                                         
                                         // Check if table is empty
                                         if ($('#productTable tbody tr').length === 0) {
-                                            $('#productTable').replaceWith(`
+                                            $('#productTable').closest('.overflow-x-auto').replaceWith(`
                                                 <div class="bg-slate-50 dark:bg-slate-800 p-8 rounded-md text-center">
                                                     <div class="mb-4">
                                                         <i class="fas fa-box text-5xl text-slate-400 mb-4"></i>
