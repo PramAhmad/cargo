@@ -185,6 +185,8 @@ class ShippingController extends Controller
                 'sda_user' => $this->parseAmount($request->input('sda_user')),
                 'bkr' => $this->parseAmount($request->input('bkr')),
                 'asuransi' => $this->parseAmount($request->input('asuransi')),
+                'pelet' => $this->parseAmount($request->input('pelet')),
+                'lainlain' => $this->parseAmount($request->input('lainlain')),
                 
                 // Biaya total
                 'biaya' => $this->parseAmount($request->input('biaya')),
@@ -445,6 +447,8 @@ class ShippingController extends Controller
                 'sda_user' => $this->parseAmount($request->input('sda_user')),
                 'bkr' => $this->parseAmount($request->input('bkr')),
                 'asuransi' => $this->parseAmount($request->input('asuransi')),
+                'pelet' => $this->parseAmount($request->input('pelet')),
+                'lainlain' => $this->parseAmount($request->input('lainlain')),
                 
                 // Biaya total
                 'biaya' => $this->parseAmount($request->input('biaya')),
