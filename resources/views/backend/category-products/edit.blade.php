@@ -51,7 +51,6 @@
                                     <div class="flex w-full flex-col">
                                         <label class="label mb-1 font-medium" for="mit_price_cbm">Mitra Price</label>
                                         <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
                                             <input type="text" class="input pl-10" id="mit_price_cbm" name="mit_price_cbm" 
                                                 value="{{ old('mit_price_cbm', $categoryProduct->mit_price_cbm) }}" />
                                         </div>
@@ -60,7 +59,6 @@
                                     <div class="flex w-full flex-col">
                                         <label class="label mb-1 font-medium" for="cust_price_cbm">Customer Price</label>
                                         <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
                                             <input type="text" class="input pl-10" id="cust_price_cbm" name="cust_price_cbm" 
                                                 value="{{ old('cust_price_cbm', $categoryProduct->cust_price_cbm) }}" />
                                         </div>
@@ -75,7 +73,6 @@
                                     <div class="flex w-full flex-col">
                                         <label class="label mb-1 font-medium" for="mit_price_kg">Mitra Price</label>
                                         <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
                                             <input type="text" class="input pl-10" id="mit_price_kg" name="mit_price_kg" 
                                                 value="{{ old('mit_price_kg', $categoryProduct->mit_price_kg) }}" />
                                         </div>
@@ -84,7 +81,6 @@
                                     <div class="flex w-full flex-col">
                                         <label class="label mb-1 font-medium" for="cust_price_kg">Customer Price</label>
                                         <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">Rp</span>
                                             <input type="text" class="input pl-10" id="cust_price_kg" name="cust_price_kg" 
                                                 value="{{ old('cust_price_kg', $categoryProduct->cust_price_kg) }}" />
                                         </div>
