@@ -53,12 +53,6 @@ class CategoryProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->merge([
-            'mit_price_cbm' => intval(str_replace('.', '', $request->mit_price_cbm ?? 0)),
-            'mit_price_kg' => intval(str_replace('.', '', $request->mit_price_kg ?? 0)),
-            'cust_price_cbm' => intval(str_replace('.', '', $request->cust_price_cbm ?? 0)),
-            'cust_price_kg' => intval(str_replace('.', '', $request->cust_price_kg ?? 0)),
-        ]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'mitra_id' => 'required|exists:mitras,id',
@@ -137,12 +131,6 @@ class CategoryProductController extends Controller
      */
     public function update(Request $request, CategoryProduct $categoryProduct)
     {
-        $request->merge([
-            'mit_price_cbm' => intval(str_replace('.', '', $request->mit_price_cbm ?? 0)),
-            'mit_price_kg' => intval(str_replace('.', '', $request->mit_price_kg ?? 0)),
-            'cust_price_cbm' => intval(str_replace('.', '', $request->cust_price_cbm ?? 0)),
-            'cust_price_kg' => intval(str_replace('.', '', $request->cust_price_kg ?? 0)),
-        ]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'mitra_id' => 'required|exists:mitras,id',

@@ -98,24 +98,4 @@
             </div>
         </div>
     </div>
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
-<script>
-    let id = [
-        'mit_price_cbm',
-        'mit_price_kg',
-        'cust_price_cbm',
-        'cust_price_kg'
-    ]
-    for (let i = 0; i < id.length; i++) {
-        let cleave = new Cleave('#' + id[i], {
-            numeral: true,
-            numeralThousandsGroupStyle: 'thousand',
-            numeralDecimalMark: ',',
-            delimiter: '.'
-        });
-    }
-</script>
-@endpush
 </x-app-layout>

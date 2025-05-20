@@ -44,8 +44,8 @@
                                 <label class="label mb-1 font-medium" for="mit_price_cbm">Mitra Price (CBM)</label>
                                 <div class="relative">
                                  
-                                    <input type="text" class="input pl-10" id="mit_price_cbm" name="mit_price_cbm" 
-                                            step="0.01" value="{{ old('mit_price_cbm') }}" />
+                                    <input type="number" class="input pl-10" id="mit_price_cbm" name="mit_price_cbm" 
+                                           min="0" step="0.01" value="{{ old('mit_price_cbm') }}" />
                                 </div>
                             </div>
                             
@@ -53,8 +53,8 @@
                                 <label class="label mb-1 font-medium" for="mit_price_kg">Mitra Price (KG)</label>
                                 <div class="relative">
                                  
-                                    <input type="text" class="input pl-10" id="mit_price_kg" name="mit_price_kg" 
-                                            step="0.01" value="{{ old('mit_price_kg') }}" />
+                                    <input type="number" class="input pl-10" id="mit_price_kg" name="mit_price_kg" 
+                                           min="0" step="0.01" value="{{ old('mit_price_kg') }}" />
                                 </div>
                             </div>
                             
@@ -62,8 +62,8 @@
                                 <label class="label mb-1 font-medium" for="cust_price_cbm">Customer Price (CBM)</label>
                                 <div class="relative">
                                  
-                                    <input type="text" class="input pl-10" id="cust_price_cbm" name="cust_price_cbm" 
-                                            step="0.01" value="{{ old('cust_price_cbm') }}" />
+                                    <input type="number" class="input pl-10" id="cust_price_cbm" name="cust_price_cbm" 
+                                           min="0" step="0.01" value="{{ old('cust_price_cbm') }}" />
                                 </div>
                             </div>
                             
@@ -71,8 +71,8 @@
                                 <label class="label mb-1 font-medium" for="cust_price_kg">Customer Price (KG)</label>
                                 <div class="relative">
                                  
-                                    <input type="text" class="input pl-10" id="cust_price_kg" name="cust_price_kg" 
-                                            step="0.01" value="{{ old('cust_price_kg') }}" />
+                                    <input type="number" class="input pl-10" id="cust_price_kg" name="cust_price_kg" 
+                                           min="0" step="0.01" value="{{ old('cust_price_kg') }}" />
                                 </div>
                             </div>
                         </div>
@@ -86,24 +86,4 @@
             </div>
         </div>
     </div>
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
-<script>
-    let id = [
-        'mit_price_cbm',
-        'mit_price_kg',
-        'cust_price_cbm',
-        'cust_price_kg'
-    ]
-    for (let i = 0; i < id.length; i++) {
-        let cleave = new Cleave('#' + id[i], {
-            numeral: true,
-            numeralThousandsGroupStyle: 'thousand',
-            numeralDecimalMark: ',',
-            delimiter: '.'
-        });
-    }
-</script>
-@endpush
 </x-app-layout>
