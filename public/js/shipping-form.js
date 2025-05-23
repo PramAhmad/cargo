@@ -257,53 +257,262 @@ $(document).ready(function() {
         }
     });
     
-    // Category selection change
-    $('#category_id').on('change', function() {
-        const categoryId = $(this).val();
-        selectedCategoryId = categoryId;
+
+$('#category_id').on('change', function() {
+    const categoryId = $(this).val();
+    selectedCategoryId = categoryId;
+    
+    if (categoryId && selectedWarehouseId) {
+        // Get service type from select
+        const serviceType = $('#service').val() || 'SEA';
+        const serviceTypeLower = serviceType.toLowerCase();
         
-        if (categoryId && selectedWarehouseId) {
-            // Get category pricing info
-            const priceCbm = $(this).find('option:selected').data('price-cbm') || 0;
-            const priceKg = $(this).find('option:selected').data('price-kg') || 0;
+        // Show selected category info with service type
+        $('#categoryName').text($(this).find('option:selected').text().split(' - ')[0]);
+        $('#serviceDisplay').text(serviceType);
+        $('#serviceTypeDisplay').text(serviceType);
+        
+        if (serviceType === 'SEA') {
+            $('#serviceDisplay').removeClass('badge-soft-warning').addClass('badge-soft-primary');
+            $('#serviceDisplay').html('<i class="fas fa-ship mr-1"></i> SEA (Laut)');
+        } else {
+            $('#serviceDisplay').removeClass('badge-soft-primary').addClass('badge-soft-warning');
+            $('#serviceDisplay').html('<i class="fas fa-plane mr-1"></i> AIR (Udara)');
+        }
+        
+        // Get pricing fields based on service type
+        const priceCbmField = `price-cbm-${serviceTypeLower}`;
+        const priceKgField = `price-kg-${serviceTypeLower}`;
+        const custPriceCbmField = `cust-price-cbm-${serviceTypeLower}`;
+        const custPriceKgField = `cust-price-kg-${serviceTypeLower}`;
+        
+        const priceCbm = parseFloat($(this).find('option:selected').data(priceCbmField)) || 0;
+        const priceKg = parseFloat($(this).find('option:selected').data(priceKgField)) || 0;
+        const custPriceCbm = parseFloat($(this).find('option:selected').data(custPriceCbmField)) || 0;
+        const custPriceKg = parseFloat($(this).find('option:selected').data(custPriceKgField)) || 0;
+        
+        // Update pricing inputs
+        $('#harga_ongkir_cbm').val(priceCbm);
+        $('#harga_ongkir_wg').val(priceKg);
+        
+        // Update pricing display
+        $('#categoryPriceCbm').text(`Rp ${formatNumber(priceCbm)}`);
+        $('#categoryPriceKg').text(`Rp ${formatNumber(priceKg)}`);
+        $('#categoryCustPriceCbm').text(`Rp ${formatNumber(custPriceCbm)}`);
+        $('#categoryCustPriceKg').text(`Rp ${formatNumber(custPriceKg)}`);
+        $('#selectedCategoryInfo').removeClass('hidden');
+        
+        // Show products section and load products
+        $('#warehouseProductsSection').removeClass('hidden');
+        $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-circle-notch fa-spin mr-2"></i> Memuat data produk...</td></tr>');
+        
+        // Include service type in API call
+        $.get(`/api/warehouses/${selectedWarehouseId}/categories/${categoryId}/products?service=${serviceType}`, function(products) {
+            console.log("Products loaded:", products);
             
-            // Update pricing inputs
-            $('#harga_ongkir_cbm').val(priceCbm);
-            $('#harga_ongkir_wg').val(priceKg);
+            // Process products for display
+            warehouseProducts = products.map(product => {
+                return {
+                    ...product,
+                    categoryName: $('#category_id option:selected').text().split(' - ')[0],
+                    price_cbm: product.price_cbm || 0,
+                    price_kg: product.price_kg || 0,
+                    cust_price_cbm: product.cust_price_cbm || 0,
+                    cust_price_kg: product.cust_price_kg || 0
+                };
+            });
             
-            // Show products section
-            $('#warehouseProductsSection').removeClass('hidden');
-            $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-circle-notch fa-spin mr-2"></i> Memuat data produk...</td></tr>');
+            // Initialize display
+            filteredProducts = [...warehouseProducts];
+            currentPage = 1;
+            renderProducts();
             
-            // Load products for this warehouse and category
-            $.get(`/api/warehouses/${selectedWarehouseId}/categories/${categoryId}/products`, function(products) {
-                console.log("Products loaded:", products);
+            // Reset product search
+            $('#product_search').val('');
+        }).fail(function(error) {
+            console.error("Error loading products:", error);
+            $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i> Gagal memuat data produk</td></tr>');
+        });
+    } else {
+        $('#warehouseProductsSection').addClass('hidden');
+        $('#selectedCategoryInfo').addClass('hidden');
+    }
+});
+// Update the service type change handler to refresh category pricing
+$('#service').on('change', function() {
+    const serviceType = $(this).val() || 'SEA';
+    updateMarkingCode();
+    
+    // If warehouse is already selected, reload the categories with new service type
+    if ($('#warehouse_id').val()) {
+        $('#warehouse_id').trigger('change');
+    }
+    
+    // If category is already selected, update the displayed pricing
+    if ($('#category_id').val()) {
+        $('#category_id').trigger('change');
+    }
+    
+    // Update service type display in selected category info if visible
+    if (!$('#selectedCategoryInfo').hasClass('hidden')) {
+        $('#serviceTypeDisplay').text(serviceType);
+        
+        if (serviceType === 'SEA') {
+            $('#serviceDisplay').removeClass('badge-soft-warning').addClass('badge-soft-primary');
+            $('#serviceDisplay').html('<i class="fas fa-ship mr-1"></i> SEA (Laut)');
+        } else {
+            $('#serviceDisplay').removeClass('badge-soft-primary').addClass('badge-soft-warning');
+            $('#serviceDisplay').html('<i class="fas fa-plane mr-1"></i> AIR (Udara)');
+        }
+    }
+});
+// Update warehouse selection change handler to include service-specific pricing
+$('#warehouse_id').on('change', function() {
+    const warehouseId = $(this).val();
+    selectedWarehouseId = warehouseId;
+    
+    // Reset dependent fields
+    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+    $('#categoryInfoBtn').addClass('hidden');
+    $('#selectedCategoryInfo').addClass('hidden');
+    $('#warehouseProductsSection').addClass('hidden');
+    $('#warehouseProductsList').empty();
+    $('#barangList').empty();
+    $('#warehouse_category_container').empty();
+    detailCounter = 0;
+    
+    if (warehouseId) {
+        // Get service type from select
+        const serviceType = $('#service').val() || 'SEA';
+        const serviceTypeLower = serviceType.toLowerCase();
+        
+        // Show loading indicator for categories
+        const loadingHtml = '<option value="">Loading...</option>';
+        $('#category_id').html(loadingHtml);
+        
+        // Show loading in warehouse info container
+        $('#warehouse_category_container').html(`
+            <div class="p-3 bg-blue-50 dark:bg-slate-700 rounded-md flex items-center justify-center w-full">
+                <div class="animate-spin mr-3 h-5 w-5 text-blue-500">
+                    <i class="fas fa-circle-notch"></i>
+                </div>
+                <p class="text-sm text-blue-600 dark:text-blue-400">Memuat informasi gudang...</p>
+            </div>
+        `);
+        
+        // Include service type in API call
+        $.get(`/api/warehouses/${warehouseId}?service=${serviceType}`, function(response) {
+            // Display warehouse info in the new container
+            const warehouseInfoHTML = `
+                <div id="warehouse_info" class="p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md w-full mb-3">
+                    <h6 class="font-semibold mb-2">Informasi Gudang:</h6>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div><span class="font-medium">Nama:</span> ${response.warehouse.name}</div>
+                        <div><span class="font-medium">Tipe:</span> ${response.warehouse.type || 'N/A'}</div>
+                        <div><span class="font-medium">Alamat:</span> ${response.warehouse.address || 'N/A'}</div>
+                        <div><span class="font-medium">Layanan:</span> ${serviceType}</div>
+                    </div>
+                </div>
+            `;
+            
+            $('#warehouse_category_container').html(warehouseInfoHTML);
+            
+            // Display mitra categories with service type
+            if (mitraCategories.length > 0) {
+                displayMitraCategories(mitraCategories, serviceTypeLower);
                 
-                // Process products for display
-                warehouseProducts = products.map(product => {
-                    return {
-                        ...product,
-                        categoryName: $('#category_id option:selected').text().split(' - ')[0],
-                        price_cbm: priceCbm,
-                        price_kg: priceKg
-                    };
+                // Highlight available categories
+                highlightWarehouseCategories(response.categories);
+            }
+            
+            // Load categories for the dropdown
+            if (response.categories && response.categories.length > 0) {
+                $('#category_id').empty().append('<option value="">Pilih Kategori</option>');
+                
+                response.categories.forEach(category => {
+                    // Use the field names that match our service type
+                    const mitPriceCbmField = `mit_price_cbm_${serviceTypeLower}`;
+                    const mitPriceKgField = `mit_price_kg_${serviceTypeLower}`;
+                    const custPriceCbmField = `cust_price_cbm_${serviceTypeLower}`;
+                    const custPriceKgField = `cust_price_kg_${serviceTypeLower}`;
+                    
+                    const mitPriceCbm = category[mitPriceCbmField] || 0;
+                    const mitPriceKg = category[mitPriceKgField] || 0;
+                    const custPriceCbm = category[custPriceCbmField] || 0;
+                    const custPriceKg = category[custPriceKgField] || 0;
+                    
+                    $('#category_id').append(`
+                        <option value="${category.id}" 
+                                data-price-cbm-${serviceTypeLower}="${mitPriceCbm}" 
+                                data-price-kg-${serviceTypeLower}="${mitPriceKg}"
+                                data-cust-price-cbm-${serviceTypeLower}="${custPriceCbm}" 
+                                data-cust-price-kg-${serviceTypeLower}="${custPriceKg}">
+                            ${category.name} - ${serviceType} - Rp ${formatNumber(mitPriceCbm)}/CBM, Rp ${formatNumber(mitPriceKg)}/KG
+                        </option>
+                    `);
                 });
                 
-                // Initialize display
-                filteredProducts = [...warehouseProducts];
-                currentPage = 1;
-                renderProducts();
+                $('#category_id').prop('disabled', false);
+                $('#categoryInfoBtn').removeClass('hidden');
+            } else {
+                $('#category_id').empty().append('<option value="">Tidak ada kategori tersedia</option>');
                 
-                // Reset product search
-                $('#product_search').val('');
-            }).fail(function(error) {
-                console.error("Error loading products:", error);
-                $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i> Gagal memuat data produk</td></tr>');
-            });
-        } else {
-            $('#warehouseProductsSection').addClass('hidden');
-        }
-    });
+                // Show no categories message
+                $('#warehouse_category_container').append(`
+                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md w-full">
+                        <p class="text-sm text-gray-500 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tidak ada kategori tersedia untuk gudang ini dengan layanan ${serviceType}
+                        </p>
+                    </div>
+                `);
+            }
+        }).fail(function(error) {
+            console.error("Error loading warehouse details:", error);
+            $('#warehouse_category_container').html(`
+                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-md w-full">
+                    <p class="text-sm text-red-600 dark:text-red-400 text-center">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Gagal memuat informasi gudang
+                    </p>
+                </div>
+            `);
+            $('#category_id').empty().append('<option value="">Error memuat kategori</option>');
+        });
+    } else {
+        // Reset everything if no warehouse selected
+        resetWarehouseAndCategorySection();
+    }
+    
+    calculateTotals();
+});
+// Update the displayMitraCategories function to include service type information
+function displayMitraCategories(categories, serviceType = 'sea') {
+    // Remove existing section if any
+    $('#mitra_categories_section').remove();
+    
+    const categoryHTML = `
+        <div id="mitra_categories_section" class="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-100 dark:border-amber-800/30 w-full">
+            <h6 class="text-sm font-medium text-amber-800 dark:text-amber-400 mb-2">
+                <i class="fas fa-tags mr-1"></i> Kategori Mitra - ${serviceType.toUpperCase()} (${categories.length})
+            </h6>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                ${categories.map(category => `
+                    <div class="text-xs bg-white dark:bg-slate-800 p-3 rounded flex justify-between items-center relative w-full border border-amber-100 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-700/50">
+                        <span class="font-medium text-sm">${category.name}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-gray-600 dark:text-gray-300">Rp ${formatNumber(category[`mit_price_cbm_${serviceType}`] || 0)}/CBM</span>
+                            <span class="text-gray-600 dark:text-gray-300">Rp ${formatNumber(category[`mit_price_kg_${serviceType}`] || 0)}/KG</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Place after warehouse selection in a full-width container
+    $('#warehouse_category_container').html(categoryHTML);
+}
     
     // Product search event
     $('#product_search').on('input', function() {
@@ -1385,4 +1594,290 @@ function highlightWarehouseCategories(warehouseCategories) {
             }
         }
     });
+}
+// Mitra change handler - only enable warehouse selection
+$('#mitra_id').on('change', function() {
+    const mitraId = $(this).val();
+    
+    // Reset all dependent fields
+    $('#warehouse_id').empty().append('<option value="">Pilih Gudang</option>').prop('disabled', true);
+    $('#service').prop('disabled', true).val('');
+    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+    $('#categoryInfoBtn').addClass('hidden');
+    $('#selectedCategoryInfo').addClass('hidden');
+    $('#warehouseProductsSection').addClass('hidden');
+    $('#warehouseProductsList').empty();
+    $('#barangList').empty();
+    $('#warehouse_category_container').empty();
+    
+    // If mitra is selected, load warehouses
+    if (mitraId) {
+        // Show loading indicator
+        $('#warehouse_id').html('<option value="">Loading...</option>');
+        
+        // Load warehouses for this mitra
+        $.get(`/api/mitras/${mitraId}/warehouses`, function(warehouses) {
+            $('#warehouse_id').empty().append('<option value="">Pilih Gudang</option>');
+            
+            warehouses.forEach(warehouse => {
+                $('#warehouse_id').append(`<option value="${warehouse.id}" data-type="${warehouse.type}">${warehouse.name}</option>`);
+            });
+            
+            $('#warehouse_id').prop('disabled', false);
+        });
+        
+        // Load mitra categories for reference
+        $.get(`/api/mitras/${mitraId}/categories`, function(categories) {
+            mitraCategories = categories;
+        });
+        
+        // Update marking code
+        updateMarkingCode();
+    }
+});
+
+// Warehouse change handler - enable service selection
+$('#warehouse_id').on('change', function() {
+    const warehouseId = $(this).val();
+    selectedWarehouseId = warehouseId;
+    
+    // Reset dependent fields
+    $('#service').prop('disabled', true).val('');
+    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+    $('#categoryInfoBtn').addClass('hidden');
+    $('#selectedCategoryInfo').addClass('hidden');
+    $('#warehouseProductsSection').addClass('hidden');
+    $('#warehouseProductsList').empty();
+    $('#barangList').empty();
+    $('#warehouse_category_container').empty();
+    
+    if (warehouseId) {
+        // Show warehouse info
+        const warehouseType = $(this).find('option:selected').data('type');
+        
+        // Display basic warehouse info
+        const warehouseInfoHTML = `
+            <div id="warehouse_info" class="p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md w-full mb-3">
+                <h6 class="font-semibold mb-2">Informasi Gudang:</h6>
+                <div class="grid grid-cols-1 gap-2">
+                    <div><span class="font-medium">Nama:</span> ${$(this).find('option:selected').text()}</div>
+                    <div><span class="font-medium">Tipe:</span> ${warehouseType || 'N/A'}</div>
+                </div>
+            </div>
+        `;
+        
+        $('#warehouse_category_container').html(warehouseInfoHTML);
+        
+        // Now enable service selection
+        $('#service').prop('disabled', false);
+        
+        // Update marking code
+        updateMarkingCode();
+    }
+});
+
+// Service change handler - only after this enable category selection
+$('#service').on('change', function() {
+    const serviceType = $(this).val();
+    
+    // Reset dependent fields
+    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
+    $('#categoryInfoBtn').addClass('hidden');
+    $('#selectedCategoryInfo').addClass('hidden');
+    $('#warehouseProductsSection').addClass('hidden');
+    $('#warehouseProductsList').empty();
+    
+    if (serviceType && selectedWarehouseId) {
+        // Show loading indicator for categories
+        const loadingHtml = '<option value="">Loading...</option>';
+        $('#category_id').html(loadingHtml);
+        
+        // Update warehouse info to include service type
+        const warehouseInfoHTML = $('#warehouse_info').html() + `
+            <div class="mt-2"><span class="font-medium">Layanan:</span> ${serviceType}</div>
+        `;
+        $('#warehouse_info').html(warehouseInfoHTML);
+        
+        // Add service badge
+        let serviceBadge = '';
+        if (serviceType === 'SEA') {
+            serviceBadge = `
+                <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                    <i class="fas fa-ship mr-1"></i> SEA (Laut)
+                </div>
+            `;
+        } else {
+            serviceBadge = `
+                <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                    <i class="fas fa-plane mr-1"></i> AIR (Udara)
+                </div>
+            `;
+        }
+        $('#warehouse_info').append(serviceBadge);
+        
+        // Load categories for the dropdown with service-specific pricing
+        $.get(`/api/warehouses/${selectedWarehouseId}?service=${serviceType}`, function(response) {
+            const serviceTypeLower = serviceType.toLowerCase();
+            
+            if (response.categories && response.categories.length > 0) {
+                $('#category_id').empty().append('<option value="">Pilih Kategori</option>');
+                
+                response.categories.forEach(category => {
+                    // Get the appropriate pricing fields based on service type
+                    const mitPriceCbmField = `mit_price_cbm_${serviceTypeLower}`;
+                    const mitPriceKgField = `mit_price_kg_${serviceTypeLower}`;
+                    const custPriceCbmField = `cust_price_cbm_${serviceTypeLower}`;
+                    const custPriceKgField = `cust_price_kg_${serviceTypeLower}`;
+                    
+                    // Use the field names that match our service type 
+                    const mitPriceCbm = category[mitPriceCbmField] || 0;
+                    const mitPriceKg = category[mitPriceKgField] || 0;
+                    const custPriceCbm = category[custPriceCbmField] || 0;
+                    const custPriceKg = category[custPriceKgField] || 0;
+                    
+                    $('#category_id').append(`
+                        <option value="${category.id}" 
+                                data-price-cbm-${serviceTypeLower}="${mitPriceCbm}" 
+                                data-price-kg-${serviceTypeLower}="${mitPriceKg}"
+                                data-cust-price-cbm-${serviceTypeLower}="${custPriceCbm}" 
+                                data-cust-price-kg-${serviceTypeLower}="${custPriceKg}">
+                            ${category.name} - ${serviceType} - Rp ${formatNumber(mitPriceCbm)}/CBM, Rp ${formatNumber(mitPriceKg)}/KG
+                        </option>
+                    `);
+                });
+                
+                $('#category_id').prop('disabled', false);
+                $('#categoryInfoBtn').removeClass('hidden');
+            } else {
+                $('#category_id').empty().append('<option value="">Tidak ada kategori tersedia</option>');
+                
+                // Show no categories message
+                $('#warehouse_category_container').append(`
+                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md w-full">
+                        <p class="text-sm text-gray-500 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tidak ada kategori tersedia untuk gudang ini dengan layanan ${serviceType}
+                        </p>
+                    </div>
+                `);
+            }
+        }).fail(function(error) {
+            console.error("Error loading warehouse details:", error);
+            $('#category_id').empty().append('<option value="">Error memuat kategori</option>');
+        });
+        
+        // Update marking code to include service
+        updateMarkingCode();
+    }
+});
+
+// Category change handler - now with service type
+$('#category_id').on('change', function() {
+    const categoryId = $(this).val();
+    selectedCategoryId = categoryId;
+    
+    if (categoryId && selectedWarehouseId) {
+        // Get service type
+        const serviceType = $('#service').val();
+        const serviceTypeLower = serviceType.toLowerCase();
+        
+        // Show selected category info with service type
+        $('#categoryName').text($(this).find('option:selected').text().split(' - ')[0]);
+        $('#serviceTypeDisplay').text(serviceType);
+        
+        if (serviceType === 'SEA') {
+            $('#serviceDisplay').removeClass('badge-soft-warning').addClass('badge-soft-primary');
+            $('#serviceDisplay').html('<i class="fas fa-ship mr-1"></i> SEA (Laut)');
+        } else {
+            $('#serviceDisplay').removeClass('badge-soft-primary').addClass('badge-soft-warning');
+            $('#serviceDisplay').html('<i class="fas fa-plane mr-1"></i> AIR (Udara)');
+        }
+        
+        // Get service-specific pricing fields
+        const priceCbmField = `price-cbm-${serviceTypeLower}`;
+        const priceKgField = `price-kg-${serviceTypeLower}`;
+        const custPriceCbmField = `cust-price-cbm-${serviceTypeLower}`;
+        const custPriceKgField = `cust-price-kg-${serviceTypeLower}`;
+        
+        const priceCbm = parseFloat($(this).find('option:selected').data(priceCbmField)) || 0;
+        const priceKg = parseFloat($(this).find('option:selected').data(priceKgField)) || 0;
+        const custPriceCbm = parseFloat($(this).find('option:selected').data(custPriceCbmField)) || 0;
+        const custPriceKg = parseFloat($(this).find('option:selected').data(custPriceKgField)) || 0;
+        
+        // Update pricing inputs
+        $('#harga_ongkir_cbm').val(priceCbm);
+        $('#harga_ongkir_wg').val(priceKg);
+        
+        // Update pricing display
+        $('#categoryPriceCbm').text(`Rp ${formatNumber(priceCbm)}`);
+        $('#categoryPriceKg').text(`Rp ${formatNumber(priceKg)}`);
+        $('#categoryCustPriceCbm').text(`Rp ${formatNumber(custPriceCbm)}`);
+        $('#categoryCustPriceKg').text(`Rp ${formatNumber(custPriceKg)}`);
+        $('#selectedCategoryInfo').removeClass('hidden');
+        
+        // Show products section and load products with service type
+        $('#warehouseProductsSection').removeClass('hidden');
+        $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-circle-notch fa-spin mr-2"></i> Memuat data produk...</td></tr>');
+        
+        // Include service type in API call
+        $.get(`/api/warehouses/${selectedWarehouseId}/categories/${categoryId}/products?service=${serviceType}`, function(products) {
+            console.log("Products loaded:", products);
+            
+            // Process products for display
+            warehouseProducts = products.map(product => {
+                return {
+                    ...product,
+                    categoryName: $('#category_id option:selected').text().split(' - ')[0],
+                    price_cbm: product.price_cbm || 0,
+                    price_kg: product.price_kg || 0,
+                    cust_price_cbm: product.cust_price_cbm || 0,
+                    cust_price_kg: product.cust_price_kg || 0
+                };
+            });
+            
+            // Initialize display
+            filteredProducts = [...warehouseProducts];
+            currentPage = 1;
+            renderProducts();
+            
+            // Reset product search
+            $('#product_search').val('');
+        }).fail(function(error) {
+            console.error("Error loading products:", error);
+            $('#warehouseProductsList').html('<tr><td colspan="4" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i> Gagal memuat data produk</td></tr>');
+        });
+    } else {
+        $('#warehouseProductsSection').addClass('hidden');
+        $('#selectedCategoryInfo').addClass('hidden');
+    }
+});
+
+// Update marking code function to include service
+function updateMarkingCode() {
+    // Get selected values
+    const mitraCode = $('#mitra_id option:selected').data('marking-code') || '';
+    const marketingCode = $('#marketing_id option:selected').data('code') || '';
+    const customerCode = $('#customer_id option:selected').data('code') || '';
+    const serviceType = $('#service').val() || '';
+    
+    // Build marking code
+    if (mitraCode) {
+        let code = `${mitraCode}/WMLC`;
+        
+        if (marketingCode) {
+            code += `/${marketingCode}`;
+        }
+        
+        if (customerCode) {
+            code += `/${customerCode}`;
+        }
+        
+        if (serviceType) {
+            code += `/${serviceType}`;
+        }
+        
+        $('#marking').val(code);
+    } else {
+        $('#marking').val('');
+    }
 }

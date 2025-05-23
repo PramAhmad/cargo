@@ -141,9 +141,12 @@
                 </div>
                 <div class="card-body p-6">
                     <div class="grid grid-cols-12 gap-6">
-                        <!-- Mitra Selection -->
+                        <!-- Step 1: Mitra Selection -->
                         <div class="col-span-6">
-                            <label for="mitra_id" class="label label-required mb-1 text-sm font-medium">Mitra</label>
+                            <label for="mitra_id" class="label label-required mb-1 text-sm font-medium">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs mr-2">1</span>
+                                Mitra
+                            </label>
                             <select id="mitra_id" name="mitra_id" class="tom-select" required>
                                 <option value="">Pilih Mitra</option>
                                 @foreach($mitras as $mitra)
@@ -154,20 +157,63 @@
                             </select>
                         </div>
                         
-                        <!-- Warehouse Selection -->
+                        <!-- Step 2: Warehouse Selection -->
                         <div class="col-span-6">
-                            <label for="warehouse_id" class="label label-required mb-1 text-sm font-medium">Gudang</label>
+                            <label for="warehouse_id" class="label label-required mb-1 text-sm font-medium">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs mr-2">2</span>
+                                Gudang
+                            </label>
                             <select id="warehouse_id" name="warehouse_id" class="select" required disabled>
                                 <option value="">Pilih Gudang</option>
                             </select>
                         </div>
                         
-                        <!-- Category Selection & Warehouse Info in the same row -->
+                        <!-- Step 3: Service selection (moved up before category) -->
+                        <div class="col-span-6">
+                            <label for="service" class="label label-required mb-1 text-sm font-medium">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs mr-2">3</span>
+                                Layanan Pengiriman
+                            </label>
+                            <div class="flex space-x-2">
+                                <select id="service" name="service" class="select flex-grow" required disabled>
+                                    <option value="">Pilih Layanan</option>
+                                    <option value="SEA">SEA (Laut)</option>
+                                    <option value="AIR">AIR (Udara)</option>
+                                </select>
+                                <span class="inline-flex items-center px-3 rounded-md bg-blue-50 text-sm text-blue-500 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400">
+                                    <i class="fas fa-info-circle mr-1"></i> Memengaruhi harga
+                                </span>
+                            </div>
+                            <p class="text-xs text-amber-600 mt-1">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                Pilihan layanan akan menentukan tarif dari kategori produk (SEA atau AIR)
+                            </p>
+                        </div>
+                        
+                        <!-- Jenis Kiriman moved to same row as Service -->
+                        <div class="col-span-6">
+                            <label for="shipping_type" class="label label-required mb-1 text-sm font-medium">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs mr-2">4</span>
+                                Jenis Kiriman
+                            </label>
+                            <select id="shipping_type" name="shipping_type" class="select" required>
+                                @foreach(\App\Enums\ShippingType::cases() as $type)
+                                    <option value="{{ $type->value }}" {{ $type->value == \App\Enums\ShippingType::LCL->value ? 'selected' : '' }}>
+                                        {{ $type->getLabel() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <!-- Step 5: Category Selection with warehouse info in the same row -->
                         <div class="col-span-12">
                             <div class="grid grid-cols-12 gap-6">
                                 <!-- Category Selection -->
                                 <div class="col-span-6">
-                                    <label for="category_id" class="label label-required mb-1 text-sm font-medium">Kategori Produk</label>
+                                    <label for="category_id" class="label label-required mb-1 text-sm font-medium">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs mr-2">5</span>
+                                        Kategori Produk
+                                    </label>
                                     <div class="flex gap-2">
                                         <select id="category_id" name="category_id" class="select w-full" required disabled>
                                             <option value="">Pilih Kategori</option>
@@ -178,15 +224,11 @@
                                             </button>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Warehouse Info container will be inserted here by JavaScript -->
-                                    <div id="warehouse_info_container"></div>
                                 </div>
                                 
-                                <!-- Warehouse Information (move to the right column) -->
+                                <!-- Warehouse Information -->
                                 <div class="col-span-6" id="warehouse_category_container">
-                                    <!-- This area will be populated by JavaScript 
-                                         It will contain the warehouse details and available categories -->
+                                    <!-- This area will be populated by JavaScript with warehouse details -->
                                 </div>
                             </div>
                         </div>
@@ -206,34 +248,11 @@
                             </p>
                         </div>
                         
-                        <!-- Jenis Kiriman -->
-                        <div class="col-span-6">
-                            <label for="shipping_type" class="label label-required mb-1 text-sm font-medium">Jenis Kiriman</label>
-                            <select id="shipping_type" name="shipping_type" class="select" required>
-                                @foreach(\App\Enums\ShippingType::cases() as $type)
-                                    <option value="{{ $type->value }}" {{ $type->value == \App\Enums\ShippingType::LCL->value ? 'selected' : '' }}>
-                                        {{ $type->getLabel() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-6">
-                            <label for="service" class="label mb-1 text-sm font-medium">Layanan</label>
-                            <select id="service" name="service" class="select">
-                                <option value="">Pilih Layanan</option>
-                                <option value="SEA">SEA</option>
-                                <option value="AIR">AIR</option>
-                            </select>
-                        </div>
-                        
                         <!-- Supplier -->
                         <div class="col-span-6">
                             <label for="supplier" class="label label-required mb-1 text-sm font-medium">Supplier</label>
                             <input type="text" id="supplier" name="supplier" class="input" required>
                         </div>
-                        
-                        <!-- Service Type -->
-                      
                         
                         <!-- Invoice File -->
                         <div class="col-span-6">
@@ -256,6 +275,11 @@
                             </div>
                             <div class="flex-grow">
                                 <h6 class="font-medium text-amber-800 dark:text-amber-400 mb-1" id="categoryName">Nama Kategori</h6>
+                                <div class="flex items-center mb-2">
+                                    <span id="serviceDisplay" class="badge badge-soft-primary">
+                                        <i class="fas fa-ship mr-1"></i> SEA (Laut)
+                                    </span>
+                                </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <p class="text-xs text-gray-500 mb-1">Harga per CBM (Mitra):</p>
@@ -276,7 +300,7 @@
                                 </div>
                                 <p class="text-xs text-amber-600 mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    Semua produk dalam transaksi ini akan menggunakan harga kategori ini untuk perhitungan biaya.
+                                    Semua produk dalam transaksi ini akan menggunakan harga kategori <span id="serviceTypeDisplay" class="font-semibold">SEA</span> untuk perhitungan biaya.
                                 </p>
                             </div>
                         </div>
