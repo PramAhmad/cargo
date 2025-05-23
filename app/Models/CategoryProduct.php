@@ -11,10 +11,14 @@ class CategoryProduct extends Model
     protected $fillable = [
         'name',
         'mitra_id',
-        'mit_price_cbm',
-        'mit_price_kg',
-        'cust_price_cbm',
-        'cust_price_kg',
+        'mit_price_cbm_sea',
+        'mit_price_kg_sea',
+        'cust_price_cbm_sea',
+        'cust_price_kg_sea',
+        'mit_price_cbm_air',
+        'mit_price_kg_air',
+        'cust_price_cbm_air',
+        'cust_price_kg_air',
     ];
 
     /**
@@ -23,10 +27,14 @@ class CategoryProduct extends Model
      * @var array
      */
     protected $casts = [
-        'mit_price_cbm' => 'double',
-        'mit_price_kg' => 'double',
-        'cust_price_cbm' => 'double',
-        'cust_price_kg' => 'double',
+        'mit_price_cbm_sea' => 'double',
+        'mit_price_kg_sea' => 'double',
+        'cust_price_cbm_sea' => 'double',
+        'cust_price_kg_sea' => 'double',
+        'mit_price_cbm_air' => 'double',
+        'mit_price_kg_air' => 'double',
+        'cust_price_cbm_air' => 'double',
+        'cust_price_kg_air' => 'double',
     ];
 
     /**
@@ -60,5 +68,19 @@ class CategoryProduct extends Model
             return "{$this->name} ({$this->mitra->name})";
         }
         return $this->name;
+    }
+    
+    /**
+     * Get price for a specific mode (sea/air) and type (mit/cust)
+     *
+     * @param string $mode 'sea' or 'air'
+     * @param string $type 'mit' or 'cust'
+     * @param string $unit 'cbm' or 'kg'
+     * @return double
+     */
+    public function getPriceForMode(string $mode, string $type, string $unit): float
+    {
+        $column = "{$type}_price_{$unit}_{$mode}";
+        return $this->$column ?? 0;
     }
 }
