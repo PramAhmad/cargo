@@ -23,7 +23,7 @@
                         value="{{ $search ?? '' }}" 
                         placeholder="Search category product" />
                     
-                    <input type="hidden" name="mitra_id" valucreae="{{ $mitraFilter ?? '' }}">
+                    <input type="hidden" name="mitra_id" value="{{ $mitraFilter ?? '' }}">
                         
                     @if(isset($search) && !empty($search))
                         <div class="flex h-full items-center px-2">
@@ -91,10 +91,18 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="w-[30%] uppercase">Name</th>
+                        <th class="w-[20%] uppercase">Name</th>
                         <th class="w-[15%] uppercase">Mitra</th>
-                        <th class="w-[20%] uppercase">CBM Pricing</th>
-                        <th class="w-[20%] uppercase">KG Pricing</th>
+                        <th class="w-[25%] uppercase">
+                            <div class="flex items-center">
+                                <i class="fas fa-ship mr-1 text-blue-500"></i> SEA Pricing
+                            </div>
+                        </th>
+                        <th class="w-[25%] uppercase">
+                            <div class="flex items-center">
+                                <i class="fas fa-plane mr-1 text-amber-500"></i> AIR Pricing
+                            </div>
+                        </th>
                         <th class="w-[15%] !text-right uppercase">Actions</th>
                     </tr>
                 </thead>
@@ -126,35 +134,65 @@
                                 </span>
                             @endif
                         </td>
+                        <!-- SEA Pricing -->
                         <td>
-                            <div class="flex flex-col space-y-1">
+                            <div class="flex flex-col space-y-1 border-l-2 border-blue-400 pl-2">
                                 <div class="flex justify-between">
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">Mitra:</span>
-                                    <span class="text-xs font-medium">
-                                        Rp {{ number_format($categoryProduct->mit_price_cbm ?? 0, 0, ',', '.') }}
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        <i class="fas fa-box mr-1 text-blue-500"></i> CBM:
                                     </span>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-xs font-medium">
+                                            Mitra: Rp {{ number_format($categoryProduct->mit_price_cbm_sea ?? 0, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-xs font-medium">
+                                            Cust: Rp {{ number_format($categoryProduct->cust_price_cbm_sea ?? 0, 0, ',', '.') }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">Customer:</span>
-                                    <span class="text-xs font-medium">
-                                        Rp {{ number_format($categoryProduct->cust_price_cbm ?? 0, 0, ',', '.') }}
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        <i class="fas fa-weight mr-1 text-blue-500"></i> KG:
                                     </span>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-xs font-medium">
+                                            Mitra: Rp {{ number_format($categoryProduct->mit_price_kg_sea ?? 0, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-xs font-medium">
+                                            Cust: Rp {{ number_format($categoryProduct->cust_price_kg_sea ?? 0, 0, ',', '.') }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
+                        <!-- AIR Pricing -->
                         <td>
-                            <div class="flex flex-col space-y-1">
+                            <div class="flex flex-col space-y-1 border-l-2 border-amber-400 pl-2">
                                 <div class="flex justify-between">
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">Mitra:</span>
-                                    <span class="text-xs font-medium">
-                                        Rp {{ number_format($categoryProduct->mit_price_kg ?? 0, 0, ',', '.') }}
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        <i class="fas fa-box mr-1 text-amber-500"></i> CBM:
                                     </span>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-xs font-medium">
+                                            Mitra: Rp {{ number_format($categoryProduct->mit_price_cbm_air ?? 0, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-xs font-medium">
+                                            Cust: Rp {{ number_format($categoryProduct->cust_price_cbm_air ?? 0, 0, ',', '.') }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">Customer:</span>
-                                    <span class="text-xs font-medium">
-                                        Rp {{ number_format($categoryProduct->cust_price_kg ?? 0, 0, ',', '.') }}
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        <i class="fas fa-weight mr-1 text-amber-500"></i> KG:
                                     </span>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-xs font-medium">
+                                            Mitra: Rp {{ number_format($categoryProduct->mit_price_kg_air ?? 0, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-xs font-medium">
+                                            Cust: Rp {{ number_format($categoryProduct->cust_price_kg_air ?? 0, 0, ',', '.') }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
