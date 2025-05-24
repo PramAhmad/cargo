@@ -538,14 +538,13 @@ function calculateRowVolume(row) {
     const width = parseFloat(row.find('input[name$="[width]"]').val()) || 0;
     const height = parseFloat(row.find('input[name$="[high]"]').val()) || 0;
     const totalCtns = parseFloat(row.find('.total-ctns').val()) || 0;
+    console.log(length, width, height, totalCtns);
+    const volumeCm3 = length * width * height * totalCtns;
+
+    row.find('.volume').val(volumeCm3.toFixed(6));
+    row.find('.volume-display').val(formatNumber(volumeCm3));
     
-    // Volume in cubic meters (L*W*H in cm / 1,000,000) x jumlah carton
-    const volumeCbm = length * width * height * totalCtns;
-    
-    row.find('.volume').val(volumeCbm.toFixed(6));
-    row.find('.volume-display').val(formatNumber(volumeCbm));
-    
-    return volumeCbm;
+    return volumeCm3;
 }
 
 // Calculate all totals
@@ -572,7 +571,7 @@ function calculateTotals() {
     $('#carton_display').val(formatNumber(totalCtns));
     $('#gw_display').val(formatNumber(totalGw));
     $('#volume_display').val(formatNumber(totalVolume));
-    $('#cbm_display').val(formatNumber(totalVolume)); // CBM is same as volume in m³
+    $('#cbm_display').val(formatNumber(totalVolume)); // Now this is in cm³ too
     
     // Update kalkulasi ongkir fields
     $('#total_volume_display').text(formatNumber(totalVolume));
@@ -590,7 +589,7 @@ function updateShippingCostCalculation() {
     const hargaOngkirWg = parseFloat($('#harga_ongkir_wg').val()) || 0;
     const maxWeight = parseFloat($('#max_weight').val()) || 0;
     
-    // Hitung biaya berdasarkan volume
+    // Hitung biaya berdasarkan volume (now in cm³)
     const volumeCost = totalVolume * hargaOngkirCbm;
     $('#volume_cost_display').text(`Rp ${formatNumber(volumeCost)}`);
     
@@ -630,10 +629,10 @@ function updateShippingCostCalculation() {
         $('.bg-green-50').addClass('border-green-500 border-2');
     }
     
-    // Update message dan total cost
+    // Update message dan total cost - updated to show cm³ instead of m³
     let message = '';
     if (selectedMethod === 'volume') {
-        message = `<span class="text-blue-700 font-medium">Menggunakan perhitungan Volume</span>: ${formatNumber(totalVolume)} m³ × Rp ${formatNumber(hargaOngkirCbm)} = <span class="font-bold">Rp ${formatNumber(selectedCost)}</span><br>`;
+        message = `<span class="text-blue-700 font-medium">Menggunakan perhitungan Volume</span>: ${formatNumber(totalVolume)} cm³ × Rp ${formatNumber(hargaOngkirCbm)} = <span class="font-bold">Rp ${formatNumber(selectedCost)}</span><br>`;
         
         if (maxWeight === 0) {
             message += `<span class="mt-1 block text-xs opacity-80">Alasan: Tidak ada batas maksimum berat yang ditentukan dan nilai ongkir volume lebih tinggi</span>`;
@@ -654,9 +653,6 @@ function updateShippingCostCalculation() {
     $('#used_calculation_message').html(message);
     $('#selected_shipping_cost').val(formatNumber(selectedCost));
     $('#calculation_method_used').val(selectedMethod);
-    
-    // Otomatis update biaya kirim (tanpa perlu tombol apply)
-    $('#jkt_sda').val(formatNumber(selectedCost));
     
     // Hitung ulang semua biaya
     calculateFees();
