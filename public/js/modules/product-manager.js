@@ -313,8 +313,8 @@ export const ProductManager = {
         const height = parseFloat(row.find('input[name$="[high]"]').val()) || 0;
         const totalCtns = parseFloat(row.find('.total-ctns').val()) || 0;
         
-        // Volume in cubic meters (L*W*H in cm / 1,000,000) x jumlah carton
-        const volumeCbm = (length * width * height / 1000000) * totalCtns;
+        // Volume in cubic meters (L*W*H in m) x jumlah carton
+        const volumeCbm = (length * width * height) * totalCtns;
         
         row.find('.volume').val(volumeCbm.toFixed(6));
         row.find('.volume-display').val(FormatUtils.formatNumber(volumeCbm));
