@@ -196,28 +196,30 @@ export const SelectionManager = {
             const loadingHtml = '<option value="">Loading...</option>';
             $('#category_id').html(loadingHtml);
             
-            // Update warehouse info to include service type
-            const warehouseInfoHTML = $('#warehouse_info').html() + `
-                <div class="mt-2"><span class="font-medium">Layanan:</span> ${serviceType}</div>
-            `;
-            $('#warehouse_info').html(warehouseInfoHTML);
-            
-            // Add service badge
-            let serviceBadge = '';
-            if (serviceType === 'SEA') {
-                serviceBadge = `
-                    <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                        <i class="fas fa-ship mr-1"></i> SEA (Laut)
-                    </div>
+            // Update warehouse info to include service type if exists
+            if ($('#warehouse_info').length > 0) {
+                const warehouseInfoHTML = $('#warehouse_info').html() + `
+                    <div class="mt-2"><span class="font-medium">Layanan:</span> ${serviceType}</div>
                 `;
-            } else {
-                serviceBadge = `
-                    <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-                        <i class="fas fa-plane mr-1"></i> AIR (Udara)
-                    </div>
-                `;
+                $('#warehouse_info').html(warehouseInfoHTML);
+                
+                // Add service badge
+                let serviceBadge = '';
+                if (serviceType === 'SEA') {
+                    serviceBadge = `
+                        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                            <i class="fas fa-ship mr-1"></i> SEA (Laut)
+                        </div>
+                    `;
+                } else {
+                    serviceBadge = `
+                        <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                            <i class="fas fa-plane mr-1"></i> AIR (Udara)
+                        </div>
+                    `;
+                }
+                $('#warehouse_info').append(serviceBadge);
             }
-            $('#warehouse_info').append(serviceBadge);
             
             // Load categories for the dropdown with service-specific pricing
             $.get(`/api/warehouses/${SelectionManager.state.selectedWarehouseId}?service=${serviceType}`, function(response) {
@@ -233,7 +235,7 @@ export const SelectionManager = {
                         const custPriceCbmField = `cust_price_cbm_${serviceTypeLower}`;
                         const custPriceKgField = `cust_price_kg_${serviceTypeLower}`;
                         
-                        // Use the field names that match our service type 
+                        // Use both mitra and customer pricing for data attributes
                         const mitPriceCbm = category[mitPriceCbmField] || 0;
                         const mitPriceKg = category[mitPriceKgField] || 0;
                         const custPriceCbm = category[custPriceCbmField] || 0;
@@ -241,11 +243,11 @@ export const SelectionManager = {
                         
                         $('#category_id').append(`
                             <option value="${category.id}" 
-                                    data-price-cbm-${serviceTypeLower}="${mitPriceCbm}" 
-                                    data-price-kg-${serviceTypeLower}="${mitPriceKg}"
+                                    data-mit-price-cbm-${serviceTypeLower}="${mitPriceCbm}" 
+                                    data-mit-price-kg-${serviceTypeLower}="${mitPriceKg}"
                                     data-cust-price-cbm-${serviceTypeLower}="${custPriceCbm}" 
                                     data-cust-price-kg-${serviceTypeLower}="${custPriceKg}">
-                                ${category.name} - ${serviceType} - Rp ${FormatUtils.formatNumber(mitPriceCbm)}/CBM, Rp ${FormatUtils.formatNumber(mitPriceKg)}/KG
+                                ${category.name} - ${serviceType} - Rp ${FormatUtils.formatNumber(custPriceCbm)}/CBM, Rp ${FormatUtils.formatNumber(custPriceKg)}/KG
                             </option>
                         `);
                     });
@@ -269,9 +271,6 @@ export const SelectionManager = {
                 console.error("Error loading warehouse details:", error);
                 $('#category_id').empty().append('<option value="">Error memuat kategori</option>');
             });
-            
-            // Update marking code to include service
-            SelectionManager.updateMarkingCode();
         }
         
         // Update service type display in selected category info if visible
@@ -309,26 +308,28 @@ export const SelectionManager = {
                 $('#serviceDisplay').html('<i class="fas fa-plane mr-1"></i> AIR (Udara)');
             }
             
-            // Get service-specific pricing fields
-            const priceCbmField = `price-cbm-${serviceTypeLower}`;
-            const priceKgField = `price-kg-${serviceTypeLower}`;
+            // Get service-specific pricing fields - both mitra and customer prices
+            const mitraPriceCbmField = `mit-price-cbm-${serviceTypeLower}`;
+            const mitraPriceKgField = `mit-price-kg-${serviceTypeLower}`;
             const custPriceCbmField = `cust-price-cbm-${serviceTypeLower}`;
             const custPriceKgField = `cust-price-kg-${serviceTypeLower}`;
             
-            const priceCbm = parseFloat($(this).find('option:selected').data(priceCbmField)) || 0;
-            const priceKg = parseFloat($(this).find('option:selected').data(priceKgField)) || 0;
+            // Get the price values from data attributes
+            const mitraPriceCbm = parseFloat($(this).find('option:selected').data(mitraPriceCbmField)) || 0;
+            const mitraPriceKg = parseFloat($(this).find('option:selected').data(mitraPriceKgField)) || 0;
             const custPriceCbm = parseFloat($(this).find('option:selected').data(custPriceCbmField)) || 0;
             const custPriceKg = parseFloat($(this).find('option:selected').data(custPriceKgField)) || 0;
             
-            // Update pricing inputs
-            $('#harga_ongkir_cbm').val(priceCbm);
-            $('#harga_ongkir_wg').val(priceKg);
+            // Update pricing inputs with customer prices (for calculations)
+            $('#harga_ongkir_cbm').val(custPriceCbm);
+            $('#harga_ongkir_wg').val(custPriceKg);
             
-            // Update pricing display
-            $('#categoryPriceCbm').text(`Rp ${FormatUtils.formatNumber(priceCbm)}`);
-            $('#categoryPriceKg').text(`Rp ${FormatUtils.formatNumber(priceKg)}`);
-            $('#categoryCustPriceCbm').text(`Rp ${FormatUtils.formatNumber(custPriceCbm)}`);
-            $('#categoryCustPriceKg').text(`Rp ${FormatUtils.formatNumber(custPriceKg)}`);
+            // Update pricing display - ensure correct labels match correct values
+            $('#categoryPriceCbm').text(`Rp ${FormatUtils.formatNumber(mitraPriceCbm)}`);     // Mitra CBM price
+            $('#categoryPriceKg').text(`Rp ${FormatUtils.formatNumber(mitraPriceKg)}`);       // Mitra KG price
+            $('#categoryCustPriceCbm').text(`Rp ${FormatUtils.formatNumber(custPriceCbm)}`);  // Customer CBM price
+            $('#categoryCustPriceKg').text(`Rp ${FormatUtils.formatNumber(custPriceKg)}`);    // Customer KG price
+            
             $('#selectedCategoryInfo').removeClass('hidden');
             
             // Show products section and load products with service type
@@ -339,15 +340,13 @@ export const SelectionManager = {
             $.get(`/api/warehouses/${SelectionManager.state.selectedWarehouseId}/categories/${categoryId}/products?service=${serviceType}`, function(products) {
                 console.log("Products loaded:", products);
                 
-                // Process products for display
+                // Process products for display - ensure we're using customer prices
                 SelectionManager.state.warehouseProducts = products.map(product => {
                     return {
                         ...product,
                         categoryName: $('#category_id option:selected').text().split(' - ')[0],
-                        price_cbm: product.price_cbm || 0,
-                        price_kg: product.price_kg || 0,
-                        cust_price_cbm: product.cust_price_cbm || 0,
-                        cust_price_kg: product.cust_price_kg || 0
+                        price_cbm: product.cust_price_cbm || 0, // Use customer price
+                        price_kg: product.cust_price_kg || 0,   // Use customer price
                     };
                 });
                 
