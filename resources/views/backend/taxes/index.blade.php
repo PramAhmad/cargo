@@ -184,21 +184,37 @@
                     const type = typeSelect.value;
                     const value = valueInput.value;
                     const isActive = activeToggle.checked ? 1 : 0;
+                    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
                     // Show loading state
                     saveButton.disabled = true;
                     saveButton.innerHTML = '<span class="animate-spin inline-block h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true"></span>';
                     
                     // Send AJAX request to update the tax
-                    fetch(`/taxes/${taxId}/update-fields`, {
+                    fetch(`/dashboard/taxes/${taxId}/update-fields`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            'Accept': 'application/json', // Add this line to request JSON response
+                            'X-CSRF-TOKEN': csrf,
                         },
                         body: JSON.stringify({ type, value, is_active: isActive })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        // Check if the response is OK before trying to parse it as JSON
+                        if (!response.ok) {
+                            if (response.status === 419) {
+                                throw new Error('CSRF token mismatch. Please refresh the page and try again.');
+                            } else if (response.status === 404) {
+                                throw new Error('The requested URL was not found on this server.');
+                            } else if (response.status === 500) {
+                                throw new Error('Internal server error. Please try again later.');
+                            } else {
+                                throw new Error(`Server responded with status: ${response.status}`);
+                            }
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             // Update original values
@@ -221,7 +237,6 @@
                             
                             // Reset save button
                             saveButton.innerHTML = '<i class="h-4 w-4" data-feather="save"></i>';
-                            feather.replace();
                             checkRowChanges(row);
                         } else {
                             throw new Error(data.message || 'Failed to update tax');
@@ -245,7 +260,6 @@
                         
                         // Reset save button
                         saveButton.innerHTML = '<i class="h-4 w-4" data-feather="save"></i>';
-                        feather.replace();
                         saveButton.disabled = false;
                     });
                 });
