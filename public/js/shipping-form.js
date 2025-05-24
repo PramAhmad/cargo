@@ -1437,139 +1437,9 @@ function displayMitraCategories(categories) {
     $('#warehouse_category_container').html(categoryHTML);
 }
 
-// Highlight which categories are available in the selected warehouse
-function highlightWarehouseCategories(warehouseCategories) {
-    if (!$('#mitra_categories_section').length) return;
-    
-    // First reset all categories to normal style
-    $('#mitra_categories_section .grid > div').removeClass('border-2 border-green-500')
-        .find('.badge-active').remove();
-    
-    // Get all category IDs from the warehouse
-    const categoryIds = warehouseCategories.map(cat => cat.id);
-    
-    // Add highlight class to categories that are used in this warehouse
-    $('#mitra_categories_section .grid > div').each(function(index) {
-        const category = mitraCategories[index];
-        if (category && categoryIds.includes(category.id)) {
-            $(this).addClass('border-2 border-green-500');
-            
-            // Add active badge
-            if ($(this).find('.badge-active').length === 0) {
-                $(this).append(`
-                    <span class="badge-active absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 h-5 w-5 flex items-center justify-center rounded-full bg-green-500 text-white text-xs shadow-sm">
-                        <i class="fas fa-check"></i>
-                    </span>
-                `);
-            }
-        }
-    });
-}
 
 // Update warehouse selection change handler to place warehouse info and categories side by side
-$('#warehouse_id').on('change', function() {
-    const warehouseId = $(this).val();
-    selectedWarehouseId = warehouseId;
-    
-    // Reset dependent fields
-    $('#category_id').empty().append('<option value="">Pilih Kategori</option>').prop('disabled', true);
-    $('#categoryInfoBtn').addClass('hidden');
-    $('#selectedCategoryInfo').addClass('hidden');
-    $('#warehouseProductsSection').addClass('hidden');
-    $('#warehouseProductsList').empty();
-    $('#barangList').empty();
-    $('#warehouse_category_container').empty();
-    detailCounter = 0;
-    
-    if (warehouseId) {
-        // Show loading indicator for categories
-        const loadingHtml = '<option value="">Loading...</option>';
-        $('#category_id').html(loadingHtml);
-        
-        // Show loading in warehouse info container
-        $('#warehouse_category_container').html(`
-            <div class="p-3 bg-blue-50 dark:bg-slate-700 rounded-md flex items-center justify-center w-full">
-                <div class="animate-spin mr-3 h-5 w-5 text-blue-500">
-                    <i class="fas fa-circle-notch"></i>
-                </div>
-                <p class="text-sm text-blue-600 dark:text-blue-400">Memuat informasi gudang...</p>
-            </div>
-        `);
-        
-        // Load warehouse details
-        $.get(`/api/warehouses/${warehouseId}`, function(response) {
-            // Display warehouse info in the new container
-            const warehouseInfoHTML = `
-                <div id="warehouse_info" class="p-3 text-sm bg-blue-50 dark:bg-slate-700 rounded-md w-full mb-3">
-                    <h6 class="font-semibold mb-2">Informasi Gudang:</h6>
-                    <div class="grid grid-cols-1 gap-2">
-                        <div><span class="font-medium">Nama:</span> ${response.warehouse.name}</div>
-                        <div><span class="font-medium">Tipe:</span> ${response.warehouse.type || 'N/A'}</div>
-                        <div><span class="font-medium">Alamat:</span> ${response.warehouse.address || 'N/A'}</div>
-                    </div>
-                </div>
-            `;
-            
-            $('#warehouse_category_container').html(warehouseInfoHTML);
-            
-            // Display mitra categories
-            if (mitraCategories.length > 0) {
-                displayMitraCategories(mitraCategories);
-                
-                // Highlight available categories
-                highlightWarehouseCategories(response.categories);
-            }
-            
-            // Load categories for the dropdown
-            if (response.categories && response.categories.length > 0) {
-                $('#category_id').empty().append('<option value="">Pilih Kategori</option>');
-                
-                response.categories.forEach(category => {
-                    $('#category_id').append(`
-                        <option value="${category.id}" 
-                                data-price-cbm="${category.mit_price_cbm}" 
-                                data-price-kg="${category.mit_price_kg}"
-                                data-cust-price-cbm="${category.cust_price_cbm}" 
-                                data-cust-price-kg="${category.cust_price_kg}">
-                            ${category.name} - Rp ${formatNumber(category.mit_price_cbm)}/CBM, Rp ${formatNumber(category.mit_price_kg)}/KG
-                        </option>
-                    `);
-                });
-                
-                $('#category_id').prop('disabled', false);
-                $('#categoryInfoBtn').removeClass('hidden');
-            } else {
-                $('#category_id').empty().append('<option value="">Tidak ada kategori tersedia</option>');
-                
-                // Show no categories message
-                $('#warehouse_category_container').append(`
-                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md w-full">
-                        <p class="text-sm text-gray-500 text-center">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Tidak ada kategori tersedia untuk gudang ini
-                        </p>
-                    </div>
-                `);
-            }
-        }).fail(function(error) {
-            console.error("Error loading warehouse details:", error);
-            $('#warehouse_category_container').html(`
-                <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-md w-full">
-                    <p class="text-sm text-red-600 dark:text-red-400 text-center">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        Gagal memuat informasi gudang
-                    </p>
-                </div>
-            `);
-            $('#category_id').empty().append('<option value="">Error memuat kategori</option>');
-        });
-    } else {
-        // Reset everything if no warehouse selected
-        resetWarehouseAndCategorySection();
-    }
-    
-    calculateTotals();
-});
+
 function highlightWarehouseCategories(warehouseCategories) {
     if (!$('#mitra_categories_section').length) return;
     
@@ -1676,7 +1546,6 @@ $('#warehouse_id').on('change', function() {
     }
 });
 
-// Service change handler - only after this enable category selection
 $('#service').on('change', function() {
     const serviceType = $(this).val();
     
