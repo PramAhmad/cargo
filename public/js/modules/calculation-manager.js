@@ -123,7 +123,7 @@ export const CalculationManager = {
         $('#selected_shipping_cost').val(FormatUtils.formatNumber(selectedCost));
         $('#calculation_method_used').val(selectedMethod);
         
-        // Automatically update shipping cost (no need for apply button)
+        // REMOVE THIS LINE - Let jkt_sda be manually input
         $('#jkt_sda').val(FormatUtils.formatNumber(selectedCost));
         
         // Recalculate all fees
@@ -134,7 +134,8 @@ export const CalculationManager = {
         let totalFees = 0;
         
         $('[data-fee="true"]').each(function() {
-            totalFees += FormatUtils.parseNumberFromFormatted($(this).val()) || 0;
+            const feeValue = FormatUtils.parseNumberFromFormatted($(this).val()) || 0;
+            totalFees += feeValue;
         });
         
         // Biaya is the total of all fees
@@ -150,25 +151,43 @@ export const CalculationManager = {
         // Update nilai display
         this.updateNilaiDisplay();
         
-        // Update PPN and grand total
+        // Make sure to calculate PPN and grand total whenever fees change
         this.calculatePPN();
         this.calculateGrandTotal();
     },
     
     calculatePPN() {
+        // Get the biaya_kirim value (total fees)
         const biayaKirim = FormatUtils.parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
+        
+        // Get the PPN percentage
         const ppnRate = parseFloat($('#ppn').val()) || 0;
+        
+        // Calculate PPN amount
         const ppnAmount = biayaKirim * (ppnRate / 100);
         
+        // Update the PPN total input
         $('#ppn_total').val(FormatUtils.formatNumber(ppnAmount));
     },
     
     calculateGrandTotal() {
+        // Get all necessary values
         const biayaKirim = FormatUtils.parseNumberFromFormatted($('#biaya_kirim').val()) || 0;
         const pph = FormatUtils.parseNumberFromFormatted($('#pph').val()) || 0;
         const ppnTotal = FormatUtils.parseNumberFromFormatted($('#ppn_total').val()) || 0;
         
+        // Calculate grand total
         const grandTotal = biayaKirim + pph + ppnTotal;
+        
+        // Log for debugging
+        console.log("Grand Total Calculation:", {
+            biayaKirim: biayaKirim,
+            pph: pph,
+            ppnTotal: ppnTotal,
+            grandTotal: grandTotal
+        });
+        
+        // Update the grand total input
         $('#grand_total').val(FormatUtils.formatNumber(grandTotal));
     },
     
