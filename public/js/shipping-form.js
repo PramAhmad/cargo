@@ -3,6 +3,8 @@
  * Menangani interaksi form shipping - dibuat oleh AstaCode
  */
 
+window.ShippingApp = window.ShippingApp || {};
+
 // Import our modules
 import { FormatUtils } from './modules/format-utils.js';
 import { SelectionManager } from './modules/selection-manager.js';
